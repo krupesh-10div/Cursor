@@ -55,6 +55,46 @@
 				</section>
 			</div>
 
+			<div class="grid grid-2 gap-16">
+				<section class="card">
+					<h2 class="card-title">Billed By <span class="muted">(Your Details)</span></h2>
+					<div class="grid grid-1">
+						<label class="field"><span>Your Business Name <b>*</b></span><input type="text" name="by_business" placeholder="Enter Your Business Name" required /></label>
+					</div>
+					<div class="grid grid-3">
+						<label class="field"><span>Contact Number</span><input type="text" name="by_contact" placeholder="+91 98765 43210" /></label>
+						<label class="field"><span>Email ID</span><input type="email" name="by_email" placeholder="you@company.com" /></label>
+						<label class="field"><span>Your GSTIN</span><input type="text" name="by_gstin" placeholder="Enter Your GSTIN Number" /></label>
+					</div>
+					<div class="grid grid-1"><label class="field"><span>Address</span><input type="text" name="by_address" placeholder="Enter Your Address" /></label></div>
+					<div class="grid grid-3">
+						<label class="field"><span>City</span><input type="text" name="by_city" placeholder="Enter City" /></label>
+						<label class="field"><span>Postal Code/Zip Code</span><input type="text" name="by_postal" placeholder="Enter Postal Code/Zip Code" /></label>
+						<label class="field"><span>State</span><input type="text" name="by_state" placeholder="Select State" /></label>
+					</div>
+					<div><button type="button" class="btn btn-outline">Add Custom Fields</button></div>
+				</section>
+
+				<section class="card">
+					<h2 class="card-title">Billed To <span class="muted">(Client Details)</span></h2>
+					<div class="grid grid-1">
+						<label class="field"><span>Client's Business Name <b>*</b></span><input type="text" name="to_business" placeholder="Enter Client's Business Name" required /></label>
+					</div>
+					<div class="grid grid-3">
+						<label class="field"><span>Contact Number</span><input type="text" name="to_contact" placeholder="+91 98765 43210" /></label>
+						<label class="field"><span>Email ID</span><input type="email" name="to_email" placeholder="client@company.com" /></label>
+						<label class="field"><span>Client's GSTIN</span><input type="text" name="to_gstin" placeholder="Enter Client's GSTIN Number" /></label>
+					</div>
+					<div class="grid grid-1"><label class="field"><span>Address</span><input type="text" name="to_address" placeholder="Enter Client's Address" /></label></div>
+					<div class="grid grid-3">
+						<label class="field"><span>City</span><input type="text" name="to_city" placeholder="Enter City" /></label>
+						<label class="field"><span>Postal Code/Zip Code</span><input type="text" name="to_postal" placeholder="Enter Postal Code/Zip Code" /></label>
+						<label class="field"><span>State</span><input type="text" name="to_state" placeholder="Select State" /></label>
+					</div>
+					<div><button type="button" class="btn btn-outline">Add Custom Fields</button></div>
+				</section>
+			</div>
+
 			<section class="card">
 				<h2 class="card-title">Invoice Details</h2>
 				<div class="table-wrap">

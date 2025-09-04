@@ -19,6 +19,8 @@ body {
 
 .container { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
 .page-title { font-size: 28px; font-weight: 700; margin: 8px 0 20px; text-align: center; color:#0f172a; }
+.muted { color: var(--muted); font-weight: 500; }
+.notice-row { margin: 8px 0 16px; }
 
 .card {
 	background: var(--card);
