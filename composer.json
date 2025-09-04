@@ -1,0 +1,9 @@
+{
+  "name": "workspace/quotation-generator",
+  "description": "Simple quotation PDF generator using Dompdf",
+  "type": "project",
+  "require": {
+    "dompdf/dompdf": "^2.0"
+  }
+}
+

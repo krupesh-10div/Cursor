@@ -395,17 +395,71 @@
         return;
       }
 
-      const subtotalText = document.getElementById('subtotal_amount')?.textContent || '₹0.00';
-      const totalText = document.getElementById('grand_total')?.textContent || '₹0.00';
-      const gstState = getGSTState();
+      // Build FormData for backend PDF generation
+      const fd = new FormData();
+      const qno = document.getElementById('qno');
+      const qdate = document.getElementById('qdate');
+      const byBusiness = document.getElementById('by_business');
+      const byEmail = document.getElementById('by_email');
+      const toBusiness = document.getElementById('to_business');
+      const toEmail = document.getElementById('to_email');
 
-      const summary = [
-        `Items: ${items.length}`,
-        `Subtotal: ${subtotalText}`,
-        gstState.isIncluded ? `GST (${gstState.percent}%): ${document.getElementById('gst_value')?.textContent || '₹0.00'}` : null,
-        `Total: ${totalText}`
-      ].filter(Boolean).join('\n');
-      alert(summary);
+      fd.append('quotation_no', (qno && qno.value) || '');
+      fd.append('quotation_date', (qdate && qdate.value) || '');
+      fd.append('currency', 'INR');
+      fd.append('company_name', (byBusiness && byBusiness.value) || '');
+      fd.append('company_email', (byEmail && byEmail.value) || '');
+      fd.append('customer_name', (toBusiness && toBusiness.value) || '');
+      fd.append('customer_email', (toEmail && toEmail.value) || '');
+
+      // Global GST -> apply same tax percent to each item for server-side totals
+      const { isIncluded, percent } = getGSTState();
+      const taxPercent = isIncluded ? percent : 0;
+
+      items.forEach((it) => {
+        fd.append('items[name][]', it.name);
+        fd.append('items[qty][]', String(it.quantity));
+        fd.append('items[price][]', String(it.rate));
+        fd.append('items[tax][]', String(taxPercent));
+      });
+
+      // Optional: collect Terms if chip section added
+      const termsSection = document.getElementById('terms_section');
+      const termsText = termsSection ? (termsSection.querySelector('textarea')?.value || '') : '';
+      if (termsText.trim()) {
+        termsText.split('\n').map(s => s.trim()).filter(Boolean).forEach((line) => {
+          fd.append('terms[]', line);
+        });
+      }
+
+      // Disable button while generating
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating...';
+
+      fetch('generate.php', { method: 'POST', body: fd })
+        .then(async (res) => {
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            throw new Error(text || 'Failed to generate PDF');
+          }
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const filename = res.headers.get('X-Filename') || 'quotation.pdf';
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch((err) => {
+          alert(err.message || 'Something went wrong while generating the PDF.');
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Generate Quote';
+        });
     });
   }
 
