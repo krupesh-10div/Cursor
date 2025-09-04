@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quotation Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <h1 class="page__title">Generate Perfect Quotes with Munim Right Away!</h1>
+
+    <div class="grid grid--2">
+      <section class="card">
+        <header class="card__header">
+          <h2 class="card__title">Quotation Details</h2>
+        </header>
+        <div class="card__body">
+          <div class="form">
+            <div class="field">
+              <label for="qno" class="label">Quotation No</label>
+              <input id="qno" class="input" type="text" placeholder="A0001">
+            </div>
+            <div class="field">
+              <label for="qdate" class="label">Quotation Date</label>
+              <input id="qdate" class="input" type="date">
+            </div>
+            <div class="field field--inline">
+              <button class="btn btn--ghost" type="button">Add More Fields</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card__header">
+          <h2 class="card__title">Add Company Logo Here</h2>
+          <p class="muted">Resolution up to 1080x1080px, PNG or JPEG file.</p>
+        </header>
+        <div class="card__body">
+          <div class="dropzone">
+            <div class="dropzone__icon" aria-hidden="true">📤</div>
+            <div class="dropzone__text">Drop files to upload</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid grid--2">
+      <section class="card">
+        <header class="card__header">
+          <h2 class="card__title">Billed By <span class="muted">(Your Details)</span></h2>
+        </header>
+        <div class="card__body">
+          <div class="form form--grid">
+            <div class="field field--full">
+              <label class="label" for="by_business">Your Business Name <span class="req">*</span></label>
+              <input id="by_business" class="input" type="text" placeholder="Enter Your Business Name">
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_phone">Contact Number</label>
+              <div class="inputgroup">
+                <select class="select select--country" aria-label="Country">
+                  <option selected>🇮🇳 +91</option>
+                  <option>🇺🇸 +1</option>
+                  <option>🇬🇧 +44</option>
+                </select>
+                <input id="by_phone" class="input input--grow" type="tel" placeholder="">
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_email">Email ID</label>
+              <input id="by_email" class="input" type="email" placeholder="Enter Your Email ID">
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_gstin">Your GSTIN</label>
+              <input id="by_gstin" class="input" type="text" placeholder="Enter Your GSTIN Number">
+            </div>
+
+            <div class="field field--full">
+              <label class="label" for="by_address">Address</label>
+              <input id="by_address" class="input" type="text" placeholder="Enter Your Address">
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_city">City</label>
+              <input id="by_city" class="input" type="text" placeholder="Enter City">
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_zip">Postal Code/Zip Code</label>
+              <input id="by_zip" class="input" type="text" placeholder="Enter Postal Code/Zip Code">
+            </div>
+
+            <div class="field">
+              <label class="label" for="by_state">State</label>
+              <select id="by_state" class="select">
+                <option selected>Select State</option>
+                <option>Maharashtra</option>
+                <option>Gujarat</option>
+                <option>Karnataka</option>
+              </select>
+            </div>
+
+            <div class="field field--inline field--full">
+              <button class="btn btn--ghost" type="button">Add Custom Fields</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card__header">
+          <h2 class="card__title">Billed To <span class="muted">(Client Details)</span></h2>
+        </header>
+        <div class="card__body">
+          <div class="form form--grid">
+            <div class="field field--full">
+              <label class="label" for="to_business">Client's Business Name <span class="req">*</span></label>
+              <input id="to_business" class="input" type="text" placeholder="Enter Client's Business Name">
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_phone">Contact Number</label>
+              <div class="inputgroup">
+                <select class="select select--country" aria-label="Country">
+                  <option selected>🇮🇳 +91</option>
+                  <option>🇺🇸 +1</option>
+                  <option>🇬🇧 +44</option>
+                </select>
+                <input id="to_phone" class="input input--grow" type="tel" placeholder="">
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_email">Email ID</label>
+              <input id="to_email" class="input" type="email" placeholder="Enter Your Email ID">
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_gstin">Client's GSTIN</label>
+              <input id="to_gstin" class="input" type="text" placeholder="Enter Client's GSTIN Number">
+            </div>
+
+            <div class="field field--full">
+              <label class="label" for="to_address">Address</label>
+              <input id="to_address" class="input" type="text" placeholder="Enter Client's Address">
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_city">City</label>
+              <input id="to_city" class="input" type="text" placeholder="Enter City">
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_zip">Postal Code/Zip Code</label>
+              <input id="to_zip" class="input" type="text" placeholder="Enter Postal Code/Zip Code">
+            </div>
+
+            <div class="field">
+              <label class="label" for="to_state">State</label>
+              <select id="to_state" class="select">
+                <option selected>Select State</option>
+                <option>Maharashtra</option>
+                <option>Gujarat</option>
+                <option>Karnataka</option>
+              </select>
+            </div>
+
+            <div class="field field--inline field--full">
+              <button class="btn btn--ghost" type="button">Add Custom Fields</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="notice">
+      <label class="checkbox">
+        <input type="checkbox">
+        <span>Does Your Estimate include GST? If yes, then tick the checkbox.</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <h2 class="card__title">Invoice Details</h2>
+      </header>
+      <div class="card__body">
+        <div class="table">
+          <div class="table__head">
+            <div class="th th--sm">Sr. No</div>
+            <div class="th">Product Name</div>
+            <div class="th th--sm">Quantity</div>
+            <div class="th th--sm">Rate</div>
+            <div class="th th--sm">Total Amount</div>
+            <div class="th th--sm">Actions</div>
+          </div>
+          <div class="table__row">
+            <div class="td td--sm">1</div>
+            <div class="td">
+              <input class="input" type="text" placeholder="Product Name *">
+              <div class="row row--gap">
+                <div class="selectwrap">
+                  <label class="sr">Add Unit</label>
+                  <select class="select">
+                    <option>Product</option>
+                    <option>Service</option>
+                    <option>Hours</option>
+                  </select>
+                </div>
+                <label class="checkbox checkbox--inline">
+                  <input type="checkbox">
+                  <span>Add Description</span>
+                </label>
+                <button class="btn btn--ghost btn--sm" type="button">Add Other Field</button>
+              </div>
+            </div>
+            <div class="td td--sm"><input class="input" type="number" min="0" value="0"></div>
+            <div class="td td--sm"><input class="input" type="number" min="0" value="0"></div>
+            <div class="td td--sm"><input class="input" type="text" value="₹0.00"></div>
+            <div class="td td--sm">
+              <div class="row row--gap">
+                <button class="iconbtn" aria-label="move">↕️</button>
+                <button class="iconbtn" aria-label="duplicate">📄</button>
+                <button class="iconbtn" aria-label="delete">🗑️</button>
+              </div>
+            </div>
+          </div>
+          <div class="table__footer">
+            <button class="btn btn--ghost" type="button">Add New Line</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid--2 grid--balanced">
+      <section class="card">
+        <div class="card__body">
+          <div class="chiprow">
+            <button class="chip" type="button">Add Terms & Conditions</button>
+            <button class="chip" type="button">Add Notes</button>
+          </div>
+          <div class="chiprow">
+            <button class="chip" type="button">Add Validity</button>
+            <button class="chip" type="button">Add your footer</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__body totals">
+          <div class="totals__row">
+            <div class="totals__label">Amount</div>
+            <div class="totals__value">₹0.00</div>
+          </div>
+          <div class="totals__group">
+            <label class="checkbox">
+              <input type="checkbox">
+              <span>Add Discounts/Additional Charges</span>
+            </label>
+            <label class="checkbox checkbox--inline">
+              <input type="checkbox">
+              <span>Summarise Total Quantity</span>
+            </label>
+            <div class="row row--gap">
+              <label class="radio">
+                <input type="radio" name="round"> <span>Round Up</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="round"> <span>Round Down</span>
+              </label>
+            </div>
+          </div>
+          <div class="totals__row totals__row--emph">
+            <div class="totals__label">Total (INR)</div>
+            <div class="totals__value">₹0.00</div>
+          </div>
+          <div class="row row--between">
+            <button class="btn btn--ghost" type="button">Add More Fields</button>
+            <label class="checkbox">
+              <input type="checkbox"><span>Show Total in Words</span>
+            </label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" type="button">Generate Quote</button>
+    </div>
+
+  </div>
+</body>
+</html>
