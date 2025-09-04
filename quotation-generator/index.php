@@ -16,118 +16,155 @@
 </head>
 <body>
 	<div class="container">
-		<h1 class="page-title">Generate Perfect Quotes</h1>
+		<h1 class="page-title">Generate Perfect Quotes with Munim Right Away!</h1>
 		<form id="quoteForm" enctype="multipart/form-data">
-			<section class="card">
-				<h2 class="card-title">Quotation Details</h2>
-				<div class="grid grid-3">
-					<label class="field">
-						<span>Quotation No</span>
-						<input type="text" name="quotation_no" placeholder="Q0001" required />
-					</label>
-					<label class="field">
-						<span>Quotation Date</span>
-						<input type="date" name="quotation_date" value="<?php echo date('Y-m-d'); ?>" required />
-					</label>
-					<label class="field">
-						<span>Currency</span>
-						<select name="currency" aria-label="Currency">
-							<option value="INR" selected>INR (₹)</option>
-							<option value="USD">USD ($)</option>
-							<option value="EUR">EUR (€)</option>
-							<option value="GBP">GBP (£)</option>
-						</select>
-					</label>
-				</div>
+			<div class="grid grid-2 gap-16">
+				<section class="card">
+					<h2 class="card-title">Quotation Details</h2>
+					<div class="grid grid-3">
+						<label class="field">
+							<span>Quotation No</span>
+							<input type="text" name="quotation_no" placeholder="A0001" required />
+						</label>
+						<label class="field">
+							<span>Quotation Date</span>
+							<input type="date" name="quotation_date" value="<?php echo date('Y-m-d'); ?>" required />
+						</label>
+						<label class="field">
+							<span>Currency</span>
+							<select name="currency" aria-label="Currency">
+								<option value="INR" selected>INR (₹)</option>
+								<option value="USD">USD ($)</option>
+								<option value="EUR">EUR (€)</option>
+								<option value="GBP">GBP (£)</option>
+							</select>
+						</label>
+					</div>
+				</section>
 
-				<div class="grid grid-2">
-					<label class="field">
-						<span>Your Company Name</span>
-						<input type="text" name="company_name" placeholder="Acme Pvt Ltd" required />
-					</label>
-					<label class="field">
-						<span>Company Email</span>
-						<input type="email" name="company_email" placeholder="hello@company.com" />
-					</label>
-				</div>
-				<div class="grid grid-2">
-					<label class="field">
-						<span>Customer Name</span>
-						<input type="text" name="customer_name" placeholder="Customer / Client" required />
-					</label>
-					<label class="field">
-						<span>Customer Email</span>
-						<input type="email" name="customer_email" placeholder="client@email.com" />
-					</label>
-				</div>
-
-				<div class="grid grid-2">
-					<label class="field file">
-						<span>Company Logo (PNG/JPG, optional)</span>
-						<input type="file" name="company_logo" accept="image/png,image/jpeg" />
-					</label>
-					<label class="field file">
-						<span>Digital Signature (PNG/JPG, optional)</span>
-						<input type="file" name="signature" accept="image/png,image/jpeg" />
-					</label>
-				</div>
-			</section>
+				<section class="card upload-card">
+					<div class="upload">
+						<div class="upload-icon">📎</div>
+						<div class="upload-title">Add Company Logo Here</div>
+						<div class="upload-sub">Resolution up to 1080x1080px, PNG or JPEG file.</div>
+						<label class="upload-drop">
+							<input type="file" name="company_logo" accept="image/png,image/jpeg" />
+							<span>Drop files to upload</span>
+						</label>
+					</div>
+				</section>
+			</div>
 
 			<section class="card">
-				<h2 class="card-title">Items</h2>
+				<h2 class="card-title">Invoice Details</h2>
 				<div class="table-wrap">
 					<table class="items" id="itemsTable">
 						<thead>
 							<tr>
-								<th>Product / Service</th>
-								<th class="w-100">Qty</th>
-								<th class="w-160">Unit Price</th>
-								<th class="w-120">Tax %</th>
-								<th class="w-160">Total</th>
-								<th class="w-80"></th>
+								<th class="w-60">Sr. No</th>
+								<th>Product Name</th>
+								<th class="w-120">Unit</th>
+								<th class="w-120">Quantity</th>
+								<th class="w-140">Rate</th>
+								<th class="w-160">Total Amount</th>
+								<th class="w-80">Actions</th>
 							</tr>
 						</thead>
 						<tbody id="itemRows">
 							<tr class="item-row">
+								<td class="sr">1</td>
 								<td>
-									<input type="text" name="items[name][]" placeholder="Product name" required />
+									<input type="text" name="items[name][]" placeholder="Product Name" required />
+									<div class="desc-row" hidden>
+										<input type="text" name="items[desc][]" placeholder="Add Description" />
+									</div>
 								</td>
 								<td>
-									<input type="number" min="0" step="1" name="items[qty][]" value="1" class="qty" required />
+									<select name="items[unit][]" class="unit">
+										<option value="Product" selected>Product</option>
+										<option value="Hour">Hour</option>
+										<option value="Kg">Kg</option>
+										<option value="Unit">Unit</option>
+									</select>
 								</td>
-								<td>
-									<input type="number" min="0" step="0.01" name="items[price][]" value="0" class="price" required />
-								</td>
-								<td>
-									<input type="number" min="0" step="0.01" name="items[tax][]" value="0" class="tax" />
-								</td>
+								<td><input type="number" min="0" step="1" name="items[qty][]" value="1" class="qty" required /></td>
+								<td><input type="number" min="0" step="0.01" name="items[price][]" value="0" class="price" required /></td>
 								<td class="row-total">0.00</td>
-								<td class="actions"><button type="button" class="btn btn-icon remove-row" title="Remove">×</button></td>
+								<td class="actions">
+									<div class="row-actions">
+										<button type="button" class="btn btn-small add-desc">Add Description</button>
+										<button type="button" class="btn btn-icon remove-row" title="Remove">🗑</button>
+									</div>
+								</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
 				<div class="table-actions">
-					<button type="button" id="addRow" class="btn">Add Row</button>
-				</div>
-
-				<div class="totals">
-					<div class="totals-line"><span class="label">Subtotal</span><span class="value" id="subtotal">0.00</span></div>
-					<div class="totals-line"><span class="label">Tax</span><span class="value" id="taxtotal">0.00</span></div>
-					<div class="totals-line grand"><span class="label">Grand Total</span><span class="value" id="grandtotal">0.00</span></div>
-				</div>
-			</section>
-
-			<section class="card">
-				<h2 class="card-title">Terms & Conditions</h2>
-				<div id="termsWrap" class="terms-wrap">
-					<div class="term-row">
-						<input type="text" name="terms[]" placeholder="Enter a term" />
-						<button type="button" class="btn btn-icon remove-term">×</button>
+					<div class="left">
+						<button type="button" id="addRow" class="btn">Add New Line</button>
 					</div>
+					<div class="right"></div>
 				</div>
-				<button type="button" id="addTerm" class="btn">Add Term</button>
 			</section>
+
+			<div class="grid grid-2 gap-16">
+				<section class="card">
+					<div class="pill-actions">
+						<button type="button" class="btn btn-outline" id="addTerms">Add Terms & Conditions</button>
+						<button type="button" class="btn btn-outline" id="addNotes">Add Notes</button>
+						<button type="button" class="btn btn-outline" id="addValidity">Add Validity</button>
+						<button type="button" class="btn btn-outline" id="addFooter">Add your footer</button>
+					</div>
+					<div id="termsWrap" class="terms-wrap" hidden>
+						<div class="term-row">
+							<input type="text" name="terms[]" placeholder="Enter a term" />
+							<button type="button" class="btn btn-icon remove-term">×</button>
+						</div>
+					</div>
+					<div id="notesWrap" class="notes-wrap" hidden>
+						<label class="field"><span>Notes</span><textarea name="notes" rows="3" placeholder="Write notes..."></textarea></label>
+					</div>
+					<div id="validityWrap" class="notes-wrap" hidden>
+						<label class="field"><span>Validity</span><input type="text" name="validity" placeholder="e.g., Valid for 7 days" /></label>
+					</div>
+					<div id="footerWrap" class="notes-wrap" hidden>
+						<label class="field"><span>Footer</span><input type="text" name="footer_text" placeholder="Thank you for your business" /></label>
+					</div>
+				</section>
+
+				<section class="card amount-card">
+					<h3 class="card-title">Amount</h3>
+					<div class="addon">
+						<label class="checkbox"><input type="checkbox" id="toggleDiscounts" checked /> Add Discounts/Additional Charges</label>
+						<div class="addon-grid" id="discountsWrap">
+							<label class="field"><span>Discount</span><input type="number" step="0.01" min="0" name="discount_amount" value="0" /></label>
+							<label class="field"><span>Additional Charges</span><input type="number" step="0.01" min="0" name="additional_amount" value="0" /></label>
+						</div>
+					</div>
+					<label class="checkbox"><input type="checkbox" id="sumQty" name="sum_qty" /> Summarise Total Quantity</label>
+					<div class="rounding">
+						<label class="radio"><input type="radio" name="rounding" value="none" checked /> No Rounding</label>
+						<label class="radio"><input type="radio" name="rounding" value="up" /> Round Up</label>
+						<label class="radio"><input type="radio" name="rounding" value="down" /> Round Down</label>
+					</div>
+					<div class="totals light">
+						<div class="totals-line"><span class="label">Subtotal</span><span class="value" id="subtotal">0.00</span></div>
+						<div class="totals-line gst" id="gstLine" hidden><span class="label">GST</span><span class="value" id="taxtotal">0.00</span></div>
+						<div class="totals-line" id="discountLine" hidden><span class="label">Discount</span><span class="value" id="discountval">0.00</span></div>
+						<div class="totals-line" id="additionalLine" hidden><span class="label">Additional Charges</span><span class="value" id="additionalval">0.00</span></div>
+						<div class="totals-line" id="roundLine" hidden><span class="label">Rounding Adj.</span><span class="value" id="roundval">0.00</span></div>
+						<div class="totals-line grand"><span class="label">Total (INR)</span><span class="value" id="grandtotal">0.00</span></div>
+					</div>
+					<div class="controls">
+						<label class="checkbox"><input type="checkbox" id="showWords" /> Show Total In Words</label>
+						<div id="wordsOut" class="words" hidden></div>
+					</div>
+					<div class="sign-upload">
+						<label class="field file"><span>Digital Signature</span><input type="file" name="signature" accept="image/png,image/jpeg" /></label>
+					</div>
+				</section>
+			</div>
 
 			<div class="actions footer-actions">
 				<button type="submit" id="generateBtn" class="btn btn-primary">Generate Quotation</button>

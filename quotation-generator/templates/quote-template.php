@@ -19,12 +19,25 @@ $subtotal = 0.0; $taxtotal = 0.0; $grand = 0.0;
 foreach (($data['items']['name'] ?? []) as $i => $name){
 	$qty = (float)($data['items']['qty'][$i] ?? 0);
 	$price = (float)($data['items']['price'][$i] ?? 0);
-	$tax = (float)($data['items']['tax'][$i] ?? 0);
 	$base = $qty * $price;
-	$taxAmt = $base * ($tax/100);
-	$lineTotal = $base + $taxAmt;
-	$subtotal += $base; $taxtotal += $taxAmt; $grand += $lineTotal;
+	$lineTotal = $base;
+	$subtotal += $base; $grand += $lineTotal;
 }
+
+// Apply global GST and adjustments
+$gstPercent = isset($data['gst_percent']) ? (float)$data['gst_percent'] : 0.0;
+$includeGst = !empty($data['include_gst']);
+if ($includeGst && $gstPercent > 0) {
+	$taxtotal = $subtotal * ($gstPercent / 100.0);
+}
+$discount = isset($data['discount_amount']) ? (float)$data['discount_amount'] : 0.0;
+$additional = isset($data['additional_amount']) ? (float)$data['additional_amount'] : 0.0;
+$grand = $subtotal + $taxtotal - $discount + $additional;
+$rounding = $data['rounding'] ?? 'none';
+$roundAdj = 0.0;
+if ($rounding === 'up') { $roundAdj = ceil($grand) - $grand; }
+elseif ($rounding === 'down') { $roundAdj = floor($grand) - $grand; }
+$grand = $grand + $roundAdj;
 ?>
 <!DOCTYPE html>
 <html>
@@ -67,9 +80,16 @@ foreach (($data['items']['name'] ?? []) as $i => $name){
 
 		<div class="flex" style="margin-top:16px;">
 			<div class="block" style="flex:1;">
-				<div class="small">Billed To</div>
-				<div><strong><?php echo esc($data['customer_name'] ?? ''); ?></strong></div>
-				<div class="small"><?php echo esc($data['customer_email'] ?? ''); ?></div>
+				<div class="small">Billed By (Your Details)</div>
+				<div><strong><?php echo esc($data['by_business'] ?? ($data['company_name'] ?? '')); ?></strong></div>
+				<div class="small"><?php echo esc($data['by_email'] ?? ($data['company_email'] ?? '')); ?></div>
+				<div class="small"><?php echo esc($data['by_address'] ?? ''); ?></div>
+			</div>
+			<div class="block" style="flex:1;">
+				<div class="small">Billed To (Client Details)</div>
+				<div><strong><?php echo esc($data['to_business'] ?? ($data['customer_name'] ?? '')); ?></strong></div>
+				<div class="small"><?php echo esc($data['to_email'] ?? ($data['customer_email'] ?? '')); ?></div>
+				<div class="small"><?php echo esc($data['to_address'] ?? ''); ?></div>
 			</div>
 		</div>
 
@@ -96,7 +116,7 @@ foreach (($data['items']['name'] ?? []) as $i => $name){
 					<td><?php echo esc($name); ?></td>
 					<td><?php echo money($qty); ?></td>
 					<td><?php echo $currencySymbol . ' ' . money($price); ?></td>
-					<td><?php echo money($tax); ?></td>
+					<td><?php echo money(0); ?></td>
 					<td><?php echo $currencySymbol . ' ' . money($lineTotal); ?></td>
 				</tr>
 			<?php endforeach; ?>
@@ -108,10 +128,30 @@ foreach (($data['items']['name'] ?? []) as $i => $name){
 				<td style="text-align:right;">Subtotal</td>
 				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($subtotal); ?></td>
 			</tr>
+			<?php if (!empty($includeGst)): ?>
 			<tr>
-				<td style="text-align:right;">Tax</td>
+				<td style="text-align:right;">GST (<?php echo money($gstPercent); ?>%)</td>
 				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($taxtotal); ?></td>
 			</tr>
+			<?php endif; ?>
+			<?php if (($discount ?? 0) > 0): ?>
+			<tr>
+				<td style="text-align:right;">Discount</td>
+				<td style="text-align:right; width:140px;">-<?php echo $currencySymbol . ' ' . money($discount); ?></td>
+			</tr>
+			<?php endif; ?>
+			<?php if (($additional ?? 0) > 0): ?>
+			<tr>
+				<td style="text-align:right;">Additional Charges</td>
+				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($additional); ?></td>
+			</tr>
+			<?php endif; ?>
+			<?php if (($rounding ?? 'none') !== 'none'): ?>
+			<tr>
+				<td style="text-align:right;">Rounding Adjustment</td>
+				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($roundAdj); ?></td>
+			</tr>
+			<?php endif; ?>
 			<tr>
 				<td style="text-align:right;"><strong>Grand Total</strong></td>
 				<td style="text-align:right; width:140px;"><strong><?php echo $currencySymbol . ' ' . money($grand); ?></strong></td>
