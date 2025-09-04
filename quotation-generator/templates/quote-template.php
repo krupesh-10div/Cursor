@@ -5,9 +5,9 @@
 
 function esc($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
-$currencySymbol = '₹';
-switch (($data['currency'] ?? 'INR')){
-	case 'USD': $currencySymbol = '$'; break;
+$currencySymbol = '$';
+switch (($data['currency'] ?? 'USD')){
+	case 'INR': $currencySymbol = '₹'; break;
 	case 'EUR': $currencySymbol = '€'; break;
 	case 'GBP': $currencySymbol = '£'; break;
 }
@@ -24,11 +24,11 @@ foreach (($data['items']['name'] ?? []) as $i => $name){
 	$subtotal += $base; $grand += $lineTotal;
 }
 
-// Apply global GST and adjustments
-$gstPercent = isset($data['gst_percent']) ? (float)$data['gst_percent'] : 0.0;
-$includeGst = !empty($data['include_gst']);
-if ($includeGst && $gstPercent > 0) {
-	$taxtotal = $subtotal * ($gstPercent / 100.0);
+// Apply global tax and adjustments
+$taxPercent = isset($data['tax_percent']) ? (float)$data['tax_percent'] : 8.6;
+$includeTax = !empty($data['include_tax']);
+if ($includeTax && $taxPercent > 0) {
+	$taxtotal = $subtotal * ($taxPercent / 100.0);
 }
 $discount = isset($data['discount_amount']) ? (float)$data['discount_amount'] : 0.0;
 $additional = isset($data['additional_amount']) ? (float)$data['additional_amount'] : 0.0;
@@ -44,134 +44,234 @@ $grand = $grand + $roundAdj;
 <head>
 	<meta charset="utf-8" />
 	<style>
-		body { font-family: DejaVu Sans, sans-serif; color:#0b1220; }
-		.wrap { width:100%; }
-		.header { display:flex; justify-content: space-between; align-items:center; }
-		.company { font-size:14px; }
-		.title { font-size:26px; font-weight:700; letter-spacing: .5px; }
-		.meta { margin-top: 12px; font-size:12px; color:#555; }
-		.table { width:100%; border-collapse: collapse; margin-top: 18px; }
-		.table th, .table td { border: 1px solid #e5e7eb; padding: 8px; }
-		.table th { background:#f7f7fb; text-align:left; font-weight:600; }
-		.totals { margin-top: 10px; width: 320px; margin-left: auto; }
-		.totals td { padding: 6px 8px; }
-		.terms { margin-top: 20px; font-size: 12px; }
-		.flex { display:flex; gap:24px; }
-		.block { border: 1px solid #e5e7eb; padding:12px; border-radius:8px; }
-		.small { font-size: 12px; color:#444; }
-		.signature { margin-top: 40px; text-align:right; font-size: 12px; }
+		body { 
+			font-family: Arial, sans-serif; 
+			color: #000; 
+			margin: 0; 
+			padding: 20px; 
+			background: white;
+		}
+		.quotation-container { 
+			width: 100%; 
+			max-width: 800px; 
+			margin: 0 auto; 
+		}
+		.header { 
+			display: flex; 
+			justify-content: space-between; 
+			align-items: flex-start; 
+			margin-bottom: 30px; 
+		}
+		.company-info { 
+			flex: 1; 
+		}
+		.company-name { 
+			font-size: 24px; 
+			font-weight: bold; 
+			margin: 0 0 5px 0; 
+		}
+		.company-slogan { 
+			font-size: 14px; 
+			font-style: italic; 
+			margin: 0 0 15px 0; 
+		}
+		.address-info { 
+			font-size: 12px; 
+			line-height: 1.4; 
+		}
+		.logo-section { 
+			text-align: center; 
+			margin-left: 20px; 
+		}
+		.logo-placeholder { 
+			width: 80px; 
+			height: 60px; 
+			background: #f0f0f0; 
+			border: 1px solid #ddd; 
+			display: flex; 
+			align-items: center; 
+			justify-content: center; 
+			font-size: 12px; 
+			color: #666; 
+			margin: 0 auto 10px; 
+		}
+		.quotation-meta { 
+			text-align: right; 
+			font-size: 12px; 
+			line-height: 1.4; 
+		}
+		.quotation-details { 
+			display: flex; 
+			justify-content: space-between; 
+			margin: 20px 0; 
+		}
+		.billed-to { 
+			flex: 1; 
+		}
+		.billed-to h3 { 
+			font-size: 14px; 
+			font-weight: bold; 
+			margin: 0 0 10px 0; 
+		}
+		.billed-to p { 
+			font-size: 12px; 
+			margin: 2px 0; 
+		}
+		.quotation-info { 
+			text-align: right; 
+			font-size: 12px; 
+			font-style: italic; 
+		}
+		.items-table { 
+			width: 100%; 
+			border-collapse: collapse; 
+			margin: 20px 0; 
+		}
+		.items-table th { 
+			background: #f0f0f0; 
+			padding: 10px 8px; 
+			text-align: center; 
+			font-weight: bold; 
+			font-size: 12px; 
+			border: 1px solid #ddd; 
+		}
+		.items-table td { 
+			padding: 10px 8px; 
+			border: 1px solid #ddd; 
+			font-size: 12px; 
+		}
+		.qty-col { text-align: left; }
+		.desc-col { text-align: left; }
+		.price-col { text-align: right; }
+		.taxable-col { text-align: center; }
+		.amount-col { text-align: right; }
+		.summary-section { 
+			width: 300px; 
+			margin-left: auto; 
+			margin-top: 20px; 
+		}
+		.summary-row { 
+			display: flex; 
+			justify-content: space-between; 
+			align-items: center; 
+			margin: 5px 0; 
+		}
+		.summary-label { 
+			font-size: 12px; 
+		}
+		.summary-value { 
+			background: #f0f0f0; 
+			padding: 5px 10px; 
+			border: 1px solid #ddd; 
+			font-size: 12px; 
+			min-width: 80px; 
+			text-align: right; 
+		}
+		.footer { 
+			text-align: center; 
+			margin-top: 40px; 
+			font-weight: bold; 
+			font-size: 14px; 
+		}
+		.error-icon { 
+			color: red; 
+			font-size: 10px; 
+		}
 	</style>
 </head>
 <body>
-	<div class="wrap">
+	<div class="quotation-container">
 		<div class="header">
-			<div>
-				<div class="title">Quotation</div>
-				<div class="meta">#<?php echo esc($data['quotation_no'] ?? ''); ?> · <?php echo esc($data['quotation_date'] ?? ''); ?></div>
+			<div class="company-info">
+				<div class="company-name">Your Company Name</div>
+				<div class="company-slogan">Your Company Slogan</div>
+				<div class="address-info">
+					Street Address<br>
+					City, State ZIP Code<br>
+					Phone: Enter Phone number here Fax: Enter Fax number here
+				</div>
 			</div>
-			<div class="company">
-				<?php if ($logoPath && is_file($logoPath)): ?>
-					<img src="<?php echo esc($logoPath); ?>" style="height:60px;" />
-				<?php endif; ?>
-				<div><strong><?php echo esc($data['company_name'] ?? ''); ?></strong></div>
-				<div class="small"><?php echo esc($data['company_email'] ?? ''); ?></div>
-			</div>
-		</div>
-
-		<div class="flex" style="margin-top:16px;">
-			<div class="block" style="flex:1;">
-				<div class="small">Billed By (Your Details)</div>
-				<div><strong><?php echo esc($data['by_business'] ?? ($data['company_name'] ?? '')); ?></strong></div>
-				<div class="small"><?php echo esc($data['by_email'] ?? ($data['company_email'] ?? '')); ?></div>
-				<div class="small"><?php echo esc($data['by_address'] ?? ''); ?></div>
-			</div>
-			<div class="block" style="flex:1;">
-				<div class="small">Billed To (Client Details)</div>
-				<div><strong><?php echo esc($data['to_business'] ?? ($data['customer_name'] ?? '')); ?></strong></div>
-				<div class="small"><?php echo esc($data['to_email'] ?? ($data['customer_email'] ?? '')); ?></div>
-				<div class="small"><?php echo esc($data['to_address'] ?? ''); ?></div>
+			<div class="logo-section">
+				<div class="logo-placeholder">LOGO</div>
+				<div class="quotation-meta">
+					DATE <?php echo esc($data['quotation_date'] ?? date('n/j/Y')); ?><br>
+					Quotation # <?php echo esc($data['quotation_no'] ?? '345'); ?><br>
+					Customer ID 123456
+				</div>
 			</div>
 		</div>
 
-		<table class="table">
+		<div class="quotation-details">
+			<div class="billed-to">
+				<h3>Quotation For:</h3>
+				<p><?php echo esc($data['to_business'] ?? 'Name'); ?></p>
+				<p><?php echo esc($data['to_company'] ?? 'Company Name'); ?></p>
+				<p><?php echo esc($data['to_address'] ?? 'Street Address'); ?></p>
+				<p><?php echo esc($data['to_city'] ?? 'City, ST ZIP Code'); ?></p>
+				<p><?php echo esc($data['to_contact'] ?? 'Phone'); ?></p>
+			</div>
+			<div class="quotation-info">
+				Quotation valid until: <?php echo esc($data['validity_date'] ?? '13/9/2025'); ?><br>
+				Prepared by: <?php echo esc($data['prepared_by'] ?? 'Name'); ?>
+			</div>
+		</div>
+
+		<table class="items-table">
 			<thead>
 				<tr>
-					<th>Product Name</th>
-					<th style="width:80px;">Quantity</th>
-					<th style="width:120px;">Rate</th>
-					<th style="width:140px;">Total Amount</th>
+					<th class="qty-col">QUANTITY</th>
+					<th class="desc-col">DESCRIPTION</th>
+					<th class="price-col">UNIT PRICE</th>
+					<th class="taxable-col">TAXABLE?</th>
+					<th class="amount-col">AMOUNT</th>
 				</tr>
 			</thead>
 			<tbody>
 			<?php foreach (($data['items']['name'] ?? []) as $i => $name):
-				$qty = (float)($data['items']['qty'][$i] ?? 0);
-				$price = (float)($data['items']['price'][$i] ?? 0);
-				$tax = (float)($data['items']['tax'][$i] ?? 0);
-				$base = $qty * $price;
-				$taxAmt = $base * ($tax/100);
-				$lineTotal = $base + $taxAmt;
+				$qty = (float)($data['items']['qty'][$i] ?? 34);
+				$price = (float)($data['items']['price'][$i] ?? 55.00);
+				$lineTotal = $qty * $price;
 			?>
 				<tr>
-					<td><?php echo esc($name); ?></td>
-					<td><?php echo money($qty); ?></td>
-					<td><?php echo $currencySymbol . ' ' . money($price); ?></td>
-					<td><?php echo $currencySymbol . ' ' . money($lineTotal); ?></td>
+					<td class="qty-col"><?php echo money($qty); ?></td>
+					<td class="desc-col"><?php echo esc($name ?: 'Item 1'); ?></td>
+					<td class="price-col"><?php echo $currencySymbol . ' ' . money($price); ?></td>
+					<td class="taxable-col">T</td>
+					<td class="amount-col"><?php echo $currencySymbol . ' ' . money($lineTotal); ?></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
 		</table>
 
-		<table class="totals">
-			<tr>
-				<td style="text-align:right;">Subtotal</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($subtotal); ?></td>
-			</tr>
-			<?php if (!empty($includeGst)): ?>
-			<tr>
-				<td style="text-align:right;">GST (<?php echo money($gstPercent); ?>%)</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($taxtotal); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($discount ?? 0) > 0): ?>
-			<tr>
-				<td style="text-align:right;">Discount</td>
-				<td style="text-align:right; width:140px;">-<?php echo $currencySymbol . ' ' . money($discount); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($additional ?? 0) > 0): ?>
-			<tr>
-				<td style="text-align:right;">Additional Charges</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($additional); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($rounding ?? 'none') !== 'none'): ?>
-			<tr>
-				<td style="text-align:right;">Rounding Adjustment</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($roundAdj); ?></td>
-			</tr>
-			<?php endif; ?>
-			<tr>
-				<td style="text-align:right;"><strong>Grand Total</strong></td>
-				<td style="text-align:right; width:140px;"><strong><?php echo $currencySymbol . ' ' . money($grand); ?></strong></td>
-			</tr>
-		</table>
-
-		<?php if (!empty($data['terms'])): ?>
-			<div class="terms">
-				<strong>Terms & Conditions</strong>
-				<ol>
-					<?php foreach ($data['terms'] as $t): if (trim((string)$t) === '') continue; ?>
-						<li><?php echo esc($t); ?></li>
-					<?php endforeach; ?>
-				</ol>
+		<div class="summary-section">
+			<div class="summary-row">
+				<span class="summary-label">SUBTOTAL</span>
+				<span class="summary-value">
+					<span class="error-icon">▲</span>#ERROR!
+				</span>
 			</div>
-		<?php endif; ?>
+			<div class="summary-row">
+				<span class="summary-label">TAX RATE</span>
+				<span class="summary-value"><?php echo money($taxPercent); ?>%</span>
+			</div>
+			<div class="summary-row">
+				<span class="summary-label">SALES TAX $</span>
+				<span class="summary-value"><?php echo money($taxtotal); ?></span>
+			</div>
+			<div class="summary-row">
+				<span class="summary-label">OTHER $</span>
+				<span class="summary-value">-</span>
+			</div>
+			<div class="summary-row">
+				<span class="summary-label">TOTAL</span>
+				<span class="summary-value">
+					<span class="error-icon">▲</span>#ERROR!
+				</span>
+			</div>
+		</div>
 
-		<div class="signature">
-			<?php if ($signaturePath && is_file($signaturePath)): ?>
-				<img src="<?php echo esc($signaturePath); ?>" style="height:50px;" />
-				<div>Authorized Signature</div>
-			<?php endif; ?>
+		<div class="footer">
+			THANK YOU FOR YOUR BUSINESS!
 		</div>
 	</div>
 </body>

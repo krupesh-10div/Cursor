@@ -23,21 +23,24 @@
 					<h2 class="card-title">Quotation Details</h2>
 					<div class="grid grid-2">
 						<label class="field">
-							<span>Quotation No</span>
-							<input type="text" name="quotation_no" placeholder="A0001" required />
+							<span>Quotation No*</span>
+							<input type="text" name="quotation_no" placeholder="A00001" required />
 						</label>
 						<label class="field">
-							<span>Quotation Date</span>
+							<span>Quotation Date*</span>
 							<input type="date" name="quotation_date" value="<?php echo date('Y-m-d'); ?>" required />
 						</label>
+					</div>
+					<div class="add-more-fields">
+						<button type="button" class="btn btn-outline">+ Add More Fields</button>
 					</div>
 				</section>
 
 				<section class="card upload-card">
 					<div class="upload">
-						<div class="upload-icon">📎</div>
+						<div class="upload-icon">🏔️</div>
 						<div class="upload-title">Add Company Logo Here</div>
-						<div class="upload-sub">Resolution up to 1080x1080px, PNG or JPEG file.</div>
+						<div class="upload-sub">Resolution up to 1080x1080px. PNG or JPEG file.</div>
 						<label class="upload-drop">
 							<input type="file" name="company_logo" accept="image/png,image/jpeg" />
 							<span>Drop files to upload</span>
@@ -50,40 +53,73 @@
 				<section class="card">
 					<h2 class="card-title">Billed By <span class="muted">(Your Details)</span></h2>
 					<div class="grid grid-1">
-						<label class="field"><span>Your Business Name <b>*</b></span><input type="text" name="by_business" placeholder="Enter Your Business Name" required /></label>
+						<label class="field"><span>Your Business Name *</span><input type="text" name="by_business" placeholder="Enter Your Business Name" required /></label>
 					</div>
-					<div class="grid grid-3">
-						<label class="field"><span>Contact Number</span><input type="text" name="by_contact" placeholder="+91 98765 43210" /></label>
-						<label class="field"><span>Email ID</span><input type="email" name="by_email" placeholder="you@company.com" /></label>
+					<div class="grid grid-2">
+						<label class="field"><span>Contact Number</span>
+							<div class="contact-input">
+								<select class="country-code">
+									<option>🇮🇳 +91</option>
+								</select>
+								<input type="text" name="by_contact" placeholder="Enter phone number" />
+							</div>
+						</label>
+						<label class="field"><span>Email ID</span><input type="email" name="by_email" placeholder="Enter Your Email ID" /></label>
+					</div>
+					<div class="grid grid-1">
 						<label class="field"><span>Your GSTIN</span><input type="text" name="by_gstin" placeholder="Enter Your GSTIN Number" /></label>
 					</div>
 					<div class="grid grid-1"><label class="field"><span>Address</span><input type="text" name="by_address" placeholder="Enter Your Address" /></label></div>
 					<div class="grid grid-3">
 						<label class="field"><span>City</span><input type="text" name="by_city" placeholder="Enter City" /></label>
 						<label class="field"><span>Postal Code/Zip Code</span><input type="text" name="by_postal" placeholder="Enter Postal Code/Zip Code" /></label>
-						<label class="field"><span>State</span><input type="text" name="by_state" placeholder="Select State" /></label>
+						<label class="field"><span>State</span>
+							<select name="by_state">
+								<option>Select State</option>
+							</select>
+						</label>
 					</div>
-					<div><button type="button" class="btn btn-outline">Add Custom Fields</button></div>
+					<div><button type="button" class="btn btn-outline">+ Add Custom Fields</button></div>
 				</section>
 
 				<section class="card">
 					<h2 class="card-title">Billed To <span class="muted">(Client Details)</span></h2>
 					<div class="grid grid-1">
-						<label class="field"><span>Client's Business Name <b>*</b></span><input type="text" name="to_business" placeholder="Enter Client's Business Name" required /></label>
+						<label class="field"><span>Client's Business Name *</span><input type="text" name="to_business" placeholder="Enter Client's Business Name" required /></label>
 					</div>
-					<div class="grid grid-3">
-						<label class="field"><span>Contact Number</span><input type="text" name="to_contact" placeholder="+91 98765 43210" /></label>
-						<label class="field"><span>Email ID</span><input type="email" name="to_email" placeholder="client@company.com" /></label>
+					<div class="grid grid-2">
+						<label class="field"><span>Contact Number</span>
+							<div class="contact-input">
+								<select class="country-code">
+									<option>🇮🇳 +91</option>
+								</select>
+								<input type="text" name="to_contact" placeholder="Enter phone number" />
+							</div>
+						</label>
+						<label class="field"><span>Email ID</span><input type="email" name="to_email" placeholder="Enter Client's Email ID" /></label>
+					</div>
+					<div class="grid grid-1">
 						<label class="field"><span>Client's GSTIN</span><input type="text" name="to_gstin" placeholder="Enter Client's GSTIN Number" /></label>
 					</div>
 					<div class="grid grid-1"><label class="field"><span>Address</span><input type="text" name="to_address" placeholder="Enter Client's Address" /></label></div>
 					<div class="grid grid-3">
 						<label class="field"><span>City</span><input type="text" name="to_city" placeholder="Enter City" /></label>
 						<label class="field"><span>Postal Code/Zip Code</span><input type="text" name="to_postal" placeholder="Enter Postal Code/Zip Code" /></label>
-						<label class="field"><span>State</span><input type="text" name="to_state" placeholder="Select State" /></label>
+						<label class="field"><span>State</span>
+							<select name="to_state">
+								<option>Select State</option>
+							</select>
+						</label>
 					</div>
-					<div><button type="button" class="btn btn-outline">Add Custom Fields</button></div>
+					<div><button type="button" class="btn btn-outline">+ Add Custom Fields</button></div>
 				</section>
+			</div>
+
+			<div class="gst-checkbox-section">
+				<label class="checkbox">
+					<input type="checkbox" name="include_gst" />
+					<span>Does Your Estimate include GST? If yes, then tick the checkbox.</span>
+				</label>
 			</div>
 
 			<section class="card">
@@ -104,35 +140,45 @@
 							<tr class="item-row">
 								<td class="sr">1</td>
 								<td>
-									<input type="text" name="items[name][]" placeholder="Product Name" required />
+									<input type="text" name="items[name][]" placeholder="Product Name *" required />
 								</td>
-								<td><input type="number" min="0" step="1" name="items[qty][]" value="1" class="qty" required /></td>
+								<td><input type="number" min="0" step="1" name="items[qty][]" value="0" class="qty" required /></td>
 								<td><input type="number" min="0" step="0.01" name="items[price][]" value="0" class="price" required /></td>
-								<td class="row-total">0.00</td>
+								<td class="row-total">₹0.00</td>
 								<td class="actions">
 									<div class="row-actions">
 										<button type="button" class="btn btn-icon remove-row" title="Remove">🗑</button>
+										<button type="button" class="btn btn-icon duplicate-row" title="Duplicate">📋</button>
 									</div>
 								</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-				<div class="table-actions">
-					<div class="left">
-						<button type="button" id="addRow" class="btn">Add New Line</button>
+				<div class="table-options">
+					<div class="add-unit">
+						<label>Add Unit</label>
+						<select>
+							<option>Product</option>
+						</select>
 					</div>
-					<div class="right"></div>
+					<div class="table-buttons">
+						<button type="button" class="btn btn-outline">+ Add Description</button>
+						<button type="button" class="btn btn-outline">+ Add Other Field</button>
+					</div>
+				</div>
+				<div class="add-new-line">
+					<button type="button" id="addRow" class="btn btn-dashed">+ Add New Line</button>
 				</div>
 			</section>
 
 			<div class="grid grid-2 gap-16">
 				<section class="card">
 					<div class="pill-actions">
-						<button type="button" class="btn btn-outline" id="addTerms">Add Terms & Conditions</button>
-						<button type="button" class="btn btn-outline" id="addNotes">Add Notes</button>
-						<button type="button" class="btn btn-outline" id="addValidity">Add Validity</button>
-						<button type="button" class="btn btn-outline" id="addFooter">Add your footer</button>
+						<button type="button" class="btn btn-outline" id="addTerms">📄 Add Terms & Conditions</button>
+						<button type="button" class="btn btn-outline" id="addNotes">📝 Add Notes</button>
+						<button type="button" class="btn btn-outline" id="addValidity">📞 Add Validity</button>
+						<button type="button" class="btn btn-outline" id="addFooter">📄 Add your footer</button>
 					</div>
 					<div id="termsWrap" class="terms-wrap" hidden>
 						<div class="term-row">
@@ -152,35 +198,33 @@
 				</section>
 
 				<section class="card amount-card">
-					<h3 class="card-title">Amount</h3>
+					<div class="amount-header">
+						<span class="amount-label">Amount</span>
+						<span class="amount-value">₹0.00</span>
+					</div>
 					<div class="addon">
-						<label class="checkbox"><input type="checkbox" id="toggleDiscounts" checked /> Add Discounts/Additional Charges</label>
-						<div class="addon-grid" id="discountsWrap">
+						<label class="checkbox"><input type="checkbox" id="toggleDiscounts" /> ⚙️ Add Discounts/Additional Charges</label>
+						<div class="addon-grid" id="discountsWrap" hidden>
 							<label class="field"><span>Discount</span><input type="number" step="0.01" min="0" name="discount_amount" value="0" /></label>
 							<label class="field"><span>Additional Charges</span><input type="number" step="0.01" min="0" name="additional_amount" value="0" /></label>
 						</div>
 					</div>
-					<label class="checkbox"><input type="checkbox" id="sumQty" name="sum_qty" /> Summarise Total Quantity</label>
-					<div class="rounding">
-						<label class="radio"><input type="radio" name="rounding" value="none" checked /> No Rounding</label>
-						<label class="radio"><input type="radio" name="rounding" value="up" /> Round Up</label>
-						<label class="radio"><input type="radio" name="rounding" value="down" /> Round Down</label>
+					<div class="checkbox-options">
+						<label class="checkbox"><input type="checkbox" id="sumQty" name="sum_qty" /> Summaries Total Quantity</label>
+						<label class="checkbox"><input type="checkbox" name="round_up" /> Round Up</label>
+						<label class="checkbox"><input type="checkbox" name="round_down" /> Round Down</label>
 					</div>
 					<div class="totals light">
-						<div class="totals-line"><span class="label">Subtotal</span><span class="value" id="subtotal">0.00</span></div>
-						<div class="totals-line gst" id="gstLine" hidden><span class="label">GST</span><span class="value" id="taxtotal">0.00</span></div>
-						<div class="totals-line" id="discountLine" hidden><span class="label">Discount</span><span class="value" id="discountval">0.00</span></div>
-						<div class="totals-line" id="additionalLine" hidden><span class="label">Additional Charges</span><span class="value" id="additionalval">0.00</span></div>
-						<div class="totals-line" id="roundLine" hidden><span class="label">Rounding Adj.</span><span class="value" id="roundval">0.00</span></div>
-						<div class="totals-line grand"><span class="label">Total (INR)</span><span class="value" id="grandtotal">0.00</span></div>
+						<div class="totals-line grand">
+							<span class="label">Total (INR)</span>
+							<span class="value" id="grandtotal">₹0.00</span>
+						</div>
 					</div>
 					<div class="controls">
-						<label class="checkbox"><input type="checkbox" id="showWords" /> Show Total In Words</label>
-						<div id="wordsOut" class="words" hidden></div>
+						<button type="button" class="btn btn-outline">+ Add More Fields</button>
+						<button type="button" class="btn btn-outline">T Show Total In Words</button>
 					</div>
-					<div class="sign-upload">
-						<label class="field file"><span>Digital Signature</span><input type="file" name="signature" accept="image/png,image/jpeg" /></label>
-					</div>
+					<div id="wordsOut" class="words" hidden></div>
 				</section>
 			</div>
 

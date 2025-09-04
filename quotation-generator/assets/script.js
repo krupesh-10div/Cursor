@@ -6,7 +6,7 @@
 	const $termsWrap = $('#termsWrap');
 	const $loading = $('#loading');
 	const $btn = $('#generateBtn');
-	const $includeGst = $('#include_gst');
+	const $includeGst = $('input[name="include_gst"]');
 	const $gstField = $('#gstField');
 	const $discountsWrap = $('#discountsWrap');
 	const $toggleDiscounts = $('#toggleDiscounts');
@@ -45,7 +45,7 @@
 		const price = parseFloat($row.find('input.price').val()) || 0;
 		const base = qty * price;
 		const total = base; // per-row tax removed; GST handled globally
-		$row.find('.row-total').text(formatNumber(total));
+		$row.find('.row-total').text('₹' + formatNumber(total));
 		return { base, total };
 	}
 
@@ -55,13 +55,15 @@
 			const {base, total} = computeRowTotal($(this));
 			subtotal += base; grand += total;
 		});
-		$('#subtotal').text(formatNumber(subtotal));
+		$('#subtotal').text('₹' + formatNumber(subtotal));
+		$('.amount-value').text('₹' + formatNumber(subtotal));
+		
 		let gstAmount = 0;
 		if ($includeGst.is(':checked')){
-			const gstPercent = parseFloat($('input[name="gst_percent"]').val()) || 0;
+			const gstPercent = parseFloat($('input[name="tax_percent"]').val()) || 8.6;
 			gstAmount = subtotal * gstPercent / 100;
 			$('#gstLine').removeAttr('hidden');
-			$('#taxtotal').text(formatNumber(gstAmount));
+			$('#taxtotal').text('₹' + formatNumber(gstAmount));
 		} else {
 			$('#gstLine').attr('hidden','hidden');
 		}
@@ -69,8 +71,8 @@
 		let additional = parseFloat($('input[name="additional_amount"]').val()) || 0;
 		$('#discountLine').toggle(discount>0);
 		$('#additionalLine').toggle(additional>0);
-		$('#discountval').text(formatNumber(discount));
-		$('#additionalval').text(formatNumber(additional));
+		$('#discountval').text('₹' + formatNumber(discount));
+		$('#additionalval').text('₹' + formatNumber(additional));
 
 		let total = subtotal + gstAmount - discount + additional;
 		let roundAdj = 0;
@@ -79,12 +81,12 @@
 		if (rounding === 'down') roundAdj = Math.floor(total) - total;
 		if (rounding !== 'none') {
 			$('#roundLine').show();
-			$('#roundval').text(formatNumber(roundAdj));
+			$('#roundval').text('₹' + formatNumber(roundAdj));
 		} else {
 			$('#roundLine').hide();
 		}
 		total = total + roundAdj;
-		$('#grandtotal').text(formatNumber(total));
+		$('#grandtotal').text('₹' + formatNumber(total));
 		if ($showWords.is(':checked')){
 			$wordsOut.removeAttr('hidden').text(numberToWordsIndian(total));
 		} else {
@@ -107,15 +109,26 @@
 			return;
 		}
 		$(this).closest('tr').remove();
+		$itemsBody.find('.sr').each(function(i){ $(this).text(i+1); });
+		recomputeTotals();
+	});
+
+	$itemsBody.on('click', '.duplicate-row', function(){
+		const $row = $(this).closest('tr').clone();
+		$row.find('input').val('');
+		$row.find('.row-total').text('₹0.00');
+		$itemsBody.append($row);
+		$itemsBody.find('.sr').each(function(i){ $(this).text(i+1); });
 		recomputeTotals();
 	});
 
 	$addRow.on('click', function(){
 		const $row = $itemsBody.find('tr.item-row').first().clone();
 		$row.find('input').val('');
-		$row.find('.row-total').text('0.00');
+		$row.find('.row-total').text('₹0.00');
 		$itemsBody.append($row);
 		$itemsBody.find('.sr').each(function(i){ $(this).text(i+1); });
+		recomputeTotals();
 	});
 
 	$termsWrap.on('click', '.remove-term', function(){
@@ -136,7 +149,7 @@
 		if (this.checked) { $gstField.removeAttr('hidden'); } else { $gstField.attr('hidden','hidden'); }
 		recomputeTotals();
 	});
-	$('input[name="gst_percent"], input[name="discount_amount"], input[name="additional_amount"], input[name="rounding"]').on('input change', recomputeTotals);
+	$('input[name="tax_percent"], input[name="discount_amount"], input[name="additional_amount"], input[name="rounding"]').on('input change', recomputeTotals);
 	$toggleDiscounts.on('change', function(){
 		if (this.checked) { $discountsWrap.show(); } else { $discountsWrap.hide(); }
 	});
