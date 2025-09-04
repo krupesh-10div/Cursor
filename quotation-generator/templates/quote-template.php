@@ -44,136 +44,149 @@ $grand = $grand + $roundAdj;
 <head>
 	<meta charset="utf-8" />
 	<style>
-		body { font-family: DejaVu Sans, sans-serif; color:#0b1220; }
-		.wrap { width:100%; }
-		.header { display:flex; justify-content: space-between; align-items:center; }
-		.company { font-size:14px; }
-		.title { font-size:26px; font-weight:700; letter-spacing: .5px; }
-		.meta { margin-top: 12px; font-size:12px; color:#555; }
+		body { font-family: DejaVu Sans, sans-serif; color:#0b1220; font-size: 12px; }
+		.header { width:100%; }
+		.h-top { display:flex; justify-content:space-between; align-items:flex-start; }
+		.company-name { font-size: 24px; font-weight: 700; }
+		.company-slogan { font-style: italic; margin-top: 4px; }
+		.logo { text-align:right; font-size: 36px; color:#9ca3af; }
+		.meta { margin-top: 8px; margin-left:auto; width: 260px; }
+		.meta td { padding: 3px 6px; }
+		.small { color:#374151; }
+		.divider { height: 14px; }
+		.block-title { font-weight: 700; margin: 12px 0 6px; }
+		.address-block { line-height: 1.5; }
 		.table { width:100%; border-collapse: collapse; margin-top: 18px; }
-		.table th, .table td { border: 1px solid #e5e7eb; padding: 8px; }
-		.table th { background:#f7f7fb; text-align:left; font-weight:600; }
-		.totals { margin-top: 10px; width: 320px; margin-left: auto; }
-		.totals td { padding: 6px 8px; }
-		.terms { margin-top: 20px; font-size: 12px; }
-		.flex { display:flex; gap:24px; }
-		.block { border: 1px solid #e5e7eb; padding:12px; border-radius:8px; }
-		.small { font-size: 12px; color:#444; }
-		.signature { margin-top: 40px; text-align:right; font-size: 12px; }
+		.table th, .table td { border:1px solid #e5e7eb; padding:8px; }
+		.table th { background:#f3f4f6; text-align:left; }
+		.right { text-align:right; }
+		.center { text-align:center; }
+		.totals { width: 300px; margin-left:auto; margin-top: 12px; border-collapse: collapse; }
+		.totals td { border:1px solid #e5e7eb; padding:8px; }
+		.footer-msg { margin-top: 40px; text-align:center; font-weight: 700; }
 	</style>
 </head>
 <body>
-	<div class="wrap">
-		<div class="header">
+	<div class="header">
+		<div class="h-top">
 			<div>
-				<div class="title">Quotation</div>
-				<div class="meta">#<?php echo esc($data['quotation_no'] ?? ''); ?> · <?php echo esc($data['quotation_date'] ?? ''); ?></div>
+				<div class="company-name"><?php echo esc($data['by_business'] ?: ($data['company_name'] ?? 'Your Company Name')); ?></div>
+				<div class="company-slogan"><?php echo esc($data['slogan'] ?? 'Your Company Slogan'); ?></div>
 			</div>
-			<div class="company">
+			<div class="logo">
 				<?php if ($logoPath && is_file($logoPath)): ?>
 					<img src="<?php echo esc($logoPath); ?>" style="height:60px;" />
+				<?php else: ?>
+					LOGO
 				<?php endif; ?>
-				<div><strong><?php echo esc($data['company_name'] ?? ''); ?></strong></div>
-				<div class="small"><?php echo esc($data['company_email'] ?? ''); ?></div>
 			</div>
 		</div>
-
-		<div class="flex" style="margin-top:16px;">
-			<div class="block" style="flex:1;">
-				<div class="small">Billed By (Your Details)</div>
-				<div><strong><?php echo esc($data['by_business'] ?? ($data['company_name'] ?? '')); ?></strong></div>
-				<div class="small"><?php echo esc($data['by_email'] ?? ($data['company_email'] ?? '')); ?></div>
-				<div class="small"><?php echo esc($data['by_address'] ?? ''); ?></div>
-			</div>
-			<div class="block" style="flex:1;">
-				<div class="small">Billed To (Client Details)</div>
-				<div><strong><?php echo esc($data['to_business'] ?? ($data['customer_name'] ?? '')); ?></strong></div>
-				<div class="small"><?php echo esc($data['to_email'] ?? ($data['customer_email'] ?? '')); ?></div>
-				<div class="small"><?php echo esc($data['to_address'] ?? ''); ?></div>
-			</div>
-		</div>
-
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Product Name</th>
-					<th style="width:80px;">Quantity</th>
-					<th style="width:120px;">Rate</th>
-					<th style="width:140px;">Total Amount</th>
-				</tr>
-			</thead>
-			<tbody>
-			<?php foreach (($data['items']['name'] ?? []) as $i => $name):
-				$qty = (float)($data['items']['qty'][$i] ?? 0);
-				$price = (float)($data['items']['price'][$i] ?? 0);
-				$tax = (float)($data['items']['tax'][$i] ?? 0);
-				$base = $qty * $price;
-				$taxAmt = $base * ($tax/100);
-				$lineTotal = $base + $taxAmt;
-			?>
-				<tr>
-					<td><?php echo esc($name); ?></td>
-					<td><?php echo money($qty); ?></td>
-					<td><?php echo $currencySymbol . ' ' . money($price); ?></td>
-					<td><?php echo $currencySymbol . ' ' . money($lineTotal); ?></td>
-				</tr>
-			<?php endforeach; ?>
-			</tbody>
+		<table class="meta" align="right">
+			<tr><td style="width:120px;"><strong>DATE</strong></td><td><?php echo esc($data['quotation_date'] ?? ''); ?></td></tr>
+			<tr><td><strong>Quotation #</strong></td><td><?php echo esc($data['quotation_no'] ?? ''); ?></td></tr>
+			<tr><td><strong>Customer ID</strong></td><td><?php echo esc($data['customer_id'] ?? ''); ?></td></tr>
 		</table>
-
-		<table class="totals">
-			<tr>
-				<td style="text-align:right;">Subtotal</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($subtotal); ?></td>
-			</tr>
-			<?php if (!empty($includeGst)): ?>
-			<tr>
-				<td style="text-align:right;">GST (<?php echo money($gstPercent); ?>%)</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($taxtotal); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($discount ?? 0) > 0): ?>
-			<tr>
-				<td style="text-align:right;">Discount</td>
-				<td style="text-align:right; width:140px;">-<?php echo $currencySymbol . ' ' . money($discount); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($additional ?? 0) > 0): ?>
-			<tr>
-				<td style="text-align:right;">Additional Charges</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($additional); ?></td>
-			</tr>
-			<?php endif; ?>
-			<?php if (($rounding ?? 'none') !== 'none'): ?>
-			<tr>
-				<td style="text-align:right;">Rounding Adjustment</td>
-				<td style="text-align:right; width:140px;"><?php echo $currencySymbol . ' ' . money($roundAdj); ?></td>
-			</tr>
-			<?php endif; ?>
-			<tr>
-				<td style="text-align:right;"><strong>Grand Total</strong></td>
-				<td style="text-align:right; width:140px;"><strong><?php echo $currencySymbol . ' ' . money($grand); ?></strong></td>
-			</tr>
-		</table>
-
-		<?php if (!empty($data['terms'])): ?>
-			<div class="terms">
-				<strong>Terms & Conditions</strong>
-				<ol>
-					<?php foreach ($data['terms'] as $t): if (trim((string)$t) === '') continue; ?>
-						<li><?php echo esc($t); ?></li>
-					<?php endforeach; ?>
-				</ol>
-			</div>
-		<?php endif; ?>
-
-		<div class="signature">
-			<?php if ($signaturePath && is_file($signaturePath)): ?>
-				<img src="<?php echo esc($signaturePath); ?>" style="height:50px;" />
-				<div>Authorized Signature</div>
-			<?php endif; ?>
-		</div>
 	</div>
+
+	<div class="divider"></div>
+
+	<table style="width:100%;">
+		<tr>
+			<td style="width:55%; vertical-align:top;">
+				<div class="address-block small">
+					<div>Street Address</div>
+					<div>City, State ZIP Code</div>
+					<div>Phone: <?php echo esc($data['by_contact'] ?? ''); ?>
+						&nbsp;&nbsp;&nbsp; Fax: Enter Fax number here
+					</div>
+				</div>
+			</td>
+			<td style="text-align:right; vertical-align:top;" class="small">
+				<div><em>Quotation valid until:</em> <?php echo esc($data['validity'] ?? ''); ?></div>
+				<div style="margin-top:8px;"><em>Prepared by:</em> <?php echo esc($data['by_business'] ?? ''); ?></div>
+			</td>
+		</tr>
+	</table>
+
+	<div class="block-title">Quotation For:</div>
+	<div class="address-block small">
+		<div><?php echo esc($data['to_business'] ?? ($data['customer_name'] ?? '')); ?></div>
+		<div>Company Name</div>
+		<div><?php echo esc($data['to_address'] ?? ''); ?></div>
+		<div><?php echo esc(trim(($data['to_city'] ?? '').', '.($data['to_state'] ?? '').'  '.($data['to_postal'] ?? ''))); ?></div>
+		<div><?php echo esc($data['to_contact'] ?? ''); ?></div>
+	</div>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th style="width:110px;">QUANTITY</th>
+				<th>DESCRIPTION</th>
+				<th style="width:120px;">UNIT PRICE</th>
+				<th style="width:90px;">TAXABLE?</th>
+				<th style="width:140px;">AMOUNT</th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach (($data['items']['name'] ?? []) as $i => $name):
+			$qty = (float)($data['items']['qty'][$i] ?? 0);
+			$price = (float)($data['items']['price'][$i] ?? 0);
+			$base = $qty * $price;
+		?>
+			<tr>
+				<td class="center"><?php echo money($qty); ?></td>
+				<td><?php echo esc($name); ?></td>
+				<td class="right"><?php echo $currencySymbol . ' ' . money($price); ?></td>
+				<td class="center"><?php echo (!empty($includeGst) && ($gstPercent ?? 0) > 0) ? 'T' : ''; ?></td>
+				<td class="right"><?php echo $currencySymbol . ' ' . money($base); ?></td>
+			</tr>
+		<?php endforeach; ?>
+		</tbody>
+	</table>
+
+	<table class="totals">
+		<tr>
+			<td>SUBTOTAL</td>
+			<td class="right"><?php echo $currencySymbol . ' ' . money($subtotal); ?></td>
+		</tr>
+		<tr>
+			<td>TAX RATE</td>
+			<td class="right"><?php echo money($includeGst ? $gstPercent : 0); ?>%</td>
+		</tr>
+		<tr>
+			<td>SALES TAX</td>
+			<td class="right"><?php echo $currencySymbol . ' ' . money($taxtotal); ?></td>
+		</tr>
+		<?php $other = ($additional ?? 0) - ($discount ?? 0); ?>
+		<tr>
+			<td>OTHER</td>
+			<td class="right"><?php echo $other === 0.0 ? '-' : $currencySymbol . ' ' . money($other); ?></td>
+		</tr>
+		<tr>
+			<td><strong>TOTAL</strong></td>
+			<td class="right"><strong><?php echo $currencySymbol . ' ' . money($grand); ?></strong></td>
+		</tr>
+	</table>
+
+	<?php if (!empty($data['terms'])): ?>
+		<div style="margin-top:18px;">
+			<strong>Terms & Conditions</strong>
+			<ol>
+				<?php foreach ($data['terms'] as $t): if (trim((string)$t) === '') continue; ?>
+					<li><?php echo esc($t); ?></li>
+				<?php endforeach; ?>
+			</ol>
+		</div>
+	<?php endif; ?>
+
+	<?php if ($signaturePath && is_file($signaturePath)): ?>
+		<div style="margin-top: 30px; text-align:right;">
+			<img src="<?php echo esc($signaturePath); ?>" style="height:50px;" />
+			<div>Authorized Signature</div>
+		</div>
+	<?php endif; ?>
+
+	<div class="footer-msg">THANK YOU FOR YOUR BUSINESS!</div>
 </body>
 </html>
 

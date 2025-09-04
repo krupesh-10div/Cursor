@@ -86,6 +86,20 @@
 				</section>
 			</div>
 
+			<!-- GST notice row -->
+			<section class="card info notice-row">
+				<label class="checkbox">
+					<input type="checkbox" id="include_gst" name="include_gst" />
+					Does Your Estimate include GST? If yes, then tick the checkbox.
+				</label>
+				<div class="gst-field" id="gstField" hidden>
+					<label class="field compact">
+						<span>GST Percent</span>
+						<input type="number" name="gst_percent" step="0.01" min="0" value="18" />
+					</label>
+				</div>
+			</section>
+
 			<section class="card">
 				<h2 class="card-title">Invoice Details</h2>
 				<div class="table-wrap">
