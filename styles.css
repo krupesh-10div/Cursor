@@ -248,6 +248,8 @@ textarea { height: 96px; resize: vertical; }
 
 .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
+.hidden { display: none; }
+
 @media (max-width: 980px) {
   .grid--2 { grid-template-columns: 1fr; }
   .table__head, .table__row { grid-template-columns: 64px 1fr 96px 96px 120px 96px; }
