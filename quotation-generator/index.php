@@ -31,6 +31,9 @@
 							<input type="date" name="quotation_date" value="<?php echo date('Y-m-d'); ?>" required />
 						</label>
 					</div>
+					<div class="notice">
+						<button type="button" class="btn btn-outline">Add More Fields</button>
+					</div>
 				</section>
 
 				<section class="card upload-card">
@@ -45,6 +48,20 @@
 					</div>
 				</section>
 			</div>
+
+			<!-- GST include notice to mirror the reference design -->
+			<section class="card info notice-row">
+				<label class="checkbox">
+					<input type="checkbox" id="include_gst" name="include_gst" />
+					Does Your Estimate include GST? If yes, then tick the checkbox.
+				</label>
+				<div id="gstField" class="gst-field" hidden>
+					<label class="field compact">
+						<span>GST Percent</span>
+						<input type="number" step="0.01" min="0" name="gst_percent" value="0" />
+					</label>
+				</div>
+			</section>
 
 			<div class="grid grid-2 gap-16">
 				<section class="card">
@@ -173,6 +190,9 @@
 						<div class="totals-line" id="additionalLine" hidden><span class="label">Additional Charges</span><span class="value" id="additionalval">0.00</span></div>
 						<div class="totals-line" id="roundLine" hidden><span class="label">Rounding Adj.</span><span class="value" id="roundval">0.00</span></div>
 						<div class="totals-line grand"><span class="label">Total (INR)</span><span class="value" id="grandtotal">0.00</span></div>
+					</div>
+					<div class="controls inline">
+						<button type="button" class="btn btn-outline">Add More Fields</button>
 					</div>
 					<div class="controls">
 						<label class="checkbox"><input type="checkbox" id="showWords" /> Show Total In Words</label>

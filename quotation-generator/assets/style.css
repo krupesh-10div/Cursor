@@ -123,6 +123,9 @@ table.items input { width: 100%; }
 .radio { display:flex; gap:6px; align-items:center; }
 .words { margin-top: 8px; font-size: 13px; color:#0f172a; background:#f8fafc; border:1px solid var(--border); padding:8px 10px; border-radius:8px; }
 
+/* Inline controls area under totals */
+.controls.inline { display:flex; justify-content:flex-end; margin-top:8px; }
+
 /* Actions */
 .row-actions { display:flex; gap:8px; align-items:center; }
 .desc-row { margin-top:6px; }
