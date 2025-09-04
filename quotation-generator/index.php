@@ -21,7 +21,7 @@
 			<div class="grid grid-2 gap-16">
 				<section class="card">
 					<h2 class="card-title">Quotation Details</h2>
-					<div class="grid grid-3">
+					<div class="grid grid-2">
 						<label class="field">
 							<span>Quotation No</span>
 							<input type="text" name="quotation_no" placeholder="A0001" required />
@@ -29,15 +29,6 @@
 						<label class="field">
 							<span>Quotation Date</span>
 							<input type="date" name="quotation_date" value="<?php echo date('Y-m-d'); ?>" required />
-						</label>
-						<label class="field">
-							<span>Currency</span>
-							<select name="currency" aria-label="Currency">
-								<option value="INR" selected>INR (₹)</option>
-								<option value="USD">USD ($)</option>
-								<option value="EUR">EUR (€)</option>
-								<option value="GBP">GBP (£)</option>
-							</select>
 						</label>
 					</div>
 				</section>
@@ -103,7 +94,6 @@
 							<tr>
 								<th class="w-60">Sr. No</th>
 								<th>Product Name</th>
-								<th class="w-120">Unit</th>
 								<th class="w-120">Quantity</th>
 								<th class="w-140">Rate</th>
 								<th class="w-160">Total Amount</th>
@@ -115,24 +105,12 @@
 								<td class="sr">1</td>
 								<td>
 									<input type="text" name="items[name][]" placeholder="Product Name" required />
-									<div class="desc-row" hidden>
-										<input type="text" name="items[desc][]" placeholder="Add Description" />
-									</div>
-								</td>
-								<td>
-									<select name="items[unit][]" class="unit">
-										<option value="Product" selected>Product</option>
-										<option value="Hour">Hour</option>
-										<option value="Kg">Kg</option>
-										<option value="Unit">Unit</option>
-									</select>
 								</td>
 								<td><input type="number" min="0" step="1" name="items[qty][]" value="1" class="qty" required /></td>
 								<td><input type="number" min="0" step="0.01" name="items[price][]" value="0" class="price" required /></td>
 								<td class="row-total">0.00</td>
 								<td class="actions">
 									<div class="row-actions">
-										<button type="button" class="btn btn-small add-desc">Add Description</button>
 										<button type="button" class="btn btn-icon remove-row" title="Remove">🗑</button>
 									</div>
 								</td>

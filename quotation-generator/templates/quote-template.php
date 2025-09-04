@@ -96,11 +96,10 @@ $grand = $grand + $roundAdj;
 		<table class="table">
 			<thead>
 				<tr>
-					<th>Product / Service</th>
-					<th style="width:80px;">Qty</th>
-					<th style="width:120px;">Unit Price</th>
-					<th style="width:80px;">Tax %</th>
-					<th style="width:140px;">Total</th>
+					<th>Product Name</th>
+					<th style="width:80px;">Quantity</th>
+					<th style="width:120px;">Rate</th>
+					<th style="width:140px;">Total Amount</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -116,7 +115,6 @@ $grand = $grand + $roundAdj;
 					<td><?php echo esc($name); ?></td>
 					<td><?php echo money($qty); ?></td>
 					<td><?php echo $currencySymbol . ' ' . money($price); ?></td>
-					<td><?php echo money(0); ?></td>
 					<td><?php echo $currencySymbol . ' ' . money($lineTotal); ?></td>
 				</tr>
 			<?php endforeach; ?>

@@ -114,14 +114,8 @@
 		const $row = $itemsBody.find('tr.item-row').first().clone();
 		$row.find('input').val('');
 		$row.find('.row-total').text('0.00');
-		$row.find('.desc-row').attr('hidden','hidden');
 		$itemsBody.append($row);
 		$itemsBody.find('.sr').each(function(i){ $(this).text(i+1); });
-	});
-
-	$itemsBody.on('click','.add-desc',function(){
-		const $row = $(this).closest('tr');
-		$row.find('.desc-row').toggle();
 	});
 
 	$termsWrap.on('click', '.remove-term', function(){
