@@ -89,7 +89,7 @@
     const qty = row.querySelector('.input-qty');
     const rate = row.querySelector('.input-rate');
     const descToggle = row.querySelector('.input-desc-toggle');
-    const actionsWrap = row.querySelector('.td .row');
+    // Use row-level event delegation for action buttons to avoid selecting the wrong `.row` container
 
     function onValueChanged() {
       computeRowTotal(row);
@@ -115,32 +115,30 @@
       });
     }
 
-    if (actionsWrap) {
-      actionsWrap.addEventListener('click', (ev) => {
-        const target = ev.target;
-        if (!(target instanceof HTMLElement)) return;
-        const actionBtn = target.closest('button');
-        if (!actionBtn) return;
-        const action = actionBtn.getAttribute('data-action');
-        if (!action) return;
-        if (action === 'delete') {
-          row.remove();
+    row.addEventListener('click', (ev) => {
+      const target = ev.target;
+      if (!(target instanceof HTMLElement)) return;
+      const actionBtn = target.closest('button[data-action]');
+      if (!actionBtn || !row.contains(actionBtn)) return;
+      const action = actionBtn.getAttribute('data-action');
+      if (!action) return;
+      if (action === 'delete') {
+        row.remove();
+        updateSerialNumbers();
+        recomputeTotals();
+      } else if (action === 'duplicate') {
+        const newRow = duplicateRow(row);
+        row.insertAdjacentElement('afterend', newRow);
+        updateSerialNumbers();
+        recomputeTotals();
+      } else if (action === 'move') {
+        const prev = row.previousElementSibling;
+        if (prev && prev.classList.contains('table__row')) {
+          row.parentElement.insertBefore(row, prev);
           updateSerialNumbers();
-          recomputeTotals();
-        } else if (action === 'duplicate') {
-          const newRow = duplicateRow(row);
-          row.insertAdjacentElement('afterend', newRow);
-          updateSerialNumbers();
-          recomputeTotals();
-        } else if (action === 'move') {
-          const prev = row.previousElementSibling;
-          if (prev && prev.classList.contains('table__row')) {
-            row.parentElement.insertBefore(row, prev);
-            updateSerialNumbers();
-          }
         }
-      });
-    }
+      }
+    });
   }
 
   function buildEmptyRow() {
