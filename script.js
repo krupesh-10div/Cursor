@@ -81,7 +81,17 @@
     if (gstValue) gstValue.textContent = formatCurrencyINR(gstAmount);
 
     const grandTotalNode = document.getElementById('grand_total');
-    const grand = subtotal + gstAmount;
+    let grand = subtotal + gstAmount;
+
+    // Apply rounding mode if selected
+    const roundChecked = document.querySelector('input[name="round"]:checked');
+    const roundingMode = roundChecked && roundChecked.value ? String(roundChecked.value) : '';
+    if (roundingMode === 'up') {
+      grand = Math.ceil(grand);
+    } else if (roundingMode === 'down') {
+      grand = Math.floor(grand);
+    }
+
     if (grandTotalNode) grandTotalNode.textContent = formatCurrencyINR(grand);
   }
 
@@ -189,6 +199,168 @@
     }
   }
 
+  function initRounding() {
+    const radios = Array.from(document.querySelectorAll('input[name="round"]'));
+    if (radios.length === 0) return;
+    radios.forEach((r) => r.addEventListener('change', () => {
+      recomputeTotals();
+    }));
+  }
+
+  function normalizeButtonText(el) {
+    return (el && el.textContent || '').trim().toLowerCase();
+  }
+
+  function ensureSection(container, id, titleText, fieldBuilder) {
+    let section = container.querySelector('#' + id);
+    if (section) {
+      section.remove();
+      return;
+    }
+    section = document.createElement('div');
+    section.className = 'field field--full';
+    section.id = id;
+    const label = document.createElement('label');
+    label.className = 'label';
+    label.textContent = titleText;
+    section.appendChild(label);
+    const fieldNode = fieldBuilder();
+    section.appendChild(fieldNode);
+    container.appendChild(section);
+  }
+
+  function buildTextarea(placeholder) {
+    const area = document.createElement('textarea');
+    area.placeholder = placeholder;
+    return area;
+  }
+
+  function buildTextInput(placeholder) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input';
+    input.placeholder = placeholder;
+    return input;
+  }
+
+  function handleChipActions(targetButton) {
+    const btnText = normalizeButtonText(targetButton);
+    const cardBody = targetButton.closest('.card__body');
+    if (!cardBody) return;
+    if (btnText.includes('terms')) {
+      ensureSection(cardBody, 'terms_section', 'Terms & Conditions', () => buildTextarea('Add terms and conditions...'));
+      return;
+    }
+    if (btnText.includes('notes')) {
+      ensureSection(cardBody, 'notes_section', 'Notes', () => buildTextarea('Add notes...'));
+      return;
+    }
+    if (btnText.includes('validity')) {
+      ensureSection(cardBody, 'validity_section', 'Validity', () => buildTextInput('e.g., Valid for 30 days'));
+      return;
+    }
+    if (btnText.includes('footer')) {
+      ensureSection(cardBody, 'footer_section', 'Footer', () => buildTextarea('Add footer text...'));
+      return;
+    }
+    if (btnText.includes('signature')) {
+      ensureSection(cardBody, 'signature_section', 'Authorized Signature', () => buildTextInput('Signatory name or draw signature'));
+    }
+  }
+
+  function addCustomFieldToForm(buttonEl) {
+    const form = buttonEl.closest('.form');
+    if (!form) return false;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'field field--full';
+    const label = document.createElement('label');
+    label.className = 'label';
+    label.textContent = 'Custom Field';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input';
+    input.placeholder = 'Enter value';
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+
+    // Insert before the button's field row if possible
+    const buttonField = buttonEl.closest('.field');
+    if (buttonField && buttonField.parentElement === form) {
+      form.insertBefore(wrapper, buttonField);
+    } else {
+      form.appendChild(wrapper);
+    }
+    return true;
+  }
+
+  function addCustomFieldToTotals(buttonEl) {
+    const totals = buttonEl.closest('.totals');
+    if (!totals) return false;
+    const row = document.createElement('div');
+    row.className = 'totals__row';
+    const label = document.createElement('div');
+    label.className = 'totals__label';
+    label.textContent = 'Custom';
+    const value = document.createElement('div');
+    value.className = 'totals__value';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input';
+    input.placeholder = 'Enter value';
+    value.appendChild(input);
+    row.appendChild(label);
+    row.appendChild(value);
+
+    const emphRow = totals.querySelector('.totals__row--emph');
+    if (emphRow && emphRow.parentElement === totals) {
+      totals.insertBefore(row, emphRow);
+    } else {
+      totals.appendChild(row);
+    }
+    return true;
+  }
+
+  function addOtherFieldToRow(row) {
+    const nameCell = row.querySelector('.td');
+    if (!nameCell) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input input-other';
+    input.placeholder = 'Other field';
+    nameCell.appendChild(input);
+  }
+
+  function initGlobalClicks() {
+    document.addEventListener('click', (ev) => {
+      const target = ev.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const button = target.closest('button');
+      if (!button) return;
+
+      const text = normalizeButtonText(button);
+
+      // Chips: Terms, Notes, Validity, Footer, Signature
+      if (button.classList.contains('chip')) {
+        handleChipActions(button);
+        return;
+      }
+
+      // Add Other Field inside line items
+      if (text.includes('add other field')) {
+        const row = button.closest('.table__row');
+        if (row) addOtherFieldToRow(row);
+        return;
+      }
+
+      // Add More/Custom Fields within forms
+      if (text.includes('add more fields') || text.includes('add custom fields')) {
+        if (addCustomFieldToForm(button)) return;
+        if (addCustomFieldToTotals(button)) return;
+      }
+    });
+  }
+
   function initAddRow() {
     const addBtn = document.getElementById('add_row');
     if (!addBtn) return;
@@ -245,6 +417,8 @@
   document.addEventListener('DOMContentLoaded', () => {
     initExistingRows();
     initGST();
+    initRounding();
+    initGlobalClicks();
     initAddRow();
     initSubmit();
   });
