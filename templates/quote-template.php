@@ -41,7 +41,6 @@ function number_to_words_int($num) {
 	if ($num < 1000) { $h=(int)($num/100); $r=$num%100; return $words[$h].' hundred' . ($r?' and '.number_to_words_int($r):''); }
 	$units=['',' thousand',' lakh',' crore']; $res=''; $i=0; $n=$num;
 	while ($n>0 && $i<count($units)){
-		$div = ($i==0?1000:($i==1?100:$i==2?100:$i==3?100:100)); // placeholder, handled via steps below
 		if ($i==0) { $chunk=$n%1000; $n=(int)($n/1000); }
 		else { $chunk=$n%100; $n=(int)($n/100); }
 		if ($chunk) { $res = number_to_words_int($chunk) . $units[$i] . ($res?' '.$res:''); }
