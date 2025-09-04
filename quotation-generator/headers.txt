@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Host: 0.0.0.0:8000
+Date: Thu, 04 Sep 2025 03:35:16 GMT
+Connection: close
+X-Powered-By: PHP/8.4.5
+X-Content-Type-Options: nosniff
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="quotation_Q0001.pdf"
+X-Filename: quotation_Q0001.pdf
+
