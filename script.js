@@ -400,20 +400,48 @@
       const qno = document.getElementById('qno');
       const qdate = document.getElementById('qdate');
       const byBusiness = document.getElementById('by_business');
+      const byPhone = document.getElementById('by_phone');
       const byEmail = document.getElementById('by_email');
+      const byGstin = document.getElementById('by_gstin');
+      const byAddress = document.getElementById('by_address');
+      const byCity = document.getElementById('by_city');
+      const byZip = document.getElementById('by_zip');
+      const byState = document.getElementById('by_state');
+
       const toBusiness = document.getElementById('to_business');
+      const toPhone = document.getElementById('to_phone');
       const toEmail = document.getElementById('to_email');
+      const toGstin = document.getElementById('to_gstin');
+      const toAddress = document.getElementById('to_address');
+      const toCity = document.getElementById('to_city');
+      const toZip = document.getElementById('to_zip');
+      const toState = document.getElementById('to_state');
 
       fd.append('quotation_no', (qno && qno.value) || '');
       fd.append('quotation_date', (qdate && qdate.value) || '');
       fd.append('currency', 'INR');
       fd.append('company_name', (byBusiness && byBusiness.value) || '');
       fd.append('company_email', (byEmail && byEmail.value) || '');
+      fd.append('company_phone', (byPhone && byPhone.value) || '');
+      fd.append('company_gstin', (byGstin && byGstin.value) || '');
+      fd.append('company_address', (byAddress && byAddress.value) || '');
+      fd.append('company_city', (byCity && byCity.value) || '');
+      fd.append('company_zip', (byZip && byZip.value) || '');
+      fd.append('company_state', (byState && byState.value) || '');
+
       fd.append('customer_name', (toBusiness && toBusiness.value) || '');
       fd.append('customer_email', (toEmail && toEmail.value) || '');
+      fd.append('customer_phone', (toPhone && toPhone.value) || '');
+      fd.append('customer_gstin', (toGstin && toGstin.value) || '');
+      fd.append('customer_address', (toAddress && toAddress.value) || '');
+      fd.append('customer_city', (toCity && toCity.value) || '');
+      fd.append('customer_zip', (toZip && toZip.value) || '');
+      fd.append('customer_state', (toState && toState.value) || '');
 
       // Global GST -> apply same tax percent to each item for server-side totals
       const { isIncluded, percent } = getGSTState();
+      fd.append('gst_included', isIncluded ? '1' : '0');
+      fd.append('gst_percent', String(percent || 0));
       const taxPercent = isIncluded ? percent : 0;
 
       items.forEach((it) => {
@@ -423,13 +451,41 @@
         fd.append('items[tax][]', String(taxPercent));
       });
 
-      // Optional: collect Terms if chip section added
+      // Optional: collect Terms/Notes/Validity/Footer/Signature text if chip sections added
       const termsSection = document.getElementById('terms_section');
       const termsText = termsSection ? (termsSection.querySelector('textarea')?.value || '') : '';
       if (termsText.trim()) {
         termsText.split('\n').map(s => s.trim()).filter(Boolean).forEach((line) => {
           fd.append('terms[]', line);
         });
+      }
+      const notesSection = document.getElementById('notes_section');
+      const notesText = notesSection ? (notesSection.querySelector('textarea')?.value || '') : '';
+      if (notesText.trim()) fd.append('notes', notesText.trim());
+
+      const validitySection = document.getElementById('validity_section');
+      const validityText = validitySection ? (validitySection.querySelector('input')?.value || '') : '';
+      if (validityText.trim()) fd.append('validity', validityText.trim());
+
+      const footerSection = document.getElementById('footer_section');
+      const footerText = footerSection ? (footerSection.querySelector('textarea')?.value || '') : '';
+      if (footerText.trim()) fd.append('footer', footerText.trim());
+
+      const signatureSection = document.getElementById('signature_section');
+      const signatureName = signatureSection ? (signatureSection.querySelector('input')?.value || '') : '';
+      if (signatureName.trim()) fd.append('signature_name', signatureName.trim());
+
+      // Rounding and total-in-words
+      const roundChecked = document.querySelector('input[name="round"]:checked');
+      if (roundChecked && roundChecked.value) fd.append('rounding', String(roundChecked.value));
+
+      const showWords = !!document.getElementById('show_total_in_words')?.checked;
+      fd.append('total_in_words', showWords ? '1' : '0');
+
+      // Files (optional)
+      const logoFile = document.getElementById('company_logo');
+      if (logoFile && logoFile.files && logoFile.files[0]) {
+        fd.append('company_logo', logoFile.files[0]);
       }
 
       // Disable button while generating
