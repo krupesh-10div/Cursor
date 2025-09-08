@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "@wordpress/scripts": "^30.23.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^5.1.4"
+  }
+}
