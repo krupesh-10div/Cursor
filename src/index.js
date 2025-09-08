@@ -345,6 +345,94 @@ registerBlockType('adr/accordion', {
 		);
 	},
 	deprecated: [
+		// Immediately previous version (before hasContent gating). Always renders markup
+		{
+			attributes: {
+				title: { type: 'string' },
+				acc_id: { type: 'string' },
+				open: { type: 'boolean', default: false },
+				alignment: { type: 'string', default: 'unset' },
+				headerTextFontSize: { type: 'string', default: '20px' },
+				headerTextColor: { type: 'string', default: '#2B2E31' },
+				titleBackgroundColor: { type: 'string', default: '#ffffff' },
+				titlePaddingTop: { type: 'string', default: 25 },
+				titlePaddingRight: { type: 'string', default: 45 },
+				titlePaddingBottom: { type: 'string', default: 25 },
+				titlePaddingLeft: { type: 'string', default: 25 },
+				bodyTextColor: { type: 'string', default: '#888888' },
+				bodyBgColor: { type: 'string', default: '#ffffff' },
+				borderWidth: { type: 'number', default: 0 },
+				borderType: { type: 'string', default: 'solid' },
+				borderColor: { type: 'string', default: '#61b23f' },
+				headerTag: { type: 'string', default: 'h2' },
+				borderRadius: { type: 'string', default: 25 },
+			},
+			save(props) {
+				const { attributes } = props;
+				const {
+					title,
+					open,
+					alignment,
+					headerTextFontSize,
+					headerTextColor,
+					titleBackgroundColor,
+					titlePaddingTop,
+					titlePaddingRight,
+					titlePaddingBottom,
+					titlePaddingLeft,
+					bodyTextColor,
+					bodyBgColor,
+					borderWidth,
+					borderType,
+					borderColor,
+					acc_id,
+					headerTag = 'h2',
+					borderRadius,
+				} = attributes;
+				const tabOpen = open ? 'tabOpen' : 'tabClose';
+				const bodyDisplay = open ? 'block' : 'none';
+				const div_id = title ? title.replace(/[^A-Z0-9]/gi, '') : 'accordionHeaderId';
+				return (
+					<div
+						className={`accordionWrapper ${tabOpen}`}
+						style={{
+							borderWidth: borderWidth + 'px',
+							borderStyle: borderType,
+							borderColor: borderColor,
+							borderRadius: borderRadius + 'px',
+						}}
+					>
+						<div className="accordionHeader">
+							<RichText.Content
+								tagName={headerTag}
+								value={title}
+								id={acc_id ? acc_id : div_id}
+								style={{
+									fontSize: headerTextFontSize,
+									textAlign: alignment,
+									color: headerTextColor,
+									backgroundColor: titleBackgroundColor,
+									paddingTop: titlePaddingTop + 'px',
+									paddingRight: titlePaddingRight + 'px',
+									paddingBottom: titlePaddingBottom + 'px',
+									paddingLeft: titlePaddingLeft + 'px',
+								}}
+							/>
+						</div>
+						<div
+							className="accordionBody"
+							style={{
+								backgroundColor: bodyBgColor,
+								color: bodyTextColor,
+								display: bodyDisplay,
+							}}
+						>
+							<InnerBlocks.Content />
+						</div>
+					</div>
+				);
+			},
+		},
 		{
 			attributes: {
 				titlePaddingTop: { type: 'number', default: 10 },
