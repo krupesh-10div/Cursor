@@ -11,6 +11,8 @@ import {
 	PanelColorSettings,
 	InnerBlocks,
 } from '@wordpress/block-editor';
+import { useSelect } from '@wordpress/data';
+import { useEffect } from '@wordpress/element';
 import {
 	TextControl,
 	PanelBody,
@@ -47,6 +49,7 @@ registerBlockType('adr/custom-accordion', {
 						template={getChildAccordionBlock(noOfAccordion)}
 						templateLock="all"
 						allowedBlocks={ALLOWBLOCKS}
+						renderAppender={false}
 					/>
 					<span
 						className="dashicons dashicons-plus"
@@ -70,7 +73,10 @@ registerBlockType('adr/accordion', {
 	title: __('Accordion Block'),
 	description: __('This is custom accordion block with multiple setting.'),
 	category: 'formatting',
-	parent: ['adr/parent-accordion'],
+	parent: ['adr/custom-accordion'],
+	supports: {
+		inserter: false,
+	},
 	attributes: {
 		title: { type: 'string' },
 		acc_id: { type: 'string' },
@@ -90,9 +96,10 @@ registerBlockType('adr/accordion', {
 		borderColor: { type: 'string', default: '#61b23f' },
 		headerTag: { type: 'string', default: 'h2' },
 		borderRadius: { type: 'string', default: 25 },
+		hasContent: { type: 'boolean', default: false },
 	},
 	edit: (props) => {
-		const { attributes, setAttributes, className } = props;
+		const { attributes, setAttributes, className, clientId } = props;
 		const {
 			title,
 			open,
@@ -112,9 +119,22 @@ registerBlockType('adr/accordion', {
 			acc_id,
 			headerTag = 'h2',
 			borderRadius,
+			hasContent,
 		} = attributes;
 
 		const div_id = title ? title.replace(/[^A-Z0-9]/gi, '') : 'accordionHeaderId';
+
+		// Track whether this accordion has any body content
+		const innerBlockCount = useSelect(
+			(select) => select('core/block-editor').getBlocks(clientId).length,
+			[clientId]
+		);
+		useEffect(() => {
+			const contentPresent = (!!title && title.trim() !== '') || innerBlockCount > 0;
+			if (contentPresent !== hasContent) {
+				setAttributes({ hasContent: contentPresent });
+			}
+		}, [title, innerBlockCount]);
 
 		return (
 			<div className={className}>
@@ -272,7 +292,13 @@ registerBlockType('adr/accordion', {
 			acc_id,
 			headerTag = 'h2',
 			borderRadius,
+			hasContent,
 		} = attributes;
+
+		// Prevent rendering an empty accordion
+		if (!hasContent) {
+			return null;
+		}
 
 		const tabOpen = open ? 'tabOpen' : 'tabClose';
 		const bodyDisplay = open ? 'block' : 'none';
