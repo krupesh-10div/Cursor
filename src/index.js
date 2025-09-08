@@ -6,6 +6,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import {
 	RichText,
 	AlignmentToolbar,
+	BlockControls,
 	InspectorControls,
 	PanelColorSettings,
 	InnerBlocks,
@@ -117,6 +118,12 @@ registerBlockType('adr/accordion', {
 
 		return (
 			<div className={className}>
+				<BlockControls>
+					<AlignmentToolbar
+						value={alignment}
+						onChange={(value) => setAttributes({ alignment: value })}
+					/>
+				</BlockControls>
 				<div
 					className="accordionWrapper"
 					style={{
@@ -151,99 +158,56 @@ registerBlockType('adr/accordion', {
 				</div>
 
 				<InspectorControls>
-					<PanelBody title={__('Accordion Title Setting')} initialOpen={false}>
-						<PanelRow>
-							<label><b>Title Setting</b></label>
-							<ToggleControl
-								label={__('Accordion Open')}
-								checked={!!open}
-								onChange={() => setAttributes({ open: !open })}
-							/>
-						</PanelRow>
-
-						<PanelRow>
-							<label><b>Title Alignment</b></label>
-							<AlignmentToolbar
-								value={alignment}
-								onChange={(value) => setAttributes({ alignment: value })}
-							/>
-						</PanelRow>
-
-						<PanelRow>
-							<TextControl
-								type="string"
-								label="Header Font Size"
-								value={headerTextFontSize}
-								onChange={(value) => setAttributes({ headerTextFontSize: value })}
-							/>
-						</PanelRow>
-
-						<PanelRow>
-							<TextControl
-								type="string"
-								label="Header Tag"
-								value={headerTag}
-								onChange={(value) => setAttributes({ headerTag: value })}
-							/>
-						</PanelRow>
+					<PanelBody title={__('Accordion Title Settings')} initialOpen={true}>
+						<ToggleControl
+							label={__('Accordion Open')}
+							checked={!!open}
+							onChange={() => setAttributes({ open: !open })}
+						/>
+						<TextControl
+							type="string"
+							label={__('Header Font Size')}
+							value={headerTextFontSize}
+							onChange={(value) => setAttributes({ headerTextFontSize: value })}
+						/>
+						<TextControl
+							type="string"
+							label={__('Header Tag')}
+							value={headerTag}
+							onChange={(value) => setAttributes({ headerTag: value })}
+						/>
 					</PanelBody>
 
-					<PanelBody>
-						<PanelRow>
-							<PanelColorSettings
-								title={__('Color Settings')}
-								initialOpen={false}
-								colorSettings={[
-									{
-										label: __('Background Color'),
-										value: titleBackgroundColor,
-										onChange: (value) => setAttributes({ titleBackgroundColor: value ? value : '#26466d' }),
-									},
-									{
-										label: __('Text Color'),
-										value: headerTextColor,
-										onChange: (value) => setAttributes({ headerTextColor: value ? value : '#fff' }),
-									},
-								]}
-							/>
-						</PanelRow>
-					</PanelBody>
-
-					<PanelBody>
-						<PanelRow className="titlePadding">
-							<label><b>Header Padding Setting</b></label>
-							<TextControl
-								type="number"
-								label="Padding Top"
-								value={titlePaddingTop}
-								onChange={(value) => setAttributes({ titlePaddingTop: value })}
-							/>
-							<TextControl
-								type="number"
-								label="Padding Right"
-								value={titlePaddingRight}
-								onChange={(value) => setAttributes({ titlePaddingRight: value })}
-							/>
-							<TextControl
-								type="number"
-								label="Padding Bottom"
-								value={titlePaddingBottom}
-								onChange={(value) => setAttributes({ titlePaddingBottom: value })}
-							/>
-							<TextControl
-								type="number"
-								label="Padding Left"
-								value={titlePaddingLeft}
-								onChange={(value) => setAttributes({ titlePaddingLeft: value })}
-							/>
-						</PanelRow>
-					</PanelBody>
-
-					<PanelBody title={__('Accordion Body Setting')} initialOpen={false}>
-						<label><b>Accordion Body Style</b></label>
+					<PanelBody title={__('Title Colors')} initialOpen={false}>
 						<PanelColorSettings
-							title={__('Color Settings')}
-							initialOpen={false}
+							title={__('Title Colors')}
+							initialOpen={true}
+							colorSettings={[
+								{
+									label: __('Background Color'),
+									value: titleBackgroundColor,
+									onChange: (value) => setAttributes({ titleBackgroundColor: value ? value : '#26466d' }),
+								},
+								{
+									label: __('Text Color'),
+									value: headerTextColor,
+									onChange: (value) => setAttributes({ headerTextColor: value ? value : '#fff' }),
+								},
+							]}
+						/>
+					</PanelBody>
+
+					<PanelBody title={__('Header Padding')} initialOpen={false}>
+						<TextControl type="number" label={__('Padding Top')} value={titlePaddingTop} onChange={(value) => setAttributes({ titlePaddingTop: value })} />
+						<TextControl type="number" label={__('Padding Right')} value={titlePaddingRight} onChange={(value) => setAttributes({ titlePaddingRight: value })} />
+						<TextControl type="number" label={__('Padding Bottom')} value={titlePaddingBottom} onChange={(value) => setAttributes({ titlePaddingBottom: value })} />
+						<TextControl type="number" label={__('Padding Left')} value={titlePaddingLeft} onChange={(value) => setAttributes({ titlePaddingLeft: value })} />
+					</PanelBody>
+
+					<PanelBody title={__('Accordion Body Settings')} initialOpen={false}>
+						<PanelColorSettings
+							title={__('Body Colors')}
+							initialOpen={true}
 							colorSettings={[
 								{
 									label: __('Background Color'),
@@ -257,14 +221,7 @@ registerBlockType('adr/accordion', {
 								},
 							]}
 						/>
-						<RangeControl
-							label={__('Border Width')}
-							value={borderWidth}
-							min={0}
-							max={100}
-							step={1}
-							onChange={(value) => setAttributes({ borderWidth: value })}
-						/>
+						<RangeControl label={__('Border Width')} value={borderWidth} min={0} max={100} step={1} onChange={(value) => setAttributes({ borderWidth: value })} />
 						<SelectControl
 							label={__('Border Type')}
 							value={borderType}
@@ -287,21 +244,8 @@ registerBlockType('adr/accordion', {
 								},
 							]}
 						/>
-						<TextControl
-							type="number"
-							label="Border Radius"
-							min={3}
-							value={borderRadius}
-							onChange={(value) => setAttributes({ borderRadius: value })}
-						/>
-						<PanelRow>
-							<TextControl
-								type="string"
-								label="ID"
-								value={acc_id}
-								onChange={(value) => setAttributes({ acc_id: value })}
-							/>
-						</PanelRow>
+						<TextControl type="number" label={__('Border Radius')} min={3} value={borderRadius} onChange={(value) => setAttributes({ borderRadius: value })} />
+						<TextControl type="string" label={__('ID')} value={acc_id} onChange={(value) => setAttributes({ acc_id: value })} />
 					</PanelBody>
 				</InspectorControls>
 			</div>
