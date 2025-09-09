@@ -7,7 +7,7 @@
   <meta name="description" content="Identixweb official website. High-quality apps and solutions.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Add your font-family here per design, or keep system fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
   <header class="site-header" role="banner">
     <div class="container site-header__inner">
       <a href="#" class="site-header__brand" aria-label="Identixweb home">
-        <img class="site-header__logo" src="https://via.placeholder.com/132x32?text=Logo" alt="Identixweb" width="132" height="32">
+        <img class="site-header__logo" src="https://via.placeholder.com/132x32?text=Logo" alt="Identixweb" width="132" height="32" decoding="async" loading="eager">
       </a>
       <button class="site-header__toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Open menu">
         <span class="site-header__toggle-bar" aria-hidden="true"></span>
@@ -37,6 +37,202 @@
       </div>
     </div>
   </header>
+
+  <main id="main" class="site-main" role="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <h1 id="hero-title" class="hero__title">Grow faster with powerful Shopify apps</h1>
+          <p class="hero__subtitle">High-converting experiences, upsells, subscriptions, and more — built for scale.</p>
+          <div class="hero__actions">
+            <a class="button" href="#pricing">Start free trial</a>
+            <a class="button button--ghost" href="#features">See features</a>
+          </div>
+          <div class="hero__trust">
+            <p class="hero__trust-text">Trusted by 10,000+ brands</p>
+            <ul class="hero__logos" aria-label="Trusted brands">
+              <li class="hero__logo-item"><img src="https://via.placeholder.com/96x32?text=Brand+1" alt="Brand 1" width="96" height="32" loading="lazy" decoding="async"></li>
+              <li class="hero__logo-item"><img src="https://via.placeholder.com/96x32?text=Brand+2" alt="Brand 2" width="96" height="32" loading="lazy" decoding="async"></li>
+              <li class="hero__logo-item"><img src="https://via.placeholder.com/96x32?text=Brand+3" alt="Brand 3" width="96" height="32" loading="lazy" decoding="async"></li>
+              <li class="hero__logo-item"><img src="https://via.placeholder.com/96x32?text=Brand+4" alt="Brand 4" width="96" height="32" loading="lazy" decoding="async"></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hero__media">
+          <img class="hero__image" src="https://via.placeholder.com/1200x800.webp?text=Hero+Image" alt="Screenshot of the app interface" width="1200" height="800" srcset="https://via.placeholder.com/600x400.webp?text=Hero+Image 600w, https://via.placeholder.com/900x600.webp?text=Hero+Image 900w, https://via.placeholder.com/1200x800.webp?text=Hero+Image 1200w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px" loading="eager" fetchpriority="high" decoding="async">
+        </div>
+      </div>
+    </section>
+
+    <section class="partners" aria-labelledby="partners-title">
+      <div class="container partners__inner">
+        <h2 id="partners-title" class="section-title">Trusted by leading brands</h2>
+        <ul class="partners__grid" role="list">
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+          <li class="partners__item"><img src="https://via.placeholder.com/120x36?text=Logo" alt="Partner logo" width="120" height="36" loading="lazy" decoding="async"></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="features" class="features" aria-labelledby="features-title">
+      <div class="container features__inner">
+        <header class="section-header">
+          <h2 id="features-title" class="section-title">Everything you need to scale</h2>
+          <p class="section-subtitle">From AOV boosters to subscriptions, our apps are purpose-built for growth.</p>
+        </header>
+        <div class="features__grid">
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=🔁" alt="Upsell icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Smart Upsells</h3>
+            <p class="feature-card__text">Increase AOV with personalized post-purchase and in-cart offers.</p>
+          </article>
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=🔒" alt="Subscription icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Subscriptions</h3>
+            <p class="feature-card__text">Flexible billing cycles, trials, and dunning automation built-in.</p>
+          </article>
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=⚡" alt="Performance icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Blazing Performance</h3>
+            <p class="feature-card__text">Lightweight scripts and edge caching ensure fast storefronts.</p>
+          </article>
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=📊" alt="Analytics icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Actionable Analytics</h3>
+            <p class="feature-card__text">Understand cohort behavior and optimize with confidence.</p>
+          </article>
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=🛡️" alt="Security icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Enterprise-Grade</h3>
+            <p class="feature-card__text">SLA-backed support, SSO, and audit logs for peace of mind.</p>
+          </article>
+          <article class="feature-card">
+            <img class="feature-card__icon" src="https://via.placeholder.com/40?text=🧩" alt="Integrations icon" width="40" height="40" loading="lazy">
+            <h3 class="feature-card__title">Seamless Integrations</h3>
+            <p class="feature-card__text">Works with your favorite tools for marketing, shipping, and more.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="testimonials" class="testimonials" aria-labelledby="testimonials-title">
+      <div class="container testimonials__inner">
+        <header class="section-header">
+          <h2 id="testimonials-title" class="section-title">What customers say</h2>
+          <p class="section-subtitle">Loved by fast-growing Shopify brands</p>
+        </header>
+        <div class="testimonials__grid">
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“These apps boosted our AOV by 22% in two months.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <img class="testimonial-card__avatar" src="https://via.placeholder.com/48x48?text=👩" alt="Photo of Jane" width="48" height="48" loading="lazy" decoding="async">
+              <div class="testimonial-card__meta">
+                <span class="testimonial-card__name">Jane Cooper</span>
+                <span class="testimonial-card__role">CMO, Glow Skincare</span>
+              </div>
+            </figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“Implementation was a breeze and support is stellar.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <img class="testimonial-card__avatar" src="https://via.placeholder.com/48x48?text=👨" alt="Photo of Mark" width="48" height="48" loading="lazy" decoding="async">
+              <div class="testimonial-card__meta">
+                <span class="testimonial-card__name">Mark Diaz</span>
+                <span class="testimonial-card__role">Founder, Peak Gear</span>
+              </div>
+            </figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“Finally, apps that are fast, reliable, and easy to use.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <img class="testimonial-card__avatar" src="https://via.placeholder.com/48x48?text=👩" alt="Photo of Aisha" width="48" height="48" loading="lazy" decoding="async">
+              <div class="testimonial-card__meta">
+                <span class="testimonial-card__name">Aisha Khan</span>
+                <span class="testimonial-card__role">Ops Lead, Urban Pantry</span>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing" aria-labelledby="pricing-title">
+      <div class="container pricing__inner">
+        <header class="section-header">
+          <h2 id="pricing-title" class="section-title">Simple, transparent pricing</h2>
+          <p class="section-subtitle">Start free. Upgrade when you grow.</p>
+        </header>
+        <div class="pricing__grid">
+          <article class="plan-card">
+            <h3 class="plan-card__name">Starter</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">$</span>19<span class="plan-card__period">/mo</span></p>
+            <ul class="plan-card__features">
+              <li class="plan-card__feature">Basic upsells</li>
+              <li class="plan-card__feature">Email support</li>
+              <li class="plan-card__feature">Analytics dashboard</li>
+            </ul>
+            <a class="button button--block" href="#">Choose plan</a>
+          </article>
+          <article class="plan-card plan-card--featured" aria-label="Recommended plan">
+            <div class="plan-card__badge">Most popular</div>
+            <h3 class="plan-card__name">Growth</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">$</span>49<span class="plan-card__period">/mo</span></p>
+            <ul class="plan-card__features">
+              <li class="plan-card__feature">All Starter features</li>
+              <li class="plan-card__feature">Subscriptions</li>
+              <li class="plan-card__feature">Priority support</li>
+            </ul>
+            <a class="button button--block" href="#">Choose plan</a>
+          </article>
+          <article class="plan-card">
+            <h3 class="plan-card__name">Scale</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">$</span>129<span class="plan-card__period">/mo</span></p>
+            <ul class="plan-card__features">
+              <li class="plan-card__feature">All Growth features</li>
+              <li class="plan-card__feature">SSO and SAML</li>
+              <li class="plan-card__feature">Dedicated CSM</li>
+            </ul>
+            <a class="button button--block" href="#">Contact sales</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq" aria-labelledby="faq-title">
+      <div class="container faq__inner">
+        <header class="section-header">
+          <h2 id="faq-title" class="section-title">Frequently asked questions</h2>
+          <p class="section-subtitle">Everything you need to know</p>
+        </header>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__question">Is there a free trial?</summary>
+            <div class="faq-item__answer"><p>Yes, try any plan free for 14 days. Cancel anytime.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__question">Will this slow down my store?</summary>
+            <div class="faq-item__answer"><p>No, our scripts are optimized and loaded asynchronously.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__question">Do you offer support?</summary>
+            <div class="faq-item__answer"><p>24/7 email support on all plans. Priority SLAs on Growth and up.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="cta" class="cta" aria-labelledby="cta-title">
+      <div class="container cta__inner">
+        <h2 id="cta-title" class="cta__title">Ready to grow?</h2>
+        <p class="cta__subtitle">Install the app and start optimizing in minutes.</p>
+        <a class="button button--inverted" href="#">Get started free</a>
+      </div>
+    </section>
+  </main>
 
   <script>
     (function() {
