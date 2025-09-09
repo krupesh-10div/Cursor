@@ -3,7 +3,7 @@
 Dynamic landing page that adapts content based on search keywords using Perplexity and keywords-defined landing URLs (no WooCommerce dependency).
 
 ## Features
-- Shortcode: `[icart_dynamic_page]`
+- No page or shortcode needed; URLs map directly to a plugin template
 - Perplexity-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
 - Caching with transients
 - Admin settings for API key, model, brand tone, Figma link, cache TTL
@@ -18,7 +18,7 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
    - Set a cache TTL
    - Place product-specific keyword CSVs in `wp-content/plugins/icart-dynamic-landing/sample/keywords/` as `<product_key>.csv` (first column keywords)
    - Optional: upload your Landing Map CSV (see `sample/landing_map.csv`) to control slugs/metadata instead of auto-scan
-4. Add the shortcode `[icart_dynamic_page]` to a page that uses your landing layout.
+4. No shortcode needed; visit your keyword slugs directly.
 
 ## Keywords Upload
 - TXT: one keyword per line

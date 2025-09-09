@@ -35,8 +35,7 @@ function icart_dl_init() {
 		define('ICART_DL_TRANSIENT_PREFIX', 'icart_dl_');
 	}
 
-	// Register shortcode
-	ICartDL_Shortcode::register();
+	// Shortcode no longer required (direct routing)
 
 	// Admin settings page
 	if (is_admin()) {
@@ -56,14 +55,24 @@ function icart_dl_init() {
 
 	add_action('init', function(){
 		$opts = icart_dl_get_settings();
-		$landing_slug = isset($opts['landing_page_slug']) && $opts['landing_page_slug'] !== '' ? sanitize_title($opts['landing_page_slug']) : 'dynamic-landing';
 		$landing_map = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
 		foreach ($landing_map as $row) {
 			if (empty($row['slug'])) { continue; }
 			$slug = sanitize_title($row['slug']);
-			add_rewrite_rule('^' . $slug . '/?$', 'index.php?pagename=' . $landing_slug . '&icart_slug=' . $slug, 'top');
+			add_rewrite_rule('^' . $slug . '/?$', 'index.php?icart_slug=' . $slug, 'top');
 		}
 	});
+
+	// Route to plugin template when icart_slug is present
+	add_filter('template_include', function($template){
+		if (get_query_var('icart_slug')) {
+			$tpl = ICART_DL_PLUGIN_DIR . 'templates/landing.php';
+			if (file_exists($tpl)) {
+				return $tpl;
+			}
+		}
+		return $template;
+	}, 99);
 
 	// Flush rewrite rules if requested by settings update
 	add_action('init', function(){

@@ -38,8 +38,7 @@ class ICartDL_Settings {
 		add_settings_field('keywords_file_upload', __('Upload Keywords CSV to sample/keywords/', 'icart-dl'), array($this, 'field_keywords_file_upload'), $this->option_key, 'icart_dl_products');
 		add_settings_field('landing_upload', __('Upload Landing Map CSV (optional)', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
 
-		add_settings_section('icart_dl_routing', __('Routing', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('landing_page_slug', __('Landing Page Slug', 'icart-dl'), array($this, 'field_landing_page_slug'), $this->option_key, 'icart_dl_routing');
+		// Routing: landing page slug no longer required (direct template routing)
 	}
 
 	public function sanitize_settings($input) {
@@ -50,7 +49,7 @@ class ICartDL_Settings {
 		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
-		$output['landing_page_slug'] = isset($input['landing_page_slug']) ? sanitize_title_with_dashes($input['landing_page_slug']) : 'dynamic-landing';
+		// landing_page_slug removed
 
 		// Upload keywords CSV into sample/keywords/
 		if (!empty($_FILES['icart_dl_keywords_file']['name'])) {
@@ -211,13 +210,7 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_landing_page_slug() {
-		$opts = icart_dl_get_settings();
-		?>
-		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[landing_page_slug]" value="<?php echo esc_attr($opts['landing_page_slug'] ?? 'dynamic-landing'); ?>" class="regular-text" />
-		<p class="description">Create a page with this slug and add the shortcode [icart_dynamic_page]. All SEO URLs route here.</p>
-		<?php
-	}
+	// field_landing_page_slug removed
 }
 
 ?>
