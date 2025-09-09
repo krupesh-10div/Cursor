@@ -46,14 +46,29 @@ function icart_dl_init() {
 	// Register rewrite rules and query vars
 	add_filter('query_vars', function($vars){
 		$vars[] = 'icart_keywords';
+		$vars[] = 'icart_slug';
+		$vars[] = 'icart_product_key';
 		return $vars;
 	});
 
 	add_action('init', function(){
 		$opts = icart_dl_get_settings();
-		$base = isset($opts['base_path']) && $opts['base_path'] !== '' ? trim($opts['base_path'], '/') : 'solutions';
-		add_rewrite_rule($base . '/([^/]+)/?$', 'index.php?pagename=' . $base . '&icart_keywords=$matches[1]', 'top');
+		$landing_slug = isset($opts['landing_page_slug']) && $opts['landing_page_slug'] !== '' ? sanitize_title($opts['landing_page_slug']) : 'dynamic-landing';
+		$landing_map = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
+		foreach ($landing_map as $row) {
+			if (empty($row['slug'])) { continue; }
+			$slug = sanitize_title($row['slug']);
+			add_rewrite_rule('^' . $slug . '/?$', 'index.php?pagename=' . $landing_slug . '&icart_slug=' . $slug, 'top');
+		}
 	});
+
+	// Flush rewrite rules if requested by settings update
+	add_action('init', function(){
+		if (get_transient('icart_dl_flush_rewrite')) {
+			flush_rewrite_rules();
+			delete_transient('icart_dl_flush_rewrite');
+		}
+	}, 99);
 }
 add_action('plugins_loaded', 'icart_dl_init');
 

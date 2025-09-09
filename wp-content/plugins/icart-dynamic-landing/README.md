@@ -9,6 +9,7 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
 - Static products textarea in settings for always-on items
 - Caching with transients
 - Admin settings for API key, model, brand tone, Figma link, cache TTL, static products, and CSV upload
+ - Landing map CSV to create root-level SEO URLs that all route to a single landing page
 
 ## Installation
 1. Upload the `icart-dynamic-landing` folder to `wp-content/plugins/`.
@@ -19,6 +20,7 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
    - Set a cache TTL
    - Add static products (one per line) in the format `Title|URL|ImageURL|Price`
    - Upload your CSV keyword mapping (see `sample/icart_dynamic_keywords.csv`)
+   - Upload your Landing Map CSV (see `sample/landing_map.csv`) to create root-level SEO URLs
 4. Add the shortcode `[icart_dynamic_page]` to a page that uses your landing layout.
 
 ## CSV Format (non-WooCommerce)
@@ -34,11 +36,13 @@ Example rows in `sample/icart_dynamic_keywords.csv`.
 ## Query Parameters
 - `s` or `q` or `keywords` → user-entered search terms
  - Pretty URL: configure base path in settings, e.g., `solutions/best-boost-average-order-value-shopify-2025` → extracted keywords `best-boost-average-order-value-shopify-2025`
+ - Root SEO URLs from Landing Map: each `slug` becomes `/slug` and routes to your landing page
 
 ## Notes
 - If no API key is set, the plugin falls back to a sensible default copy.
 - If a CSV row matches, up to `limit` products are displayed from that row. Duplicates by URL are removed.
  - After changing the base path, go to Settings → Permalinks and click Save to flush.
+ - After uploading Landing Map CSV, permalinks are auto-flushed; if not, save permalinks manually.
 
 ## Figma
 Configure your Figma link in Settings for reference only.

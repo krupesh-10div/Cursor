@@ -17,6 +17,8 @@ class ICartDL_Shortcode {
 		$content = ICartDL_Content_Generator::generate($keywords);
 
 		$mapper = new ICartDL_Keyword_Mapper();
+		$landing = icart_dl_get_landing_entry();
+		$product_key = $landing['product_key'] ?? '';
 		$dynamic_products = $mapper->match_products($keywords, intval($atts['limit']));
 		$static_products = $mapper->get_static_products();
 
@@ -37,6 +39,9 @@ class ICartDL_Shortcode {
 				<header class="icart-dl__header">
 					<h1 class="icart-dl__title"><?php echo esc_html($content['heading']); ?></h1>
 					<p class="icart-dl__subtitle"><?php echo esc_html($content['subheading']); ?></p>
+					<?php if ($product_key): ?>
+						<div class="icart-dl__badge">For: <?php echo esc_html($product_key); ?></div>
+					<?php endif; ?>
 				</header>
 
 				<div class="icart-dl__explanation">
@@ -71,6 +76,14 @@ class ICartDL_Shortcode {
 					</div>
 				</section>
 				<?php endif; ?>
+
+				<?php
+				// Include product-specific section if present
+				$partial = ICART_DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title($product_key) . '.php';
+				if ($product_key && file_exists($partial)) {
+					include $partial;
+				}
+				?>
 
 				<?php if (!empty($static_products)): ?>
 				<section class="icart-dl__products icart-dl__products--static">
