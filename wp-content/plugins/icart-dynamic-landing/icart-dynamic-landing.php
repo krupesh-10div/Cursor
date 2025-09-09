@@ -59,7 +59,7 @@ function icart_dl_activate() {
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
 		'figma_url' => '',
 		'cache_ttl' => 3600,
-		'static_product_ids' => '',
+		'static_products' => '',
 		'mapping' => array(),
 	);
 	$options = get_option('icart_dl_settings', array());

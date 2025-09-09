@@ -18,15 +18,40 @@ class ICartDL_Keyword_Mapper {
 		return array_unique($parts);
 	}
 
-	public function match_products($keywords) {
-		$tokens = $this->tokenize($keywords);
-		$matched = array(
-			'product_ids' => array(),
-			'product_skus' => array(),
-			'product_tags' => array(),
-			'product_cats' => array(),
-		);
+	private function parse_products_from_row($row) {
+		$titles = isset($row['product_titles']) ? $row['product_titles'] : '';
+		$urls = isset($row['product_urls']) ? $row['product_urls'] : '';
+		$images = isset($row['product_images']) ? $row['product_images'] : '';
+		$prices = isset($row['product_prices']) ? $row['product_prices'] : '';
 
+		$title_list = array_filter(array_map('trim', explode('|', $titles)));
+		$url_list = array_filter(array_map('trim', explode('|', $urls)));
+		$image_list = array_filter(array_map('trim', explode('|', $images)));
+		$price_list = array_map('trim', explode('|', $prices));
+
+		$max = max(count($title_list), count($url_list), count($image_list), count($price_list));
+		$items = array();
+		for ($i = 0; $i < $max; $i++) {
+			$title = isset($title_list[$i]) ? $title_list[$i] : '';
+			$url = isset($url_list[$i]) ? $url_list[$i] : '';
+			$image = isset($image_list[$i]) ? $image_list[$i] : '';
+			$price = isset($price_list[$i]) ? $price_list[$i] : '';
+			if ($url === '') {
+				continue;
+			}
+			$items[] = array(
+				'title' => $title,
+				'url' => $url,
+				'image' => $image,
+				'price' => $price,
+			);
+		}
+		return $items;
+	}
+
+	public function match_products($keywords, $limit = 6) {
+		$tokens = $this->tokenize($keywords);
+		$products = array();
 		foreach ($this->mapping_rows as $row) {
 			$kw = isset($row['keywords']) ? strtolower($row['keywords']) : '';
 			if ($kw === '') {
@@ -37,7 +62,6 @@ class ICartDL_Keyword_Mapper {
 			if (empty($required)) {
 				continue;
 			}
-			// Check if all required tokens are present in tokens
 			$all_present = true;
 			foreach ($required as $r) {
 				if (!in_array(strtolower($r), $tokens, true)) {
@@ -48,103 +72,51 @@ class ICartDL_Keyword_Mapper {
 			if (!$all_present) {
 				continue;
 			}
-
-			if (!empty($row['product_ids'])) {
-				$ids = array_filter(array_map('absint', preg_split('/[\s,|]+/', $row['product_ids'])));
-				$matched['product_ids'] = array_merge($matched['product_ids'], $ids);
-			}
-			if (!empty($row['product_skus'])) {
-				$skus = array_filter(array_map('trim', preg_split('/[\s,|]+/', $row['product_skus'])));
-				$matched['product_skus'] = array_merge($matched['product_skus'], $skus);
-			}
-			if (!empty($row['product_tags'])) {
-				$tags = array_filter(array_map('trim', preg_split('/[\s,|]+/', $row['product_tags'])));
-				$matched['product_tags'] = array_merge($matched['product_tags'], $tags);
-			}
-			if (!empty($row['product_cats'])) {
-				$cats = array_filter(array_map('trim', preg_split('/[\s,|]+/', $row['product_cats'])));
-				$matched['product_cats'] = array_merge($matched['product_cats'], $cats);
+			$items = $this->parse_products_from_row($row);
+			$products = array_merge($products, $items);
+			if (count($products) >= $limit) {
+				break;
 			}
 		}
-
-		// Deduplicate
-		$matched['product_ids'] = array_values(array_unique($matched['product_ids']));
-		$matched['product_skus'] = array_values(array_unique($matched['product_skus']));
-		$matched['product_tags'] = array_values(array_unique($matched['product_tags']));
-		$matched['product_cats'] = array_values(array_unique($matched['product_cats']));
-
-		return $matched;
-	}
-
-	public function fetch_wc_products($match, $limit = 6) {
-		if (!class_exists('WC_Product') || !function_exists('wc_get_products')) {
-			return array();
-		}
-
-		$args = array(
-			'limit' => $limit,
-			'orderby' => 'date',
-			'order' => 'DESC',
-			'status' => 'publish',
-		);
-
-		$products = array();
-
-		// Fetch by IDs first
-		if (!empty($match['product_ids'])) {
-			$args_by_id = $args;
-			$args_by_id['include'] = $match['product_ids'];
-			$products = wc_get_products($args_by_id);
-		}
-
-		// Expand by SKU
-		if (count($products) < $limit && !empty($match['product_skus'])) {
-			$skus = $match['product_skus'];
-			$sku_products = array();
-			foreach ($skus as $sku) {
-				$id = wc_get_product_id_by_sku($sku);
-				if ($id) {
-					$p = wc_get_product($id);
-					if ($p) {
-						$sku_products[] = $p;
-					}
-				}
-			}
-			$products = array_merge($products, $sku_products);
-		}
-
-		// Expand by tags
-		if (count($products) < $limit && !empty($match['product_tags'])) {
-			$args_by_tag = $args;
-			$args_by_tag['tag'] = $match['product_tags'];
-			$tag_products = wc_get_products($args_by_tag);
-			$products = array_merge($products, $tag_products);
-		}
-
-		// Expand by categories
-		if (count($products) < $limit && !empty($match['product_cats'])) {
-			$args_by_cat = $args;
-			$args_by_cat['category'] = $match['product_cats'];
-			$cat_products = wc_get_products($args_by_cat);
-			$products = array_merge($products, $cat_products);
-		}
-
-		// Trim to limit and dedupe by ID
-		$by_id = array();
+		// Dedupe by URL
+		$seen = array();
 		$unique = array();
-		foreach ($products as $p) {
-			$pid = $p->get_id();
-			if (isset($by_id[$pid])) {
+		foreach ($products as $item) {
+			$key = md5($item['url']);
+			if (isset($seen[$key])) {
 				continue;
 			}
-			$by_id[$pid] = true;
-			$unique[] = $p;
+			$seen[$key] = true;
+			$unique[] = $item;
 			if (count($unique) >= $limit) {
 				break;
 			}
 		}
-
 		return $unique;
+	}
+
+	public function get_static_products() {
+		$settings = icart_dl_get_settings();
+		$static_raw = isset($settings['static_products']) ? $settings['static_products'] : '';
+		$lines = preg_split('/\r?\n/', $static_raw);
+		$items = array();
+		foreach ($lines as $line) {
+			$line = trim($line);
+			if ($line === '') { continue; }
+			$parts = explode('|', $line);
+			$title = isset($parts[0]) ? trim($parts[0]) : '';
+			$url = isset($parts[1]) ? trim($parts[1]) : '';
+			$image = isset($parts[2]) ? trim($parts[2]) : '';
+			$price = isset($parts[3]) ? trim($parts[3]) : '';
+			if ($url === '') { continue; }
+			$items[] = array(
+				'title' => $title,
+				'url' => $url,
+				'image' => $image,
+				'price' => $price,
+			);
+		}
+		return $items;
 	}
 }
 

@@ -17,19 +17,8 @@ class ICartDL_Shortcode {
 		$content = ICartDL_Content_Generator::generate($keywords);
 
 		$mapper = new ICartDL_Keyword_Mapper();
-		$match = $mapper->match_products($keywords);
-		$wc_products = $mapper->fetch_wc_products($match, intval($atts['limit']));
-
-		$settings = icart_dl_get_settings();
-		$static_ids = array_filter(array_map('absint', preg_split('/[\s,|]+/', $settings['static_product_ids'] ?? '')));
-		$static_products = array();
-		if (!empty($static_ids) && function_exists('wc_get_products')) {
-			$static_products = wc_get_products(array(
-				'include' => $static_ids,
-				'limit' => count($static_ids),
-				'orderby' => 'include',
-			));
-		}
+		$dynamic_products = $mapper->match_products($keywords, intval($atts['limit']));
+		$static_products = $mapper->get_static_products();
 
 		ob_start();
 		?>
@@ -47,22 +36,25 @@ class ICartDL_Shortcode {
 					<?php endif; ?>
 				</div>
 
-				<?php if (!empty($wc_products)): ?>
+				<?php if (!empty($dynamic_products)): ?>
 				<section id="icart-dl-dynamic" class="icart-dl__products">
 					<h2 class="icart-dl__section-title">Recommended for you</h2>
 					<div class="icart-dl__grid">
-						<?php foreach ($wc_products as $product): ?>
-							<?php /** @var WC_Product $product */ ?>
+						<?php foreach ($dynamic_products as $item): ?>
 							<article class="icart-dl__card">
-								<a href="<?php echo esc_url(get_permalink($product->get_id())); ?>" class="icart-dl__image">
-									<?php echo $product->get_image('woocommerce_thumbnail'); ?>
+								<a href="<?php echo esc_url($item['url']); ?>" class="icart-dl__image">
+									<?php if (!empty($item['image'])): ?>
+										<img src="<?php echo esc_url($item['image']); ?>" alt="<?php echo esc_attr($item['title']); ?>" />
+									<?php endif; ?>
 								</a>
 								<div class="icart-dl__card-content">
 									<h3 class="icart-dl__product-title">
-										<a href="<?php echo esc_url(get_permalink($product->get_id())); ?>"><?php echo esc_html($product->get_name()); ?></a>
+										<a href="<?php echo esc_url($item['url']); ?>"><?php echo esc_html($item['title']); ?></a>
 									</h3>
-									<div class="icart-dl__price"><?php echo wp_kses_post($product->get_price_html()); ?></div>
-									<a class="button add_to_cart_button" href="<?php echo esc_url('?add-to-cart=' . $product->get_id()); ?>">Add to cart</a>
+									<?php if (!empty($item['price'])): ?>
+										<div class="icart-dl__price"><?php echo esc_html($item['price']); ?></div>
+									<?php endif; ?>
+									<a class="button" href="<?php echo esc_url($item['url']); ?>">View</a>
 								</div>
 							</article>
 						<?php endforeach; ?>
@@ -74,18 +66,21 @@ class ICartDL_Shortcode {
 				<section class="icart-dl__products icart-dl__products--static">
 					<h2 class="icart-dl__section-title">Popular choices</h2>
 					<div class="icart-dl__grid">
-						<?php foreach ($static_products as $product): ?>
-							<?php /** @var WC_Product $product */ ?>
+						<?php foreach ($static_products as $item): ?>
 							<article class="icart-dl__card">
-								<a href="<?php echo esc_url(get_permalink($product->get_id())); ?>" class="icart-dl__image">
-									<?php echo $product->get_image('woocommerce_thumbnail'); ?>
+								<a href="<?php echo esc_url($item['url']); ?>" class="icart-dl__image">
+									<?php if (!empty($item['image'])): ?>
+										<img src="<?php echo esc_url($item['image']); ?>" alt="<?php echo esc_attr($item['title']); ?>" />
+									<?php endif; ?>
 								</a>
 								<div class="icart-dl__card-content">
 									<h3 class="icart-dl__product-title">
-										<a href="<?php echo esc_url(get_permalink($product->get_id())); ?>"><?php echo esc_html($product->get_name()); ?></a>
+										<a href="<?php echo esc_url($item['url']); ?>"><?php echo esc_html($item['title']); ?></a>
 									</h3>
-									<div class="icart-dl__price"><?php echo wp_kses_post($product->get_price_html()); ?></div>
-									<a class="button add_to_cart_button" href="<?php echo esc_url('?add-to-cart=' . $product->get_id()); ?>">Add to cart</a>
+									<?php if (!empty($item['price'])): ?>
+										<div class="icart-dl__price"><?php echo esc_html($item['price']); ?></div>
+									<?php endif; ?>
+									<a class="button" href="<?php echo esc_url($item['url']); ?>">View</a>
 								</div>
 							</article>
 						<?php endforeach; ?>

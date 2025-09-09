@@ -34,7 +34,7 @@ class ICartDL_Settings {
 		add_settings_field('cache_ttl', __('Cache TTL (seconds)', 'icart-dl'), array($this, 'field_cache_ttl'), $this->option_key, 'icart_dl_brand');
 
 		add_settings_section('icart_dl_products', __('Products & Mapping', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('static_product_ids', __('Static Product IDs', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
+		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
 		add_settings_field('mapping_upload', __('Upload Keyword Mapping CSV', 'icart-dl'), array($this, 'field_mapping_upload'), $this->option_key, 'icart_dl_products');
 	}
 
@@ -45,7 +45,7 @@ class ICartDL_Settings {
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
-		$output['static_product_ids'] = isset($input['static_product_ids']) ? sanitize_text_field($input['static_product_ids']) : '';
+		$output['static_products'] = isset($input['static_products']) ? wp_kses_post($input['static_products']) : '';
 
 		// Handle CSV upload
 		if (!empty($_FILES['icart_dl_mapping_csv']['name'])) {
@@ -80,7 +80,7 @@ class ICartDL_Settings {
 				foreach ($headers as $i => $header) {
 					$item[$header] = isset($data[$i]) ? trim($data[$i]) : '';
 				}
-				// Expected headers: keywords, product_ids, product_skus, product_tags, product_cats
+				// Expected headers (non-WooCommerce): keywords, product_titles, product_urls, product_images, product_prices
 				if (!empty($item)) {
 					$rows[] = $item;
 				}
@@ -159,15 +159,15 @@ class ICartDL_Settings {
 	public function field_static_products() {
 		$opts = icart_dl_get_settings();
 		?>
-		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[static_product_ids]" value="<?php echo esc_attr($opts['static_product_ids'] ?? ''); ?>" class="regular-text" />
-		<p class="description">Comma-separated WooCommerce product IDs to always show in the static section.</p>
+		<textarea name="<?php echo esc_attr($this->option_key); ?>[static_products]" rows="6" class="large-text" placeholder="Title|https://example.com|https://example.com/image.jpg|$19.00\n..."><?php echo esc_textarea($opts['static_products'] ?? ''); ?></textarea>
+		<p class="description">One product per line: Title|URL|ImageURL|Price (Price optional).</p>
 		<?php
 	}
 
 	public function field_mapping_upload() {
 		?>
 		<input type="file" name="icart_dl_mapping_csv" accept=".csv" />
-		<p class="description">Upload CSV with columns: keywords, product_ids, product_skus, product_tags, product_cats</p>
+		<p class="description">Upload CSV with columns: keywords, product_titles, product_urls, product_images, product_prices. Use | as item delimiter in each column.</p>
 		<?php
 	}
 }
