@@ -37,6 +37,11 @@ class ICartDL_Settings {
 		add_settings_section('icart_dl_products', __('Products & Mapping', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
 		add_settings_field('mapping_upload', __('Upload Keyword Mapping CSV', 'icart-dl'), array($this, 'field_mapping_upload'), $this->option_key, 'icart_dl_products');
+
+		add_settings_field('landing_upload', __('Upload Landing Map CSV', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
+
+		add_settings_section('icart_dl_routing', __('Routing', 'icart-dl'), '__return_false', $this->option_key);
+		add_settings_field('landing_page_slug', __('Landing Page Slug', 'icart-dl'), array($this, 'field_landing_page_slug'), $this->option_key, 'icart_dl_routing');
 	}
 
 	public function sanitize_settings($input) {
@@ -48,8 +53,9 @@ class ICartDL_Settings {
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		$output['static_products'] = isset($input['static_products']) ? wp_kses_post($input['static_products']) : '';
 		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
+		$output['landing_page_slug'] = isset($input['landing_page_slug']) ? sanitize_title_with_dashes($input['landing_page_slug']) : 'dynamic-landing';
 
-		// Handle CSV upload
+		// Handle CSV upload (product mapping)
 		if (!empty($_FILES['icart_dl_mapping_csv']['name'])) {
 			check_admin_referer($this->option_key . '-options');
 			$uploaded = wp_handle_upload($_FILES['icart_dl_mapping_csv'], array('test_form' => false));
@@ -57,6 +63,19 @@ class ICartDL_Settings {
 				$parsed = $this->parse_csv($uploaded['file']);
 				if (is_array($parsed)) {
 					$output['mapping'] = $parsed;
+				}
+			}
+		}
+
+		// Handle CSV upload (landing map)
+		if (!empty($_FILES['icart_dl_landing_csv']['name'])) {
+			check_admin_referer($this->option_key . '-options');
+			$uploaded = wp_handle_upload($_FILES['icart_dl_landing_csv'], array('test_form' => false));
+			if (!isset($uploaded['error'])) {
+				$parsed = $this->parse_csv($uploaded['file']);
+				if (is_array($parsed)) {
+					$output['landing_map'] = $parsed;
+					set_transient('icart_dl_flush_rewrite', 1, 60);
 				}
 			}
 		}
@@ -178,6 +197,21 @@ class ICartDL_Settings {
 		?>
 		<input type="file" name="icart_dl_mapping_csv" accept=".csv" />
 		<p class="description">Upload CSV with columns: keywords, product_titles, product_urls, product_images, product_prices. Use | as item delimiter in each column.</p>
+		<?php
+	}
+
+	public function field_landing_upload() {
+		?>
+		<input type="file" name="icart_dl_landing_csv" accept=".csv" />
+		<p class="description">Upload Landing Map CSV with columns: slug, keywords, product_key, title, description. Each row becomes a root-level SEO URL.</p>
+		<?php
+	}
+
+	public function field_landing_page_slug() {
+		$opts = icart_dl_get_settings();
+		?>
+		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[landing_page_slug]" value="<?php echo esc_attr($opts['landing_page_slug'] ?? 'dynamic-landing'); ?>" class="regular-text" />
+		<p class="description">Create a page with this slug and add the shortcode [icart_dynamic_page]. All SEO URLs route here.</p>
 		<?php
 	}
 }

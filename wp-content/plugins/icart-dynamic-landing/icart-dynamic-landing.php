@@ -88,6 +88,8 @@ function icart_dl_activate() {
 		'cache_ttl' => 3600,
 		'static_products' => '',
 		'mapping' => array(),
+		'landing_map' => array(),
+		'landing_page_slug' => 'dynamic-landing',
 		'base_path' => 'solutions',
 	);
 	$options = get_option('icart_dl_settings', array());
