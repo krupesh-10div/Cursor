@@ -19,7 +19,7 @@ class ICartDL_Shortcode {
 		$mapper = new ICartDL_Keyword_Mapper();
 		$landing = icart_dl_get_landing_entry();
 		$product_key = $landing['product_key'] ?? '';
-		$dynamic_products = $mapper->match_products($keywords, intval($atts['limit']));
+		$dynamic_products = array();
 		$static_products = $mapper->get_static_products();
 
 		ob_start();

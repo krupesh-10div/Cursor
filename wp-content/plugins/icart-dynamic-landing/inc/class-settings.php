@@ -34,10 +34,9 @@ class ICartDL_Settings {
 		add_settings_field('cache_ttl', __('Cache TTL (seconds)', 'icart-dl'), array($this, 'field_cache_ttl'), $this->option_key, 'icart_dl_brand');
 		add_settings_field('base_path', __('Landing Base Path', 'icart-dl'), array($this, 'field_base_path'), $this->option_key, 'icart_dl_brand');
 
-		add_settings_section('icart_dl_products', __('Products & Mapping', 'icart-dl'), '__return_false', $this->option_key);
+		add_settings_section('icart_dl_products', __('Keywords & Landing', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
-		add_settings_field('mapping_upload', __('Upload Keyword Mapping CSV', 'icart-dl'), array($this, 'field_mapping_upload'), $this->option_key, 'icart_dl_products');
-
+		add_settings_field('keywords_upload', __('Upload Keywords (TXT/CSV)', 'icart-dl'), array($this, 'field_keywords_upload'), $this->option_key, 'icart_dl_products');
 		add_settings_field('landing_upload', __('Upload Landing Map CSV', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
 
 		add_settings_section('icart_dl_routing', __('Routing', 'icart-dl'), '__return_false', $this->option_key);
@@ -55,14 +54,27 @@ class ICartDL_Settings {
 		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
 		$output['landing_page_slug'] = isset($input['landing_page_slug']) ? sanitize_title_with_dashes($input['landing_page_slug']) : 'dynamic-landing';
 
-		// Handle CSV upload (product mapping)
-		if (!empty($_FILES['icart_dl_mapping_csv']['name'])) {
+		// Handle keywords upload (TXT/CSV first column)
+		if (!empty($_FILES['icart_dl_keywords']['name'])) {
 			check_admin_referer($this->option_key . '-options');
-			$uploaded = wp_handle_upload($_FILES['icart_dl_mapping_csv'], array('test_form' => false));
+			$uploaded = wp_handle_upload($_FILES['icart_dl_keywords'], array('test_form' => false));
 			if (!isset($uploaded['error'])) {
-				$parsed = $this->parse_csv($uploaded['file']);
-				if (is_array($parsed)) {
-					$output['mapping'] = $parsed;
+				$list = $this->parse_keywords_file($uploaded['file']);
+				if (!empty($list)) {
+					$product_key_for_upload = isset($input['keywords_upload_product_key']) ? sanitize_title($input['keywords_upload_product_key']) : '';
+					$map = array();
+					foreach ($list as $kw) {
+						$slug = sanitize_title($kw);
+						$map[] = array(
+							'slug' => $slug,
+							'keywords' => $kw,
+							'product_key' => $product_key_for_upload,
+							'title' => '',
+							'description' => '',
+						);
+					}
+					$output['landing_map'] = $map;
+					set_transient('icart_dl_flush_rewrite', 1, 60);
 				}
 			}
 		}
@@ -101,7 +113,7 @@ class ICartDL_Settings {
 				foreach ($headers as $i => $header) {
 					$item[$header] = isset($data[$i]) ? trim($data[$i]) : '';
 				}
-				// Expected headers (non-WooCommerce): keywords, product_titles, product_urls, product_images, product_prices
+				// Expected headers for landing map: slug, keywords, product_key, title, description
 				if (!empty($item)) {
 					$rows[] = $item;
 				}
@@ -109,6 +121,28 @@ class ICartDL_Settings {
 			fclose($handle);
 		}
 		return $rows;
+	}
+
+	private function parse_keywords_file($filepath) {
+		$ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
+		$keywords = array();
+		if ($ext === 'txt') {
+			$lines = file($filepath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			foreach ($lines as $line) {
+				$kw = trim($line);
+				if ($kw !== '') { $keywords[] = $kw; }
+			}
+		} else {
+			if (($handle = fopen($filepath, 'r')) !== false) {
+				while (($data = fgetcsv($handle)) !== false) {
+					if (!empty($data[0])) {
+						$keywords[] = trim($data[0]);
+					}
+				}
+				fclose($handle);
+			}
+		}
+		return array_values(array_unique($keywords));
 	}
 
 	public function render_settings_page() {
@@ -188,15 +222,19 @@ class ICartDL_Settings {
 	public function field_static_products() {
 		$opts = icart_dl_get_settings();
 		?>
-		<textarea name="<?php echo esc_attr($this->option_key); ?>[static_products]" rows="6" class="large-text" placeholder="Title|https://example.com|https://example.com/image.jpg|$19.00\n..."><?php echo esc_textarea($opts['static_products'] ?? ''); ?></textarea>
+		<textarea name="<?php echo esc_attr($this->option_key); ?>[static_products]" rows="6" class="large-text" placeholder="Title|https://example.com|https://example.com/image.jpg|$19.00
+...">&lt;?php echo esc_textarea($opts['static_products'] ?? ''); ?&gt;</textarea>
 		<p class="description">One product per line: Title|URL|ImageURL|Price (Price optional).</p>
 		<?php
 	}
 
-	public function field_mapping_upload() {
+	public function field_keywords_upload() {
 		?>
-		<input type="file" name="icart_dl_mapping_csv" accept=".csv" />
-		<p class="description">Upload CSV with columns: keywords, product_titles, product_urls, product_images, product_prices. Use | as item delimiter in each column.</p>
+		<input type="file" name="icart_dl_keywords" accept=".txt,.csv" />
+		<p class="description">Upload TXT (one keyword per line) or CSV (first column keywords). Slugs and routes are auto-generated.</p>
+		<br />
+		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[keywords_upload_product_key]" value="" class="regular-text" placeholder="Optional product key, e.g., icart" />
+		<p class="description">Optional: assign a product key to all uploaded keywords for product-specific partials.</p>
 		<?php
 	}
 
