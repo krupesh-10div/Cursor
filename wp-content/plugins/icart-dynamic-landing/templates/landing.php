@@ -76,20 +76,6 @@ get_header();
 ?>
 <main class="icart-dl">
 	<div class="icart-dl__container">
-		<header class="icart-dl__header">
-			<h1 class="icart-dl__title"><?php echo esc_html($content['heading']); ?></h1>
-			<p class="icart-dl__subtitle"><?php echo esc_html($content['subheading']); ?></p>
-			<?php if ($product_key): ?>
-				<div class="icart-dl__badge">For: <?php echo esc_html($product_key); ?></div>
-			<?php endif; ?>
-		</header>
-
-		<div class="icart-dl__explanation">
-			<p><?php echo wp_kses_post($content['explanation']); ?></p>
-			<?php if (!empty($content['cta'])): ?>
-				<a href="#icart-dl-dynamic" class="icart-dl__cta button"><?php echo esc_html($content['cta']); ?></a>
-			<?php endif; ?>
-		</div>
 
 		<?php
 		$partial = ICART_DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title($product_key) . '.php';
