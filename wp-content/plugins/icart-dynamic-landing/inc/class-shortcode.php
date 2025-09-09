@@ -21,6 +21,16 @@ class ICartDL_Shortcode {
 		$static_products = $mapper->get_static_products();
 
 		ob_start();
+
+		// Inject dynamic SEO metas
+		add_filter('pre_get_document_title', function($title) use ($content, $keywords) {
+			$k = $keywords ? ' | ' . sanitize_text_field($keywords) : '';
+			return $content['heading'] . $k;
+		}, 20);
+		add_action('wp_head', function() use ($content) {
+			$desc = wp_strip_all_tags($content['explanation']);
+			echo '<meta name="description" content="' . esc_attr($desc) . '" />';
+		}, 1);
 		?>
 		<section class="icart-dl">
 			<div class="icart-dl__container">

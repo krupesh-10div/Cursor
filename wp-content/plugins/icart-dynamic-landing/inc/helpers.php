@@ -15,6 +15,8 @@ function icart_dl_get_search_keywords() {
 		$keywords = sanitize_text_field(wp_unslash($_GET['q']));
 	} elseif (!empty($_GET['keywords'])) {
 		$keywords = sanitize_text_field(wp_unslash($_GET['keywords']));
+	} elseif (get_query_var('icart_keywords')) {
+		$keywords = sanitize_text_field(get_query_var('icart_keywords'));
 	}
 	return trim($keywords);
 }

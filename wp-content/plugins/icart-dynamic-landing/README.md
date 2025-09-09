@@ -33,10 +33,12 @@ Example rows in `sample/icart_dynamic_keywords.csv`.
 
 ## Query Parameters
 - `s` or `q` or `keywords` → user-entered search terms
+ - Pretty URL: configure base path in settings, e.g., `solutions/best-boost-average-order-value-shopify-2025` → extracted keywords `best-boost-average-order-value-shopify-2025`
 
 ## Notes
 - If no API key is set, the plugin falls back to a sensible default copy.
 - If a CSV row matches, up to `limit` products are displayed from that row. Duplicates by URL are removed.
+ - After changing the base path, go to Settings → Permalinks and click Save to flush.
 
 ## Figma
 Configure your Figma link in Settings for reference only.

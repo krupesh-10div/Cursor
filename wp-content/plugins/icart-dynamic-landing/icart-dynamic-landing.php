@@ -42,6 +42,18 @@ function icart_dl_init() {
 	if (is_admin()) {
 		new ICartDL_Settings();
 	}
+
+	// Register rewrite rules and query vars
+	add_filter('query_vars', function($vars){
+		$vars[] = 'icart_keywords';
+		return $vars;
+	});
+
+	add_action('init', function(){
+		$opts = icart_dl_get_settings();
+		$base = isset($opts['base_path']) && $opts['base_path'] !== '' ? trim($opts['base_path'], '/') : 'solutions';
+		add_rewrite_rule($base . '/([^/]+)/?$', 'index.php?pagename=' . $base . '&icart_keywords=$matches[1]', 'top');
+	});
 }
 add_action('plugins_loaded', 'icart_dl_init');
 
@@ -61,11 +73,18 @@ function icart_dl_activate() {
 		'cache_ttl' => 3600,
 		'static_products' => '',
 		'mapping' => array(),
+		'base_path' => 'solutions',
 	);
 	$options = get_option('icart_dl_settings', array());
 	update_option('icart_dl_settings', wp_parse_args($options, $defaults));
+	flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'icart_dl_activate');
+
+function icart_dl_deactivate() {
+	flush_rewrite_rules();
+}
+register_deactivation_hook(__FILE__, 'icart_dl_deactivate');
 
 ?>
 

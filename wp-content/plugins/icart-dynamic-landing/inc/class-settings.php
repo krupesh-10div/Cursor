@@ -32,6 +32,7 @@ class ICartDL_Settings {
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
 		add_settings_field('figma_url', __('Figma Link', 'icart-dl'), array($this, 'field_figma'), $this->option_key, 'icart_dl_brand');
 		add_settings_field('cache_ttl', __('Cache TTL (seconds)', 'icart-dl'), array($this, 'field_cache_ttl'), $this->option_key, 'icart_dl_brand');
+		add_settings_field('base_path', __('Landing Base Path', 'icart-dl'), array($this, 'field_base_path'), $this->option_key, 'icart_dl_brand');
 
 		add_settings_section('icart_dl_products', __('Products & Mapping', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
@@ -46,6 +47,7 @@ class ICartDL_Settings {
 		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		$output['static_products'] = isset($input['static_products']) ? wp_kses_post($input['static_products']) : '';
+		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
 
 		// Handle CSV upload
 		if (!empty($_FILES['icart_dl_mapping_csv']['name'])) {
@@ -153,6 +155,14 @@ class ICartDL_Settings {
 		?>
 		<input type="number" min="60" step="60" name="<?php echo esc_attr($this->option_key); ?>[cache_ttl]" value="<?php echo esc_attr($opts['cache_ttl'] ?? 3600); ?>" />
 		<p class="description">How long to cache generated content (seconds). Minimum 60.</p>
+		<?php
+	}
+
+	public function field_base_path() {
+		$opts = icart_dl_get_settings();
+		?>
+		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[base_path]" value="<?php echo esc_attr($opts['base_path'] ?? 'solutions'); ?>" class="regular-text" />
+		<p class="description">Base slug for pretty URLs, e.g., solutions/best-boost-average-order-value-shopify-2025. Save permalinks after changing.</p>
 		<?php
 	}
 
