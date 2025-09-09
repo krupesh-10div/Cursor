@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: iCart Dynamic Landing
-Description: Dynamic landing page that adapts to user search keywords with GPT-generated content and WooCommerce product recommendations.
+Description: Dynamic landing page that adapts to user search keywords with Perplexity-generated content and CSV-based product recommendations.
 Version: 1.0.0
 Author: Identixweb
 */
@@ -54,8 +54,8 @@ add_action('wp_enqueue_scripts', 'icart_dl_enqueue_assets');
 // Activation hook to ensure default options
 function icart_dl_activate() {
 	$defaults = array(
-		'api_key' => '',
-		'model' => 'gpt-4o-mini',
+		'perplexity_api_key' => '',
+		'perplexity_model' => 'sonar-pro',
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
 		'figma_url' => '',
 		'cache_ttl' => 3600,

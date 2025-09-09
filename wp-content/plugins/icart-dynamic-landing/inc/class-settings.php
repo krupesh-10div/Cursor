@@ -24,9 +24,9 @@ class ICartDL_Settings {
 	public function register_settings() {
 		register_setting($this->option_key, $this->option_key, array($this, 'sanitize_settings'));
 
-		add_settings_section('icart_dl_api', __('OpenAI Settings', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('api_key', __('API Key', 'icart-dl'), array($this, 'field_api_key'), $this->option_key, 'icart_dl_api');
-		add_settings_field('model', __('Model', 'icart-dl'), array($this, 'field_model'), $this->option_key, 'icart_dl_api');
+		add_settings_section('icart_dl_api', __('Perplexity Settings', 'icart-dl'), '__return_false', $this->option_key);
+		add_settings_field('perplexity_api_key', __('API Key', 'icart-dl'), array($this, 'field_api_key'), $this->option_key, 'icart_dl_api');
+		add_settings_field('perplexity_model', __('Model', 'icart-dl'), array($this, 'field_model'), $this->option_key, 'icart_dl_api');
 
 		add_settings_section('icart_dl_brand', __('Branding & Behavior', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
@@ -40,8 +40,8 @@ class ICartDL_Settings {
 
 	public function sanitize_settings($input) {
 		$output = icart_dl_get_settings();
-		$output['api_key'] = isset($input['api_key']) ? sanitize_text_field($input['api_key']) : '';
-		$output['model'] = isset($input['model']) ? sanitize_text_field($input['model']) : 'gpt-4o-mini';
+		$output['perplexity_api_key'] = isset($input['perplexity_api_key']) ? sanitize_text_field($input['perplexity_api_key']) : '';
+		$output['perplexity_model'] = isset($input['perplexity_model']) ? sanitize_text_field($input['perplexity_model']) : 'sonar-pro';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
@@ -115,17 +115,17 @@ class ICartDL_Settings {
 	public function field_api_key() {
 		$opts = icart_dl_get_settings();
 		?>
-		<input type="password" name="<?php echo esc_attr($this->option_key); ?>[api_key]" value="<?php echo esc_attr($opts['api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
-		<p class="description">Store your OpenAI API key securely here.</p>
+		<input type="password" name="<?php echo esc_attr($this->option_key); ?>[perplexity_api_key]" value="<?php echo esc_attr($opts['perplexity_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+		<p class="description">Store your Perplexity API key securely here.</p>
 		<?php
 	}
 
 	public function field_model() {
 		$opts = icart_dl_get_settings();
-		$model = $opts['model'] ?? 'gpt-4o-mini';
+		$model = $opts['perplexity_model'] ?? 'sonar-pro';
 		?>
-		<select name="<?php echo esc_attr($this->option_key); ?>[model]">
-			<?php foreach (array('gpt-4o-mini','gpt-4o','gpt-4.1-mini','gpt-4.1') as $m): ?>
+		<select name="<?php echo esc_attr($this->option_key); ?>[perplexity_model]">
+			<?php foreach (array('sonar-pro','sonar-medium','sonar-small') as $m): ?>
 				<option value="<?php echo esc_attr($m); ?>" <?php selected($model, $m); ?>><?php echo esc_html($m); ?></option>
 			<?php endforeach; ?>
 		</select>

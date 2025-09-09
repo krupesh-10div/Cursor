@@ -1,10 +1,10 @@
 # iCart Dynamic Landing
 
-Dynamic landing page that adapts content based on search keywords using GPT and CSV-defined product entries (no WooCommerce dependency).
+Dynamic landing page that adapts content based on search keywords using Perplexity and CSV-defined product entries (no WooCommerce dependency).
 
 ## Features
 - Shortcode: `[icart_dynamic_page]`
-- GPT-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
+- Perplexity-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
 - CSV-driven keyword → product mapping with columns for titles, URLs, images, and prices
 - Static products textarea in settings for always-on items
 - Caching with transients
@@ -14,7 +14,7 @@ Dynamic landing page that adapts content based on search keywords using GPT and 
 1. Upload the `icart-dynamic-landing` folder to `wp-content/plugins/`.
 2. Activate the plugin in WordPress admin.
 3. Go to Settings → iCart Dynamic Landing and:
-   - Enter your OpenAI API key and choose a model
+   - Enter your Perplexity API key and choose a model
    - Set your brand tone and optional Figma link reference
    - Set a cache TTL
    - Add static products (one per line) in the format `Title|URL|ImageURL|Price`

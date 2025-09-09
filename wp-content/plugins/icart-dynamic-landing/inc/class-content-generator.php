@@ -7,14 +7,14 @@ class ICartDL_Content_Generator {
 	public static function generate($keywords) {
 		$settings = icart_dl_get_settings();
 		$cache_ttl = isset($settings['cache_ttl']) ? intval($settings['cache_ttl']) : 3600;
-		$transient_key = icart_dl_build_transient_key('gpt', $keywords);
+		$transient_key = icart_dl_build_transient_key('perplexity', $keywords);
 		$cached = get_transient($transient_key);
 		if ($cached) {
 			return $cached;
 		}
 
-		$api_key = $settings['api_key'] ?? '';
-		$model = $settings['model'] ?? 'gpt-4o-mini';
+		$api_key = $settings['perplexity_api_key'] ?? '';
+		$model = $settings['perplexity_model'] ?? 'sonar-pro';
 		$brand_tone = $settings['brand_tone'] ?? '';
 
 		if (empty($api_key)) {
@@ -58,7 +58,7 @@ class ICartDL_Content_Generator {
 			'timeout' => 20,
 		);
 
-		$response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
+		$response = wp_remote_post('https://api.perplexity.ai/chat/completions', $args);
 		$result = self::fallback($keywords);
 		if (!is_wp_error($response)) {
 			$code = wp_remote_retrieve_response_code($response);
