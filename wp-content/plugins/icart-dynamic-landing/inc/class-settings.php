@@ -36,8 +36,7 @@ class ICartDL_Settings {
 
 		add_settings_section('icart_dl_products', __('Keywords & Landing', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
-		add_settings_field('keywords_upload', __('Upload Keywords (TXT/CSV)', 'icart-dl'), array($this, 'field_keywords_upload'), $this->option_key, 'icart_dl_products');
-		add_settings_field('landing_upload', __('Upload Landing Map CSV', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
+		add_settings_field('landing_upload', __('Upload Landing Map CSV (optional)', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
 
 		add_settings_section('icart_dl_routing', __('Routing', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('landing_page_slug', __('Landing Page Slug', 'icart-dl'), array($this, 'field_landing_page_slug'), $this->option_key, 'icart_dl_routing');
@@ -54,30 +53,7 @@ class ICartDL_Settings {
 		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
 		$output['landing_page_slug'] = isset($input['landing_page_slug']) ? sanitize_title_with_dashes($input['landing_page_slug']) : 'dynamic-landing';
 
-		// Handle keywords upload (TXT/CSV first column)
-		if (!empty($_FILES['icart_dl_keywords']['name'])) {
-			check_admin_referer($this->option_key . '-options');
-			$uploaded = wp_handle_upload($_FILES['icart_dl_keywords'], array('test_form' => false));
-			if (!isset($uploaded['error'])) {
-				$list = $this->parse_keywords_file($uploaded['file']);
-				if (!empty($list)) {
-					$product_key_for_upload = isset($input['keywords_upload_product_key']) ? sanitize_title($input['keywords_upload_product_key']) : '';
-					$map = array();
-					foreach ($list as $kw) {
-						$slug = sanitize_title($kw);
-						$map[] = array(
-							'slug' => $slug,
-							'keywords' => $kw,
-							'product_key' => $product_key_for_upload,
-							'title' => '',
-							'description' => '',
-						);
-					}
-					$output['landing_map'] = $map;
-					set_transient('icart_dl_flush_rewrite', 1, 60);
-				}
-			}
-		}
+		// Removed direct keywords upload; plugin now auto-scans sample/keywords/*.csv
 
 		// Handle CSV upload (landing map)
 		if (!empty($_FILES['icart_dl_landing_csv']['name'])) {
@@ -123,27 +99,7 @@ class ICartDL_Settings {
 		return $rows;
 	}
 
-	private function parse_keywords_file($filepath) {
-		$ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
-		$keywords = array();
-		if ($ext === 'txt') {
-			$lines = file($filepath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-			foreach ($lines as $line) {
-				$kw = trim($line);
-				if ($kw !== '') { $keywords[] = $kw; }
-			}
-		} else {
-			if (($handle = fopen($filepath, 'r')) !== false) {
-				while (($data = fgetcsv($handle)) !== false) {
-					if (!empty($data[0])) {
-						$keywords[] = trim($data[0]);
-					}
-				}
-				fclose($handle);
-			}
-		}
-		return array_values(array_unique($keywords));
-	}
+	// Removed parse_keywords_file (auto-scan is used instead)
 
 	public function render_settings_page() {
 		if (!current_user_can('manage_options')) {
@@ -228,15 +184,7 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_keywords_upload() {
-		?>
-		<input type="file" name="icart_dl_keywords" accept=".txt,.csv" />
-		<p class="description">Upload TXT (one keyword per line) or CSV (first column keywords). Slugs and routes are auto-generated.</p>
-		<br />
-		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[keywords_upload_product_key]" value="" class="regular-text" placeholder="Optional product key, e.g., icart" />
-		<p class="description">Optional: assign a product key to all uploaded keywords for product-specific partials.</p>
-		<?php
-	}
+	// Removed keywords upload field (use sample folder)
 
 	public function field_landing_upload() {
 		?>

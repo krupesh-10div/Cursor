@@ -63,5 +63,58 @@ function icart_dl_build_transient_key($prefix, $keywords) {
 	return ICART_DL_TRANSIENT_PREFIX . $prefix . '_' . $hash;
 }
 
+function icart_dl_scan_sample_keywords() {
+	$base_dir = ICART_DL_PLUGIN_DIR . 'sample/keywords/';
+	$entries = array();
+	if (!is_dir($base_dir)) {
+		return $entries;
+	}
+	$files = glob($base_dir . '*.csv');
+	foreach ($files as $file) {
+		$product_key = sanitize_title(pathinfo($file, PATHINFO_FILENAME));
+		if (($handle = fopen($file, 'r')) !== false) {
+			$line = 0;
+			$headers = array();
+			while (($data = fgetcsv($handle)) !== false) {
+				$line++;
+				if ($line === 1) {
+					$headers = array_map('strtolower', $data);
+				}
+				$kw = '';
+				if (!empty($data[0])) {
+					$kw = trim($data[0]);
+				}
+				if ($kw === '' || strtolower($kw) === 'keyword' || strtolower($kw) === 'keywords') {
+					continue;
+				}
+				$slug = sanitize_title($kw);
+				$entries[] = array(
+					'slug' => $slug,
+					'keywords' => $kw,
+					'product_key' => $product_key,
+					'title' => '',
+					'description' => '',
+				);
+			}
+			fclose($handle);
+		}
+	}
+	return $entries;
+}
+
+function icart_dl_sync_landing_map_from_samples() {
+	$entries = icart_dl_scan_sample_keywords();
+	$stored = icart_dl_get_settings();
+	$current = isset($stored['landing_map']) && is_array($stored['landing_map']) ? $stored['landing_map'] : array();
+	$hash_new = md5(wp_json_encode($entries));
+	$hash_old = isset($stored['landing_map_hash']) ? $stored['landing_map_hash'] : '';
+	if ($hash_new !== $hash_old) {
+		$stored['landing_map'] = $entries;
+		$stored['landing_map_hash'] = $hash_new;
+		update_option('icart_dl_settings', $stored);
+		set_transient('icart_dl_flush_rewrite', 1, 60);
+	}
+}
+
 ?>
 

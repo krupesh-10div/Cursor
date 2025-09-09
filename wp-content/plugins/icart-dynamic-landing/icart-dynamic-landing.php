@@ -43,6 +43,9 @@ function icart_dl_init() {
 		new ICartDL_Settings();
 	}
 
+	// Sync landing map from sample keywords folder
+	icart_dl_sync_landing_map_from_samples();
+
 	// Register rewrite rules and query vars
 	add_filter('query_vars', function($vars){
 		$vars[] = 'icart_keywords';
