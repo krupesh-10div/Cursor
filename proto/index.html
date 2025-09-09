@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Figma Proto — Landing Page</title>
+  <meta name="description" content="Landing page converted from Figma prototype.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="container site-header__inner">
+      <a href="#" class="site-header__brand" aria-label="Home">
+        <img class="site-header__logo" src="https://via.placeholder.com/128x32?text=Logo" alt="Brand" width="128" height="32" loading="eager" decoding="async">
+      </a>
+      <button class="site-header__toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Open menu">
+        <span class="site-header__toggle-bar" aria-hidden="true"></span>
+        <span class="site-header__toggle-bar" aria-hidden="true"></span>
+        <span class="site-header__toggle-bar" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" aria-label="Primary">
+        <ul id="primary-nav" class="site-header__menu">
+          <li class="site-header__item"><a class="site-header__link" href="#features">Features</a></li>
+          <li class="site-header__item"><a class="site-header__link" href="#work">Work</a></li>
+          <li class="site-header__item"><a class="site-header__link" href="#testimonials">Testimonials</a></li>
+          <li class="site-header__item"><a class="site-header__link" href="#faq">FAQ</a></li>
+          <li class="site-header__item"><a class="site-header__link" href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-header__actions">
+        <a class="button button--ghost" href="#contact">Contact</a>
+        <a class="button" href="#cta">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="site-main" role="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Design. Build. Launch.</p>
+          <h1 id="hero-title" class="hero__title">We craft delightful digital experiences</h1>
+          <p class="hero__subtitle">High‑quality, responsive websites and apps. Pixel‑perfect and performance‑driven.</p>
+          <div class="hero__actions">
+            <a class="button" href="#work">View our work</a>
+            <a class="button button--ghost" href="#features">Explore features</a>
+          </div>
+        </div>
+        <div class="hero__media">
+          <img class="hero__image" src="https://via.placeholder.com/1200x720.webp?text=Hero" alt="Interface preview" width="1200" height="720" loading="eager" fetchpriority="high" decoding="async">
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features" aria-labelledby="features-title">
+      <div class="container features__inner">
+        <header class="section-header">
+          <h2 id="features-title" class="section-title">What we deliver</h2>
+          <p class="section-subtitle">Clean code, stunning visuals, and scalable architecture.</p>
+        </header>
+        <div class="features__grid">
+          <article class="feature-card">
+            <h3 class="feature-card__title">Semantic HTML5</h3>
+            <p class="feature-card__text">Accessible, SEO‑friendly markup with a clear structure.</p>
+          </article>
+          <article class="feature-card">
+            <h3 class="feature-card__title">Modern CSS</h3>
+            <p class="feature-card__text">BEM, variables, grid/flex, and responsive design from mobile up.</p>
+          </article>
+          <article class="feature-card">
+            <h3 class="feature-card__title">Performance</h3>
+            <p class="feature-card__text">Optimized images, minimal JS, and fast loading times.</p>
+          </article>
+          <article class="feature-card">
+            <h3 class="feature-card__title">Scalable</h3>
+            <p class="feature-card__text">Reusable components ready for WordPress, React, or static hosting.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="work" class="work" aria-labelledby="work-title">
+      <div class="container work__inner">
+        <h2 id="work-title" class="section-title">Selected work</h2>
+        <div class="work__grid">
+          <figure class="work-card">
+            <img class="work-card__image" src="https://via.placeholder.com/640x420.webp?text=Project+1" alt="Project preview 1" width="640" height="420" loading="lazy" decoding="async">
+            <figcaption class="work-card__caption">E‑commerce landing page</figcaption>
+          </figure>
+          <figure class="work-card">
+            <img class="work-card__image" src="https://via.placeholder.com/640x420.webp?text=Project+2" alt="Project preview 2" width="640" height="420" loading="lazy" decoding="async">
+            <figcaption class="work-card__caption">SaaS marketing site</figcaption>
+          </figure>
+          <figure class="work-card">
+            <img class="work-card__image" src="https://via.placeholder.com/640x420.webp?text=Project+3" alt="Project preview 3" width="640" height="420" loading="lazy" decoding="async">
+            <figcaption class="work-card__caption">Portfolio and blog</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="testimonials" class="testimonials" aria-labelledby="testimonials-title">
+      <div class="container testimonials__inner">
+        <header class="section-header">
+          <h2 id="testimonials-title" class="section-title">What clients say</h2>
+          <p class="section-subtitle">Real results from real projects</p>
+        </header>
+        <div class="testimonials__grid">
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“The team translated Figma to code perfectly and shipped fast.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <span class="testimonial-card__name">Alex Rivera</span>
+              <span class="testimonial-card__role">Product Lead</span>
+            </figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“Clean, accessible, and easy to integrate into our React stack.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <span class="testimonial-card__name">Priya Sharma</span>
+              <span class="testimonial-card__role">Engineering Manager</span>
+            </figcaption>
+          </figure>
+          <figure class="testimonial-card">
+            <blockquote class="testimonial-card__quote">“Pixel‑perfect and blazing fast across all devices.”</blockquote>
+            <figcaption class="testimonial-card__author">
+              <span class="testimonial-card__name">Noah Bennett</span>
+              <span class="testimonial-card__role">Founder</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq" aria-labelledby="faq-title">
+      <div class="container faq__inner">
+        <header class="section-header">
+          <h2 id="faq-title" class="section-title">FAQ</h2>
+          <p class="section-subtitle">Quick answers</p>
+        </header>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__question">Can you match the Figma prototype exactly?</summary>
+            <div class="faq-item__answer"><p>Yes. We mirror typography, spacing, and layout using CSS variables and BEM.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__question">Is the code framework‑agnostic?</summary>
+            <div class="faq-item__answer"><p>Absolutely. The output is drop‑in ready for WordPress, React, or static sites.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__question">Do you optimize images?</summary>
+            <div class="faq-item__answer"><p>Yes, with WebP/srcset and proper sizes to keep pages fast.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="cta" aria-labelledby="cta-title">
+      <div class="container cta__inner">
+        <h2 id="cta-title" class="cta__title">Let’s build something great</h2>
+        <p class="cta__subtitle">Share your Figma link and requirements. We’ll convert it to clean HTML/CSS.</p>
+        <a class="button button--inverted" href="#">Start a project</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      const toggle = document.querySelector('.site-header__toggle');
+      const nav = document.querySelector('.site-header__nav');
+      if (!toggle || !nav) return;
+      toggle.addEventListener('click', function() {
+        const isOpen = nav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        document.body.classList.toggle('no-scroll', isOpen);
+      });
+    })();
+  </script>
+</body>
+</html>
+
