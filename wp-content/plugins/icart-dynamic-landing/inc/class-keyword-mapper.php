@@ -94,30 +94,6 @@ class ICartDL_Keyword_Mapper {
 		}
 		return $unique;
 	}
-
-	public function get_static_products() {
-		$settings = icart_dl_get_settings();
-		$static_raw = isset($settings['static_products']) ? $settings['static_products'] : '';
-		$lines = preg_split('/\r?\n/', $static_raw);
-		$items = array();
-		foreach ($lines as $line) {
-			$line = trim($line);
-			if ($line === '') { continue; }
-			$parts = explode('|', $line);
-			$title = isset($parts[0]) ? trim($parts[0]) : '';
-			$url = isset($parts[1]) ? trim($parts[1]) : '';
-			$image = isset($parts[2]) ? trim($parts[2]) : '';
-			$price = isset($parts[3]) ? trim($parts[3]) : '';
-			if ($url === '') { continue; }
-			$items[] = array(
-				'title' => $title,
-				'url' => $url,
-				'image' => $image,
-				'price' => $price,
-			);
-		}
-		return $items;
-	}
 }
 
 ?>

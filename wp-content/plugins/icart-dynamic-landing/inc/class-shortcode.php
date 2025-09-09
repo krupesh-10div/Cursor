@@ -20,7 +20,6 @@ class ICartDL_Shortcode {
 		$landing = icart_dl_get_landing_entry();
 		$product_key = $landing['product_key'] ?? '';
 		$dynamic_products = array();
-		$static_products = $mapper->get_static_products();
 
 		ob_start();
 
@@ -85,31 +84,6 @@ class ICartDL_Shortcode {
 				}
 				?>
 
-				<?php if (!empty($static_products)): ?>
-				<section class="icart-dl__products icart-dl__products--static">
-					<h2 class="icart-dl__section-title">Popular choices</h2>
-					<div class="icart-dl__grid">
-						<?php foreach ($static_products as $item): ?>
-							<article class="icart-dl__card">
-								<a href="<?php echo esc_url($item['url']); ?>" class="icart-dl__image">
-									<?php if (!empty($item['image'])): ?>
-										<img src="<?php echo esc_url($item['image']); ?>" alt="<?php echo esc_attr($item['title']); ?>" />
-									<?php endif; ?>
-								</a>
-								<div class="icart-dl__card-content">
-									<h3 class="icart-dl__product-title">
-										<a href="<?php echo esc_url($item['url']); ?>"><?php echo esc_html($item['title']); ?></a>
-									</h3>
-									<?php if (!empty($item['price'])): ?>
-										<div class="icart-dl__price"><?php echo esc_html($item['price']); ?></div>
-									<?php endif; ?>
-									<a class="button" href="<?php echo esc_url($item['url']); ?>">View</a>
-								</div>
-							</article>
-						<?php endforeach; ?>
-					</div>
-				</section>
-				<?php endif; ?>
 			</div>
 		</section>
 		<?php

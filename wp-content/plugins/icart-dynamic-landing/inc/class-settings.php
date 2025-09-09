@@ -35,7 +35,7 @@ class ICartDL_Settings {
 		add_settings_field('base_path', __('Landing Base Path', 'icart-dl'), array($this, 'field_base_path'), $this->option_key, 'icart_dl_brand');
 
 		add_settings_section('icart_dl_products', __('Keywords & Landing', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('static_products', __('Static Products (one per line)', 'icart-dl'), array($this, 'field_static_products'), $this->option_key, 'icart_dl_products');
+		add_settings_field('keywords_file_upload', __('Upload Keywords CSV to sample/keywords/', 'icart-dl'), array($this, 'field_keywords_file_upload'), $this->option_key, 'icart_dl_products');
 		add_settings_field('landing_upload', __('Upload Landing Map CSV (optional)', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
 
 		add_settings_section('icart_dl_routing', __('Routing', 'icart-dl'), '__return_false', $this->option_key);
@@ -49,11 +49,32 @@ class ICartDL_Settings {
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
-		$output['static_products'] = isset($input['static_products']) ? wp_kses_post($input['static_products']) : '';
 		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
 		$output['landing_page_slug'] = isset($input['landing_page_slug']) ? sanitize_title_with_dashes($input['landing_page_slug']) : 'dynamic-landing';
 
-		// Removed direct keywords upload; plugin now auto-scans sample/keywords/*.csv
+		// Upload keywords CSV into sample/keywords/
+		if (!empty($_FILES['icart_dl_keywords_file']['name'])) {
+			check_admin_referer($this->option_key . '-options');
+			$uploaded = wp_handle_upload($_FILES['icart_dl_keywords_file'], array('test_form' => false));
+			if (!isset($uploaded['error'])) {
+				$dest_dir = ICART_DL_PLUGIN_DIR . 'sample/keywords/';
+				if (!is_dir($dest_dir)) {
+					wp_mkdir_p($dest_dir);
+				}
+				$filename = isset($input['keywords_filename']) ? sanitize_file_name($input['keywords_filename']) : '';
+				if ($filename === '') {
+					$filename = basename($uploaded['file']);
+				}
+				if (substr(strtolower($filename), -4) !== '.csv') {
+					$filename .= '.csv';
+				}
+				$dest = $dest_dir . $filename;
+				copy($uploaded['file'], $dest);
+				// Trigger rescan to rebuild landing_map
+				icart_dl_sync_landing_map_from_samples();
+				set_transient('icart_dl_flush_rewrite', 1, 60);
+			}
+		}
 
 		// Handle CSV upload (landing map)
 		if (!empty($_FILES['icart_dl_landing_csv']['name'])) {
@@ -98,8 +119,6 @@ class ICartDL_Settings {
 		}
 		return $rows;
 	}
-
-	// Removed parse_keywords_file (auto-scan is used instead)
 
 	public function render_settings_page() {
 		if (!current_user_can('manage_options')) {
@@ -175,16 +194,15 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_static_products() {
-		$opts = icart_dl_get_settings();
+	public function field_keywords_file_upload() {
 		?>
-		<textarea name="<?php echo esc_attr($this->option_key); ?>[static_products]" rows="6" class="large-text" placeholder="Title|https://example.com|https://example.com/image.jpg|$19.00
-...">&lt;?php echo esc_textarea($opts['static_products'] ?? ''); ?&gt;</textarea>
-		<p class="description">One product per line: Title|URL|ImageURL|Price (Price optional).</p>
+		<input type="file" name="icart_dl_keywords_file" accept=".csv" />
+		<p class="description">Upload a CSV with a single column header (e.g., "keyword"). It will be saved to sample/keywords/ and auto-scanned.</p>
+		<br />
+		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[keywords_filename]" value="" class="regular-text" placeholder="Optional filename, e.g., icart.csv" />
+		<p class="description">Provide a filename to save under sample/keywords/. Leave blank to keep original name.</p>
 		<?php
 	}
-
-	// Removed keywords upload field (use sample folder)
 
 	public function field_landing_upload() {
 		?>

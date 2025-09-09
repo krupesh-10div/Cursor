@@ -5,9 +5,8 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
 ## Features
 - Shortcode: `[icart_dynamic_page]`
 - Perplexity-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
-- Optional static products textarea in settings for always-on items
 - Caching with transients
-- Admin settings for API key, model, brand tone, Figma link, cache TTL, static products
+- Admin settings for API key, model, brand tone, Figma link, cache TTL
 - Auto-scan sample keyword CSVs in `sample/keywords/*.csv` to create root-level SEO URLs that all route to a single landing page
 
 ## Installation
@@ -17,7 +16,6 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
    - Enter your Perplexity API key and choose a model
    - Set your brand tone and optional Figma link reference
    - Set a cache TTL
-   - Add static products (one per line) in the format `Title|URL|ImageURL|Price` (optional)
    - Place product-specific keyword CSVs in `wp-content/plugins/icart-dynamic-landing/sample/keywords/` as `<product_key>.csv` (first column keywords)
    - Optional: upload your Landing Map CSV (see `sample/landing_map.csv`) to control slugs/metadata instead of auto-scan
 4. Add the shortcode `[icart_dynamic_page]` to a page that uses your landing layout.
