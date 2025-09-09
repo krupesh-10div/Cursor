@@ -39,7 +39,16 @@
   </header>
 
   <script>
-    // Mobile navigation script will be added in subsequent edits
+    (function() {
+      const toggle = document.querySelector('.site-header__toggle');
+      const nav = document.querySelector('.site-header__nav');
+      if (!toggle || !nav) return;
+      toggle.addEventListener('click', function() {
+        const isOpen = nav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        document.body.classList.toggle('no-scroll', isOpen);
+      });
+    })();
   </script>
 </body>
 </html>
