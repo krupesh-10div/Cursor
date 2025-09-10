@@ -38,6 +38,7 @@ function icart_dl_init() {
 	// Register shortcodes
 	if (class_exists('ICartDL_Shortcode')) {
 		ICartDL_Shortcode::register();
+		add_filter('the_content', array('ICartDL_Shortcode', 'maybe_inject_into_content'), 5);
 	}
 
 	// Admin settings page

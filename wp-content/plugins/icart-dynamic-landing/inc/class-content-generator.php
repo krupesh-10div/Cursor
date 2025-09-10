@@ -23,8 +23,8 @@ class ICartDL_Content_Generator {
 			return $result;
 		}
 
-		$system = 'You are a senior marketing copywriter writing high-converting landing page copy. ' .
-			'Write in the brand voice provided. Keep it concise, benefit-led, and keyword-aware. ' .
+		$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
+			'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
 			'Output strict JSON ONLY with keys: title, short_description.';
 
 		$user = wp_json_encode(array(
@@ -43,7 +43,7 @@ class ICartDL_Content_Generator {
 				array('role' => 'system', 'content' => $system),
 				array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 			),
-			'temperature' => 0.7,
+			'temperature' => 0.4,
 			'max_tokens' => 400,
 		);
 
@@ -69,6 +69,8 @@ class ICartDL_Content_Generator {
 					if (is_array($decoded)) {
 						$title = sanitize_text_field($decoded['title'] ?? '');
 						$short = sanitize_text_field($decoded['short_description'] ?? '');
+						$title = self::trim_to_chars($title, 50);
+						$short = self::trim_to_chars($short, 170);
 						if ($title !== '' || $short !== '') {
 							$result['title'] = $title !== '' ? $title : $result['title'];
 							$result['short_description'] = $short !== '' ? $short : $result['short_description'];
@@ -87,6 +89,8 @@ class ICartDL_Content_Generator {
 		if (stripos($keywords, 'icart') !== false) {
 			$override_title = 'Boost AOV with iCart Drawer Cart';
 			$override_desc = 'Increase average order value with targeted upsells, smart recommendations, and a beautiful slide cart that converts.';
+			$override_title = self::trim_to_chars($override_title, 50);
+			$override_desc = self::trim_to_chars($override_desc, 170);
 			$result['title'] = $override_title;
 			$result['short_description'] = $override_desc;
 			$result['heading'] = $override_title;
@@ -103,6 +107,8 @@ class ICartDL_Content_Generator {
 		$k = esc_html($keywords);
 		$title = $k ? sprintf('Ideas for "%s"', $k) : 'Ideas just for you';
 		$short = 'Discover relevant insights tailored to your search. Concise, helpful guidance to help you decide quickly and confidently.';
+		$title = self::trim_to_chars($title, 50);
+		$short = self::trim_to_chars($short, 170);
 		return array(
 			// New fields
 			'title' => $title,
@@ -113,6 +119,19 @@ class ICartDL_Content_Generator {
 			'explanation' => $short,
 			'cta' => '',
 		);
+	}
+
+	private static function trim_to_chars($text, $max) {
+		$text = trim((string)$text);
+		if ($text === '' || $max <= 0) { return ''; }
+		if (mb_strlen($text) <= $max) { return $text; }
+		$truncated = mb_substr($text, 0, $max);
+		// avoid cutting last word: backtrack to last space if present
+		$space = mb_strrpos($truncated, ' ');
+		if ($space !== false && $space > ($max - 20)) { // only backtrack if near the end to avoid over-shortening
+			$truncated = mb_substr($truncated, 0, $space);
+		}
+		return rtrim($truncated, "\s\.,;:!-—") . '…';
 	}
 }
 

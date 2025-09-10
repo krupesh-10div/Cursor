@@ -120,6 +120,35 @@ class ICartDL_Shortcode {
 		<?php
 		return ob_get_clean();
 	}
+
+	/**
+	 * Auto-inject snippet on normal pages if enabled via filter.
+	 * Usage: add_filter('icart_dl_auto_snippet', '__return_true');
+	 */
+	public static function maybe_inject_into_content($content) {
+		$enable = apply_filters('icart_dl_auto_snippet', false);
+		if (!is_singular() || !in_the_loop() || !is_main_query() || !$enable) {
+			return $content;
+		}
+		$keywords = icart_dl_get_search_keywords();
+		if ($keywords === '') {
+			return $content;
+		}
+		$cg = ICartDL_Content_Generator::generate($keywords);
+		$title = isset($cg['title']) && $cg['title'] !== '' ? $cg['title'] : ($cg['heading'] ?? '');
+		$short = isset($cg['short_description']) && $cg['short_description'] !== '' ? $cg['short_description'] : ($cg['explanation'] ?? '');
+		if ($title === '' && $short === '') {
+			return $content;
+		}
+		$snippet = '';
+		if ($title !== '') {
+			$snippet .= '<h1 class="icart-dl__title">' . esc_html($title) . '</h1>';
+		}
+		if ($short !== '') {
+			$snippet .= '<p class="icart-dl__subtitle">' . esc_html($short) . '</p>';
+		}
+		return $snippet . $content;
+	}
 }
 
 ?>
