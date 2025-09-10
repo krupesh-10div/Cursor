@@ -78,7 +78,7 @@ class ICartDL_Shortcode {
 
 				<?php
 				// Include product-specific section if present
-				$partial = ICART_DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title($product_key) . '.php';
+				$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title($product_key) . '.php';
 				if ($product_key && file_exists($partial)) {
 					include $partial;
 				}
