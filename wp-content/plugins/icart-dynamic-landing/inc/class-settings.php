@@ -30,13 +30,10 @@ class ICartDL_Settings {
 
 		add_settings_section('icart_dl_brand', __('Branding & Behavior', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
-		add_settings_field('figma_url', __('Figma Link', 'icart-dl'), array($this, 'field_figma'), $this->option_key, 'icart_dl_brand');
 		add_settings_field('cache_ttl', __('Cache TTL (seconds)', 'icart-dl'), array($this, 'field_cache_ttl'), $this->option_key, 'icart_dl_brand');
-		add_settings_field('base_path', __('Landing Base Path', 'icart-dl'), array($this, 'field_base_path'), $this->option_key, 'icart_dl_brand');
 
 		add_settings_section('icart_dl_products', __('Keywords & Landing', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('keywords_file_upload', __('Upload Keywords CSV to sample/keywords/', 'icart-dl'), array($this, 'field_keywords_file_upload'), $this->option_key, 'icart_dl_products');
-		add_settings_field('landing_upload', __('Upload Landing Map CSV (optional)', 'icart-dl'), array($this, 'field_landing_upload'), $this->option_key, 'icart_dl_products');
 
 		// Routing: landing page slug no longer required (direct template routing)
 	}
@@ -46,9 +43,7 @@ class ICartDL_Settings {
 		$output['perplexity_api_key'] = isset($input['perplexity_api_key']) ? sanitize_text_field($input['perplexity_api_key']) : '';
 		$output['perplexity_model'] = isset($input['perplexity_model']) ? sanitize_text_field($input['perplexity_model']) : 'sonar-pro';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
-		$output['figma_url'] = isset($input['figma_url']) ? esc_url_raw($input['figma_url']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
-		$output['base_path'] = isset($input['base_path']) ? sanitize_title_with_dashes($input['base_path']) : 'solutions';
 		// landing_page_slug removed
 
 		// Upload keywords CSV into sample/keywords/
@@ -75,49 +70,11 @@ class ICartDL_Settings {
 			}
 		}
 
-		// Handle CSV upload (landing map)
-		if (!empty($_FILES['icart_dl_landing_csv']['name'])) {
-			check_admin_referer($this->option_key . '-options');
-			$uploaded = wp_handle_upload($_FILES['icart_dl_landing_csv'], array('test_form' => false));
-			if (!isset($uploaded['error'])) {
-				$parsed = $this->parse_csv($uploaded['file']);
-				if (is_array($parsed)) {
-					$output['landing_map'] = $parsed;
-					set_transient('dl_flush_rewrite', 1, 60);
-				}
-			}
-		}
+		// Landing map upload removed; landing map is built from sample keywords
 
 		return $output;
 	}
 
-	private function parse_csv($filepath) {
-		if (!file_exists($filepath)) {
-			return array();
-		}
-		$rows = array();
-		if (($handle = fopen($filepath, 'r')) !== false) {
-			$headers = array();
-			$line = 0;
-			while (($data = fgetcsv($handle)) !== false) {
-				$line++;
-				if ($line === 1) {
-					$headers = array_map('strtolower', $data);
-					continue;
-				}
-				$item = array();
-				foreach ($headers as $i => $header) {
-					$item[$header] = isset($data[$i]) ? trim($data[$i]) : '';
-				}
-				// Expected headers for landing map: slug, keywords, product_key, title, description
-				if (!empty($item)) {
-					$rows[] = $item;
-				}
-			}
-			fclose($handle);
-		}
-		return $rows;
-	}
 
 	public function render_settings_page() {
 		if (!current_user_can('manage_options')) {
@@ -169,13 +126,6 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_figma() {
-		$opts = icart_dl_get_settings();
-		?>
-		<input type="url" name="<?php echo esc_attr($this->option_key); ?>[figma_url]" value="<?php echo esc_attr($opts['figma_url'] ?? ''); ?>" class="regular-text" />
-		<p class="description">Reference design link (Figma).</p>
-		<?php
-	}
 
 	public function field_cache_ttl() {
 		$opts = icart_dl_get_settings();
@@ -185,13 +135,6 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_base_path() {
-		$opts = icart_dl_get_settings();
-		?>
-		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[base_path]" value="<?php echo esc_attr($opts['base_path'] ?? 'solutions'); ?>" class="regular-text" />
-		<p class="description">Base slug for pretty URLs, e.g., solutions/best-boost-average-order-value-shopify-2025. Save permalinks after changing.</p>
-		<?php
-	}
 
 	public function field_keywords_file_upload() {
 		?>
@@ -203,12 +146,6 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_landing_upload() {
-		?>
-		<input type="file" name="icart_dl_landing_csv" accept=".csv" />
-		<p class="description">Upload Landing Map CSV with columns: slug, keywords, product_key, title, description. Each row becomes a root-level SEO URL.</p>
-		<?php
-	}
 
 	// field_landing_page_slug removed
 }

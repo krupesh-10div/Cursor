@@ -96,12 +96,10 @@ function icart_dl_activate() {
 		'perplexity_api_key' => '',
 		'perplexity_model' => 'sonar-pro',
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
-		'figma_url' => '',
 		'cache_ttl' => 3600,
 		'mapping' => array(),
 		'landing_map' => array(),
 		'landing_page_slug' => 'dynamic-landing',
-		'base_path' => 'solutions',
 	);
 	$options = get_option('icart_dl_settings', array());
 	update_option('icart_dl_settings', wp_parse_args($options, $defaults));
