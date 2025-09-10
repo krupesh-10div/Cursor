@@ -18,10 +18,10 @@ $product_key = isset( $landing['product_key'] ) ? $landing['product_key'] : '';
 add_filter(
 	'pre_get_document_title',
 	function ( $title ) use ( $content, $keywords ) {
-		$k = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		// Fallback to original title if heading empty.
-		if ( ! empty( $content['heading'] ) ) {
-			return $content['heading'] . $k;
+		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		if ( ! empty( $h1 ) ) {
+			return $h1 . $k;
 		}
 		return $title;
 	},
@@ -31,9 +31,10 @@ add_filter(
 add_filter(
 	'wpseo_title',
 	function ( $title ) use ( $content, $keywords ) {
-		$k = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		if ( ! empty( $content['heading'] ) ) {
-			return $content['heading'] . $k;
+		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		if ( ! empty( $h1 ) ) {
+			return $h1 . $k;
 		}
 		return $title;
 	},
@@ -43,8 +44,9 @@ add_filter(
 add_filter(
 	'wpseo_metadesc',
 	function ( $desc ) use ( $content ) {
-		if ( ! empty( $content['explanation'] ) ) {
-			return wp_strip_all_tags( $content['explanation'] );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		if ( ! empty( $short ) ) {
+			return wp_strip_all_tags( $short );
 		}
 		return $desc;
 	},
@@ -81,9 +83,10 @@ add_filter(
 add_filter(
 	'wpseo_opengraph_title',
 	function ( $t ) use ( $content, $keywords ) {
-		$k = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		if ( ! empty( $content['heading'] ) ) {
-			return $content['heading'] . $k;
+		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		if ( ! empty( $h1 ) ) {
+			return $h1 . $k;
 		}
 		return $t;
 	},
@@ -93,8 +96,9 @@ add_filter(
 add_filter(
 	'wpseo_opengraph_desc',
 	function ( $d ) use ( $content ) {
-		if ( ! empty( $content['explanation'] ) ) {
-			return wp_strip_all_tags( $content['explanation'] );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		if ( ! empty( $short ) ) {
+			return wp_strip_all_tags( $short );
 		}
 		return $d;
 	},
@@ -104,8 +108,9 @@ add_filter(
 add_filter(
 	'wpseo_twitter_title',
 	function ( $t ) use ( $content ) {
-		if ( ! empty( $content['heading'] ) ) {
-			return $content['heading'];
+		$h1 = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		if ( ! empty( $h1 ) ) {
+			return $h1;
 		}
 		return $t;
 	},
@@ -115,8 +120,9 @@ add_filter(
 add_filter(
 	'wpseo_twitter_description',
 	function ( $d ) use ( $content ) {
-		if ( ! empty( $content['explanation'] ) ) {
-			return wp_strip_all_tags( $content['explanation'] );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		if ( ! empty( $short ) ) {
+			return wp_strip_all_tags( $short );
 		}
 		return $d;
 	},
@@ -132,8 +138,8 @@ add_action(
 		}
 
 		$site_name = get_bloginfo( 'name' );
-		$title     = $content['heading'];
-		$desc      = wp_strip_all_tags( $content['explanation'] );
+		$title     = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		$desc      = wp_strip_all_tags( isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' ) );
 		$img       = get_site_icon_url( 512 );
 
 		echo '<meta name="robots" content="index,follow" />';
@@ -175,6 +181,16 @@ get_header();
 ?>
 <main class="icart-dl">
 	<div class="icart-dl__container">
+		<header class="icart-dl__header">
+			<h1 class="icart-dl__title"><?php echo esc_html( isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' ) ); ?></h1>
+			<?php if ( ! empty( $content['short_description'] ) || ! empty( $content['explanation'] ) ) : ?>
+			<p class="icart-dl__subtitle"><?php echo esc_html( isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' ) ); ?></p>
+			<?php endif; ?>
+			<?php if ( $product_key ) : ?>
+				<div class="icart-dl__badge">For: <?php echo esc_html( $product_key ); ?></div>
+			<?php endif; ?>
+		</header>
+
 		<?php
 		$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title( $product_key ) . '.php';
 		if ( $product_key && file_exists( $partial ) ) {

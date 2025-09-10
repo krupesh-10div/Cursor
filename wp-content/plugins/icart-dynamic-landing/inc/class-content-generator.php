@@ -25,17 +25,15 @@ class ICartDL_Content_Generator {
 
 		$system = 'You are a senior marketing copywriter writing high-converting landing page copy. ' .
 			'Write in the brand voice provided. Keep it concise, benefit-led, and keyword-aware. ' .
-			'Output strict JSON with keys: heading, subheading, explanation, cta.';
+			'Output strict JSON ONLY with keys: title, short_description.';
 
 		$user = wp_json_encode(array(
-			'instructions' => 'Create keyword-driven copy for a dynamic landing section. Return JSON only.',
+			'instructions' => 'Generate a compelling H1 title and a short description for a landing page. Return JSON only.',
 			'brand_tone' => $brand_tone,
 			'keywords' => $keywords,
 			'constraints' => array(
-				'heading_max_chars' => 70,
-				'subheading_max_chars' => 120,
-				'explanation_max_words' => 80,
-				'cta_max_chars' => 40,
+				'title_max_chars' => 50,
+				'short_description_max_chars' => 170,
 			),
 		));
 
@@ -69,15 +67,32 @@ class ICartDL_Content_Generator {
 					$txt = trim($data['choices'][0]['message']['content']);
 					$decoded = json_decode($txt, true);
 					if (is_array($decoded)) {
-						$result = array(
-							'heading' => sanitize_text_field($decoded['heading'] ?? $result['heading']),
-							'subheading' => sanitize_text_field($decoded['subheading'] ?? $result['subheading']),
-							'explanation' => wp_kses_post($decoded['explanation'] ?? $result['explanation']),
-							'cta' => sanitize_text_field($decoded['cta'] ?? $result['cta']),
-						);
+						$title = sanitize_text_field($decoded['title'] ?? '');
+						$short = sanitize_text_field($decoded['short_description'] ?? '');
+						if ($title !== '' || $short !== '') {
+							$result['title'] = $title !== '' ? $title : $result['title'];
+							$result['short_description'] = $short !== '' ? $short : $result['short_description'];
+							// Backward-compatible fields
+							$result['heading'] = $result['title'];
+							$result['subheading'] = '';
+							$result['explanation'] = $result['short_description'];
+							$result['cta'] = '';
+						}
 					}
 				}
 			}
+		}
+
+		// Special-case override when keyword contains "icart"
+		if (stripos($keywords, 'icart') !== false) {
+			$override_title = 'Boost AOV with iCart Drawer Cart';
+			$override_desc = 'Increase average order value with targeted upsells, smart recommendations, and a beautiful slide cart that converts.';
+			$result['title'] = $override_title;
+			$result['short_description'] = $override_desc;
+			$result['heading'] = $override_title;
+			$result['subheading'] = '';
+			$result['explanation'] = $override_desc;
+			$result['cta'] = '';
 		}
 
 		set_transient($transient_key, $result, $cache_ttl);
@@ -86,11 +101,17 @@ class ICartDL_Content_Generator {
 
 	private static function fallback($keywords) {
 		$k = esc_html($keywords);
+		$title = $k ? sprintf('Ideas for "%s"', $k) : 'Ideas just for you';
+		$short = 'Discover relevant insights tailored to your search. Concise, helpful guidance to help you decide quickly and confidently.';
 		return array(
-			'heading' => $k ? sprintf('Top Picks for "%s"', $k) : 'Top Picks Tailored for You',
-			'subheading' => $k ? sprintf('Curated recommendations for %s', $k) : 'Curated recommendations based on your interests',
-			'explanation' => 'Discover relevant products and insights. We personalize this page based on your search keywords to help you act faster with confidence.',
-			'cta' => 'Shop Recommended Picks',
+			// New fields
+			'title' => $title,
+			'short_description' => $short,
+			// Backward-compatible fields
+			'heading' => $title,
+			'subheading' => '',
+			'explanation' => $short,
+			'cta' => '',
 		);
 	}
 }
