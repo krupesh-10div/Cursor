@@ -56,7 +56,7 @@ class ICartDL_Settings {
 			check_admin_referer($this->option_key . '-options');
 			$uploaded = wp_handle_upload($_FILES['icart_dl_keywords_file'], array('test_form' => false));
 			if (!isset($uploaded['error'])) {
-				$dest_dir = ICART_DL_PLUGIN_DIR . 'sample/keywords/';
+				$dest_dir = DL_PLUGIN_DIR . 'sample/keywords/';
 				if (!is_dir($dest_dir)) {
 					wp_mkdir_p($dest_dir);
 				}
@@ -70,8 +70,8 @@ class ICartDL_Settings {
 				$dest = $dest_dir . $filename;
 				copy($uploaded['file'], $dest);
 				// Trigger rescan to rebuild landing_map
-				icart_dl_sync_landing_map_from_samples();
-				set_transient('icart_dl_flush_rewrite', 1, 60);
+				dl_sync_landing_map_from_samples();
+				set_transient('dl_flush_rewrite', 1, 60);
 			}
 		}
 
@@ -83,7 +83,7 @@ class ICartDL_Settings {
 				$parsed = $this->parse_csv($uploaded['file']);
 				if (is_array($parsed)) {
 					$output['landing_map'] = $parsed;
-					set_transient('icart_dl_flush_rewrite', 1, 60);
+					set_transient('dl_flush_rewrite', 1, 60);
 				}
 			}
 		}
