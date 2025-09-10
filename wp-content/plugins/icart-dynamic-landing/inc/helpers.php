@@ -60,11 +60,11 @@ function icart_dl_normalize_keywords($keywords) {
 
 function icart_dl_build_transient_key($prefix, $keywords) {
 	$hash = substr(md5(icart_dl_normalize_keywords($keywords)), 0, 12);
-	return ICART_DL_TRANSIENT_PREFIX . $prefix . '_' . $hash;
+	return DL_TRANSIENT_PREFIX . $prefix . '_' . $hash;
 }
 
 function icart_dl_scan_sample_keywords() {
-	$base_dir = ICART_DL_PLUGIN_DIR . 'sample/keywords/';
+	$base_dir = DL_PLUGIN_DIR . 'sample/keywords/';
 	$entries = array();
 	if (!is_dir($base_dir)) {
 		return $entries;
@@ -102,7 +102,7 @@ function icart_dl_scan_sample_keywords() {
 	return $entries;
 }
 
-function icart_dl_sync_landing_map_from_samples() {
+function dl_sync_landing_map_from_samples() {
 	$entries = icart_dl_scan_sample_keywords();
 	$stored = icart_dl_get_settings();
 	$current = isset($stored['landing_map']) && is_array($stored['landing_map']) ? $stored['landing_map'] : array();
@@ -112,7 +112,7 @@ function icart_dl_sync_landing_map_from_samples() {
 		$stored['landing_map'] = $entries;
 		$stored['landing_map_hash'] = $hash_new;
 		update_option('icart_dl_settings', $stored);
-		set_transient('icart_dl_flush_rewrite', 1, 60);
+		set_transient('dl_flush_rewrite', 1, 60);
 	}
 }
 
