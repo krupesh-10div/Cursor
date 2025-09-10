@@ -35,7 +35,10 @@ function icart_dl_init() {
 		define('DL_TRANSIENT_PREFIX', 'icart_dl_');
 	}
 
-	// Shortcode no longer required (direct routing)
+	// Register shortcodes
+	if (class_exists('ICartDL_Shortcode')) {
+		ICartDL_Shortcode::register();
+	}
 
 	// Admin settings page
 	if (is_admin()) {
