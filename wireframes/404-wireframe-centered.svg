@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <style>
+      .title { font: 700 40px/1.2 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #0f172a; }
+      .body { font: 400 18px/1.7 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #334155; }
+      .label { font: 600 16px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #0f172a; }
+      .caption { font: 400 14px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #64748b; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1000" fill="#f6f7f9"/>
+
+  <!-- Circular image avatar style -->
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="800" cy="260" r="140"/>
+    </clipPath>
+  </defs>
+  <circle cx="800" cy="260" r="148" fill="#e2e8f0"/>
+  <image xlink:href="../assets/2504 Photographe MarieClaire_fr_04.jpg" x="660" y="120" width="280" height="280" preserveAspectRatio="xMidYMid slice" clip-path="url(#circleClip)"/>
+
+  <text class="title" x="800" y="460" text-anchor="middle">Un espace vide, comme une toile blanche.</text>
+  <text class="body" x="800" y="510" text-anchor="middle">La page que vous recherchez n’existe pas.</text>
+  <text class="body" x="800" y="540" text-anchor="middle">Chez SOFTICATED, nous croyons que chaque espace mérite une pièce exceptionnelle.</text>
+  <text class="body" x="800" y="570" text-anchor="middle">Explorez nos collections pour trouver celle qui donnera du sens à votre intérieur.</text>
+
+  <!-- Search (optional) -->
+  <g transform="translate(520,600)">
+    <rect x="0" y="0" width="560" height="52" rx="12" fill="#ffffff" stroke="#d1d5db"/>
+    <text class="caption" x="16" y="34">Rechercher…</text>
+  </g>
+
+  <!-- Buttons stack -->
+  <g transform="translate(520,668)">
+    <a xlink:href="https://softicated.com/" target="_blank">
+      <rect x="0" y="0" width="560" height="52" rx="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <text class="label" x="280" y="34" text-anchor="middle">Accueil</text>
+    </a>
+    <a xlink:href="https://softicated.com/categorie-produit/assises/tabouret-design-softicated/" target="_blank">
+      <rect x="0" y="68" width="560" height="52" rx="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <text class="label" x="280" y="102" text-anchor="middle">Nos tabourets</text>
+    </a>
+    <a xlink:href="https://softicated.com/categorie-produit/rugs/" target="_blank">
+      <rect x="0" y="136" width="560" height="52" rx="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <text class="label" x="280" y="170" text-anchor="middle">Nos tapis</text>
+    </a>
+    <a xlink:href="https://softicated.com/categorie-produit/luminaire/" target="_blank">
+      <rect x="0" y="204" width="560" height="52" rx="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <text class="label" x="280" y="238" text-anchor="middle">Nos luminaires</text>
+    </a>
+  </g>
+
+  <text class="caption" x="800" y="920" text-anchor="middle">« In interiors, we care. »</text>
+</svg>
+

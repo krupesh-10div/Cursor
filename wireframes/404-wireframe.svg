@@ -24,10 +24,12 @@
   <!-- Title -->
   <text class="title" x="800" y="150" text-anchor="middle">Un espace vide, comme une toile blanche.</text>
 
-  <!-- Image placeholder -->
+  <!-- Image block using provided asset; replace href if needed -->
   <g transform="translate(200,190)">
-    <rect x="0" y="0" width="1200" height="320" rx="16" ry="16" fill="#fafafa" stroke="#d1d5db" stroke-width="2" stroke-dasharray="10 8"/>
-    <text class="muted" x="600" y="160" text-anchor="middle">Photo 404 (placer visuel depuis la médiathèque WordPress)</text>
+    <clipPath id="heroClip">
+      <rect x="0" y="0" width="1200" height="320" rx="16" ry="16"/>
+    </clipPath>
+    <image xlink:href="../assets/2504 Photographe MarieClaire_fr_04.jpg" x="0" y="0" width="1200" height="320" preserveAspectRatio="xMidYMid slice" clip-path="url(#heroClip)"/>
   </g>
 
   <!-- Main message -->
