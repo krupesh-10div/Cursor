@@ -8,7 +8,8 @@
     "build": "wp-scripts build && npm run postbuild",
     "build:theme": "WP_BUILD_DIR=accordion-blocks WP_BUILD_BASENAME=block.build.js npm run build",
     "postbuild": "node scripts/copy-to-theme.js",
-    "lint": "wp-scripts lint-js"
+    "lint": "wp-scripts lint-js",
+    "images:fit": ".venv/bin/python scripts/fit_tools_image.py"
   },
   "dependencies": {
     "lodash.times": "^4.3.2",
