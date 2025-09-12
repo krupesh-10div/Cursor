@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="390" height="844" viewBox="0 0 390 844">
+  <title>SOFTICATED – 404 Wireframe (Mobile)</title>
+  <desc>Mobile wireframe mockup for a custom 404 page with title, image placeholder, explanatory text, search bar, navigation buttons, and a tagline.</desc>
+  <defs>
+    <style><![CDATA[
+      .bg { fill: #fafafa; }
+      .frame { fill: none; stroke: #e5e5e5; stroke-width: 1; }
+      .heading { font: 600 24px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; fill: #111; }
+      .sub { font: 400 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; fill: #333; }
+      .muted { fill: #7a7a7a; font: 400 13px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; }
+      .tagline { font: 500 14px/1.4 Georgia, Times, 'Times New Roman', serif; fill: #222; }
+      .placeholder { fill: #f0f0f0; stroke: #d0d0d0; }
+      .button { fill: #ffffff; stroke: #d6d6d6; }
+      .button-text { font: 600 15px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; fill: #111; }
+      .search { fill: #ffffff; stroke: #d6d6d6; }
+      .search-placeholder { fill: #9a9a9a; font: 400 15px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; }
+      .chip { fill: #ededed; stroke: #d6d6d6; }
+      .kicker { font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; fill: #555; }
+    ]]></style>
+    <symbol id="magnifier" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7" fill="none" stroke="#9a9a9a" stroke-width="2"/>
+      <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="#9a9a9a" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="390" height="844"/>
+
+  <!-- Content frame -->
+  <rect class="frame" x="16" y="16" width="358" height="812" rx="12"/>
+
+  <!-- 404 chip -->
+  <g transform="translate(32,44)">
+    <rect class="chip" x="0" y="0" width="64" height="26" rx="13"/>
+    <text class="kicker" x="32" y="18" text-anchor="middle">404</text>
+  </g>
+
+  <!-- Title -->
+  <g transform="translate(32,86)">
+    <text class="heading">Un espace vide, comme une toile blanche.</text>
+  </g>
+
+  <!-- Image placeholder -->
+  <g transform="translate(32,168)">
+    <rect class="placeholder" x="0" y="0" width="326" height="180" rx="12"/>
+    <text class="muted" x="163" y="88" text-anchor="middle">Photo 404 — placeholder</text>
+    <text class="muted" x="163" y="108" text-anchor="middle">(Image: "Photo Page erreur 404")</text>
+  </g>
+
+  <!-- Explanatory text -->
+  <g transform="translate(32,370)">
+    <text class="sub" x="0" y="0">La page que vous recherchez n’existe pas.</text>
+    <text class="sub" x="0" y="30">Chez SOFTICATED, nous croyons que chaque espace mérite une</text>
+    <text class="sub" x="0" y="56">pièce exceptionnelle. Explorez nos collections pour trouver celle</text>
+    <text class="sub" x="0" y="82">qui donnera du sens à votre intérieur.</text>
+  </g>
+
+  <!-- Search bar -->
+  <g transform="translate(32,476)">
+    <rect class="search" x="0" y="0" width="326" height="46" rx="8"/>
+    <use href="#magnifier" x="12" y="11" width="22" height="22"/>
+    <text class="search-placeholder" x="46" y="30">Rechercher…</text>
+  </g>
+
+  <!-- Buttons, stacked -->
+  <g transform="translate(32,540)">
+    <!-- Accueil -->
+    <a xlink:href="https://softicated.com/" target="_blank">
+      <rect class="button" x="0" y="0" width="326" height="52" rx="10"/>
+      <text class="button-text" x="163" y="32" text-anchor="middle">Accueil</text>
+    </a>
+    <!-- Tabourets -->
+    <a xlink:href="https://softicated.com/categorie-produit/assises/tabouret-design-softicated/" target="_blank">
+      <rect class="button" x="0" y="64" width="326" height="52" rx="10"/>
+      <text class="button-text" x="163" y="96" text-anchor="middle">Nos tabourets</text>
+    </a>
+    <!-- Tapis -->
+    <a xlink:href="https://softicated.com/categorie-produit/rugs/" target="_blank">
+      <rect class="button" x="0" y="128" width="326" height="52" rx="10"/>
+      <text class="button-text" x="163" y="160" text-anchor="middle">Nos tapis</text>
+    </a>
+    <!-- Luminaires -->
+    <a xlink:href="https://softicated.com/categorie-produit/luminaire/" target="_blank">
+      <rect class="button" x="0" y="192" width="326" height="52" rx="10"/>
+      <text class="button-text" x="163" y="224" text-anchor="middle">Nos luminaires</text>
+    </a>
+  </g>
+
+  <!-- Tagline -->
+  <g transform="translate(32,770)">
+    <text class="tagline">« In interiors, we care. »</text>
+  </g>
+
+  <!-- Footer note -->
+  <g transform="translate(16,812)">
+    <text class="muted">Wireframe (SVG) — présentation client</text>
+  </g>
+</svg>
+
