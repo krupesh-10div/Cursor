@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1000" viewBox="0 0 1600 1000">
   <defs>
     <style>
-      .title { font: 600 36px/1.3 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #222; }
-      .subtitle { font: 600 28px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #222; }
-      .body { font: 400 20px/1.6 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #333; }
-      .muted { fill: #666; font: 400 18px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-      .button-label { font: 600 18px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #222; }
-      .quote { font: 500 18px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #222; }
-      .caption { font: 400 14px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #666; }
+      .title { font: 600 36px/1.3 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #1F2937; }
+      .subtitle { font: 600 28px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #1F2937; }
+      .body { font: 400 20px/1.6 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #374151; }
+      .muted { fill: #8A8F98; font: 400 18px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+      .button-label { font: 600 18px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #1F2937; }
+      .quote { font: 500 18px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #1F2937; }
+      .caption { font: 400 14px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #8A8F98; }
     </style>
     <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0%" stop-color="#f7f7f7"/>
-      <stop offset="100%" stop-color="#f2f2f2"/>
+      <stop offset="0%" stop-color="#F6F4EF"/>
+      <stop offset="100%" stop-color="#EEEDEA"/>
     </linearGradient>
   </defs>
 
@@ -19,7 +19,7 @@
   <rect x="0" y="0" width="1600" height="1000" fill="url(#bg)"/>
 
   <!-- Card container to guide spacing -->
-  <rect x="120" y="80" width="1360" height="840" rx="24" ry="24" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <rect x="120" y="80" width="1360" height="840" rx="24" ry="24" fill="#ffffff" stroke="#e6e1d5" stroke-width="2"/>
 
   <!-- Title -->
   <text class="title" x="800" y="150" text-anchor="middle">Un espace vide, comme une toile blanche.</text>
@@ -45,9 +45,9 @@
 
   <!-- Optional Search Bar -->
   <g transform="translate(240,670)">
-    <rect x="0" y="0" width="1120" height="56" rx="12" ry="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
-    <circle cx="28" cy="28" r="10" fill="none" stroke="#9ca3af" stroke-width="3"/>
-    <line x1="36" y1="36" x2="46" y2="46" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+    <rect x="0" y="0" width="1120" height="56" rx="12" ry="12" fill="#ffffff" stroke="#D6CFC0" stroke-width="2"/>
+    <circle cx="28" cy="28" r="10" fill="none" stroke="#A8ABB2" stroke-width="3"/>
+    <line x1="36" y1="36" x2="46" y2="46" stroke="#A8ABB2" stroke-width="3" stroke-linecap="round"/>
     <text class="muted" x="70" y="35">Rechercher…</text>
     <text class="caption" x="980" y="36">(Barre de recherche – optionnelle)</text>
   </g>
@@ -56,25 +56,25 @@
   <g transform="translate(240,750)" >
     <!-- Accueil -->
     <a xlink:href="https://softicated.com/" target="_blank">
-      <rect x="0" y="0" width="260" height="56" rx="12" ry="12" fill="#e5e7eb" stroke="#cfd3d9"/>
-      <text class="button-label" x="130" y="35" text-anchor="middle">Accueil</text>
+      <rect x="0" y="0" width="260" height="56" rx="12" ry="12" fill="#0F5A58"/>
+      <text class="button-label" x="130" y="35" text-anchor="middle" fill="#ffffff">Accueil</text>
     </a>
 
     <!-- Nos tabourets -->
     <a xlink:href="https://softicated.com/categorie-produit/assises/tabouret-design-softicated/" target="_blank">
-      <rect x="290" y="0" width="260" height="56" rx="12" ry="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <rect x="290" y="0" width="260" height="56" rx="12" ry="12" fill="#E7E3D8" stroke="#D6CFC0"/>
       <text class="button-label" x="420" y="35" text-anchor="middle">Nos tabourets</text>
     </a>
 
     <!-- Nos tapis -->
     <a xlink:href="https://softicated.com/categorie-produit/rugs/" target="_blank">
-      <rect x="580" y="0" width="260" height="56" rx="12" ry="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <rect x="580" y="0" width="260" height="56" rx="12" ry="12" fill="#E7E3D8" stroke="#D6CFC0"/>
       <text class="button-label" x="710" y="35" text-anchor="middle">Nos tapis</text>
     </a>
 
     <!-- Nos luminaires -->
     <a xlink:href="https://softicated.com/categorie-produit/luminaire/" target="_blank">
-      <rect x="870" y="0" width="260" height="56" rx="12" ry="12" fill="#e5e7eb" stroke="#cfd3d9"/>
+      <rect x="870" y="0" width="260" height="56" rx="12" ry="12" fill="#E7E3D8" stroke="#D6CFC0"/>
       <text class="button-label" x="1000" y="35" text-anchor="middle">Nos luminaires</text>
     </a>
   </g>

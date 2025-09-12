@@ -4,7 +4,7 @@
       .over-title { font: 600 16px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; letter-spacing: 2px; text-transform: uppercase; }
       .title { font: 700 56px/1.2 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
       .body { font: 400 20px/1.7 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #f3f4f6; }
-      .button-label { font: 600 18px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #111827; }
+      .button-label { font: 600 18px/1 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #0b1220; }
       .quote { font: 500 18px/1.4 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; opacity: .9; }
     </style>
   </defs>
@@ -13,7 +13,7 @@
   <image xlink:href="../assets/2504 Photographe MarieClaire_fr_04.jpg" x="0" y="0" width="1600" height="1000" preserveAspectRatio="xMidYMid slice"/>
 
   <!-- Dark overlay -->
-  <rect x="0" y="0" width="1600" height="1000" fill="#0b1220" opacity="0.48"/>
+  <rect x="0" y="0" width="1600" height="1000" fill="#0F5A58" opacity="0.45"/>
 
   <!-- Content Center -->
   <g transform="translate(200,160)">
@@ -30,15 +30,15 @@
         <text class="button-label" x="140" y="36" text-anchor="middle">Accueil</text>
       </a>
       <a xlink:href="https://softicated.com/categorie-produit/assises/tabouret-design-softicated/" target="_blank">
-        <rect x="300" y="0" width="280" height="56" rx="12" fill="#ffffff"/>
+        <rect x="300" y="0" width="280" height="56" rx="12" fill="#E7E3D8"/>
         <text class="button-label" x="440" y="36" text-anchor="middle">Nos tabourets</text>
       </a>
       <a xlink:href="https://softicated.com/categorie-produit/rugs/" target="_blank">
-        <rect x="0" y="76" width="280" height="56" rx="12" fill="#ffffff"/>
+        <rect x="0" y="76" width="280" height="56" rx="12" fill="#E7E3D8"/>
         <text class="button-label" x="140" y="112" text-anchor="middle">Nos tapis</text>
       </a>
       <a xlink:href="https://softicated.com/categorie-produit/luminaire/" target="_blank">
-        <rect x="300" y="76" width="280" height="56" rx="12" fill="#ffffff"/>
+        <rect x="300" y="76" width="280" height="56" rx="12" fill="#E7E3D8"/>
         <text class="button-label" x="440" y="112" text-anchor="middle">Nos luminaires</text>
       </a>
     </g>
