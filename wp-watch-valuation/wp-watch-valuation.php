@@ -110,8 +110,41 @@ function wpwv_estimate_valuation() {
 add_filter('wpforms_email_message', function($message, $fields, $form_data, $entry_id) {
 	$valuation = isset($_POST['estimated_valuation']) ? sanitize_text_field(wp_unslash($_POST['estimated_valuation'])) : '';
 	if ($valuation !== '') {
-		$message .= "\n\nEstimated Valuation: " . $valuation;
+		// Try to detect HTML email and append accordingly
+		if (strip_tags($message) !== $message) {
+			$message .= '<p><strong>Estimated Valuation:</strong> ' . esc_html($valuation) . '</p>';
+		} else {
+			$message .= "\n\nEstimated Valuation: " . $valuation;
+		}
 	}
 	return $message;
 }, 10, 4);
+
+// Ensure the valuation appears in {all_fields} by injecting a synthetic field for emails
+add_filter('wpforms_email_fields', function($fields, $form_data, $emails) {
+	$valuation = isset($_POST['estimated_valuation']) ? sanitize_text_field(wp_unslash($_POST['estimated_valuation'])) : '';
+	if ($valuation !== '') {
+		$fields[999] = array(
+			'id'    => 999,
+			'name'  => 'Estimated Valuation',
+			'value' => $valuation,
+			'type'  => 'text',
+		);
+	}
+	return $fields;
+}, 10, 3);
+
+// Also inject into {all_fields} by adding a synthetic field during processing
+add_filter('wpforms_process_filter', function($fields, $entry, $form_data) {
+	$valuation = isset($_POST['estimated_valuation']) ? sanitize_text_field(wp_unslash($_POST['estimated_valuation'])) : '';
+	if ($valuation !== '') {
+		$fields[999] = array(
+			'id'    => 999,
+			'name'  => 'Estimated Valuation',
+			'value' => $valuation,
+			'type'  => 'text',
+		);
+	}
+	return $fields;
+}, 10, 3);
 
