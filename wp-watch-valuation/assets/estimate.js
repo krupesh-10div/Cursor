@@ -65,19 +65,17 @@
 
 	function estimate(form, estimateBtn) {
 		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : getFormIdFromForm(form);
-		// Run validation first: trigger WPForms/client validation and show field-wise errors
-		var originalSubmitBtn = qs(form, '#wpforms-submit-' + formId);
-		if (originalSubmitBtn) {
-			// Intercept the submit to avoid actual submission while letting WPForms show errors
-			var intercept = function(e) { e.preventDefault(); e.stopPropagation(); };
-			form.addEventListener('submit', intercept, true);
-			originalSubmitBtn.click();
-			form.removeEventListener('submit', intercept, true);
-		}
-		// If the form is invalid per HTML5 constraints, show browser errors and stop
-		if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
-			if (typeof form.reportValidity === 'function') form.reportValidity();
-			return;
+		// Run validation first using WPForms/jQuery Validate for field-wise errors
+		var $jq = (typeof window.jQuery !== 'undefined') ? window.jQuery : null;
+		if ($jq && typeof $jq(form).valid === 'function') {
+			if (!$jq(form).valid()) {
+				return;
+			}
+		} else {
+			if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+				if (typeof form.reportValidity === 'function') form.reportValidity();
+				return;
+			}
 		}
 		var brand     = getFieldValue('#wpforms-' + formId + '-field_1');
 		var model     = getFieldValue('#wpforms-' + formId + '-field_2');
@@ -90,9 +88,6 @@
 		var source    = getFieldValue('#wpforms-' + formId + '-field_18');
 
 		var container = qs(form, '#wpwv-valuation-container') || qs(document, '#wpwv-valuation-container');
-		if (container) {
-			container.textContent = 'Calculating estimate…';
-		}
 
 		var formData = new FormData();
 		formData.append('action', 'wpwv_estimate_valuation');
@@ -109,6 +104,9 @@
 
 		var submitBtn = qs(form, '#wpforms-submit-' + formId);
 
+		if (container) {
+			container.textContent = 'Calculating estimate…';
+		}
 		fetch((window.WPWV && WPWV.ajax_url) ? WPWV.ajax_url : '/wp-admin/admin-ajax.php', {
 			method: 'POST',
 			credentials: 'same-origin',
@@ -150,6 +148,22 @@
 			}
 		}
 		if (!form || !formId) return;
+
+		// Enhance validation: disallow placeholder values like "Select" via jQuery Validate rules
+		var $jq = (typeof window.jQuery !== 'undefined') ? window.jQuery : null;
+		if ($jq && $jq.validator && typeof $jq.validator.addMethod === 'function') {
+			$jq.validator.addMethod('valueNot', function(value, element, arg) {
+				return value !== arg;
+			}, 'This field is required.');
+			var brandSel = '#wpforms-' + formId + '-field_1';
+			var sourceSel = '#wpforms-' + formId + '-field_18';
+			if ($jq(brandSel).length) {
+				$jq(brandSel).rules('add', { valueNot: 'Select' });
+			}
+			if ($jq(sourceSel).length) {
+				$jq(sourceSel).rules('add', { valueNot: 'Select' });
+			}
+		}
 
 		// Hide any existing Start/Submit buttons
 		var originalSubmit = qs(form, '#wpforms-submit-' + WPWV.formId);
