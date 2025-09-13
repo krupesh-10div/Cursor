@@ -42,35 +42,49 @@ document.addEventListener('DOMContentLoaded',function(){
   hidden.id   = 'wpwv_valuation_preview';
   form.appendChild(hidden);
 
-  form.addEventListener('submit', function(e){
-    if(form.dataset.wpwvAllowSubmit === '1'){
-      return;
+  function showPreview(){
+    if(form.dataset.wpwvPreviewShown === '1') return;
+    var valuation = '$8,500 – $10,500';
+    container.innerHTML = ''
+      + '<div class="wpwv-preview" style="font-size:16px;margin-bottom:8px;">Estimated valuation for your watch: ' + valuation + '</div>'
+      + '<div style="margin-top:4px;font-size:14px;color:#333;">To connect with one of our valuation experts, please <a href="#" id="wpwv-submit-link" style="color:#0073aa;text-decoration:underline;">click here</a>.</div>';
+    var h = document.getElementById('wpwv_valuation_preview');
+    if(h){ h.value = valuation; }
+    if(submitBtn){ submitBtn.disabled = true; }
+    form.dataset.wpwvPreviewShown = '1';
+    var link = container.querySelector('#wpwv-submit-link');
+    if(link){
+      link.addEventListener('click', function(ev){
+        ev.preventDefault();
+        form.dataset.wpwvAllowSubmit = '1';
+        if(submitBtn){ submitBtn.disabled = false; }
+        form.submit();
+      });
     }
+  }
+
+  // Make the original submit button act as a preview trigger only
+  if(submitBtn){
+    submitBtn.setAttribute('type','button');
+    submitBtn.addEventListener('click', function(){
+      if(!form.checkValidity()){
+        form.reportValidity();
+        return;
+      }
+      showPreview();
+    });
+  }
+
+  // Block any form submission (e.g., Enter key) until the link allows it
+  form.addEventListener('submit', function(e){
+    if(form.dataset.wpwvAllowSubmit === '1') return;
     e.preventDefault();
     if(!form.dataset.wpwvPreviewShown){
       if(!form.checkValidity()){
         form.reportValidity();
         return;
       }
-      var valuation = '$8,500 – $10,500';
-      container.innerHTML = ''
-        + '<div class="wpwv-preview" style="font-size:16px;margin-bottom:8px;">Estimated valuation for your watch: ' + valuation + '</div>'
-        + '<div style="margin-top:4px;font-size:14px;color:#333;">To connect with one of our valuation experts, please <a href="#" id="wpwv-submit-link" style="color:#0073aa;text-decoration:underline;">click here</a>.</div>';
-      var h = document.getElementById('wpwv_valuation_preview');
-      if(h){ h.value = valuation; }
-      if(submitBtn){
-        submitBtn.disabled = true;
-      }
-      form.dataset.wpwvPreviewShown = '1';
-      var link = container.querySelector('#wpwv-submit-link');
-      if(link){
-        link.addEventListener('click', function(ev){
-          ev.preventDefault();
-          form.dataset.wpwvAllowSubmit = '1';
-          if(submitBtn){ submitBtn.disabled = false; }
-          form.submit();
-        });
-      }
+      showPreview();
     }
   });
 });
