@@ -107,20 +107,11 @@
 				return;
 			}
 			renderEstimate(container, json.data.valuation, submitBtn);
-			// Store valuation in a hidden input so it is included in email submissions
-			var hiddenInput = qs(form, '#wpwv-valuation-input');
-			if (!hiddenInput) {
-				hiddenInput = document.createElement('input');
-				hiddenInput.type = 'hidden';
-				hiddenInput.id = 'wpwv-valuation-input';
-				hiddenInput.name = 'estimated_valuation';
-				form.appendChild(hiddenInput);
-			}
-			hiddenInput.value = json.data && json.data.valuation ? json.data.valuation : '';
-			// Also populate the existing WPForms hidden field so it shows in {all_fields}
+			// Populate the existing WPForms hidden field so it shows in {all_fields}
+			var estimatedValuation = json.data && json.data.valuation ? json.data.valuation : '';
 			var wpformsHidden = qs(form, '#wpforms-' + formId + '-field_20');
 			if (wpformsHidden) {
-				wpformsHidden.value = hiddenInput.value;
+				wpformsHidden.value = estimatedValuation;
 			}
 			// Hide the estimate button once we have a valuation
 			hideElement(estimateBtn);
