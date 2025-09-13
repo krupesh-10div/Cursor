@@ -104,3 +104,14 @@ function wpwv_estimate_valuation() {
 	));
 }
 
+// ================================
+// Email: Append estimated valuation to outgoing message
+// ================================
+add_filter('wpforms_email_message', function($message, $fields, $form_data, $entry_id) {
+	$valuation = isset($_POST['estimated_valuation']) ? sanitize_text_field(wp_unslash($_POST['estimated_valuation'])) : '';
+	if ($valuation !== '') {
+		$message .= "\n\nEstimated Valuation: " . $valuation;
+	}
+	return $message;
+}, 10, 4);
+

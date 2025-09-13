@@ -63,7 +63,7 @@
 		}
 	}
 
-	function estimate(form) {
+	function estimate(form, estimateBtn) {
 		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : getFormIdFromForm(form);
 		var brand     = getFieldValue('#wpforms-' + formId + '-field_1');
 		var model     = getFieldValue('#wpforms-' + formId + '-field_2');
@@ -107,6 +107,18 @@
 				return;
 			}
 			renderEstimate(container, json.data.valuation, submitBtn);
+			// Store valuation in a hidden input so it is included in email submissions
+			var hiddenInput = qs(form, '#wpwv-valuation-input');
+			if (!hiddenInput) {
+				hiddenInput = document.createElement('input');
+				hiddenInput.type = 'hidden';
+				hiddenInput.id = 'wpwv-valuation-input';
+				hiddenInput.name = 'estimated_valuation';
+				form.appendChild(hiddenInput);
+			}
+			hiddenInput.value = json.data && json.data.valuation ? json.data.valuation : '';
+			// Hide the estimate button once we have a valuation
+			hideElement(estimateBtn);
 		})
 		.catch(function() {
 			if (container) container.textContent = 'Unable to calculate estimate right now.';
@@ -161,7 +173,7 @@
 		submitContainer.appendChild(estimateBtn);
 
 		estimateBtn.addEventListener('click', function() {
-			estimate(form);
+			estimate(form, estimateBtn);
 		});
 	}
 
