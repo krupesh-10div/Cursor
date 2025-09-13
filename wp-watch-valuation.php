@@ -2,7 +2,7 @@
 /*
 Plugin Name: WP Watch Valuation
 Description: Two-step watch valuation (preview, then submit) for WPForms
-Version: 1.2.2
+Version: 2.0
 Author: Your Name
 */
 
@@ -24,89 +24,115 @@ document.addEventListener('DOMContentLoaded',function(){
   var form = document.getElementById('wpforms-form-{$form_id}');
   if(!form) return;
 
-  var submitBtn = form.querySelector('#wpforms-submit-{$form_id}');
+  // Prevent Enter key submitting the form
+  form.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      return false;
+    }
+  });
 
+  // Hide the default submit button
+  var submitBtn = form.querySelector('#wpforms-submit-{$form_id}');
+  if(submitBtn){
+    submitBtn.style.display = 'none';
+  }
+
+  // Add Start Valuation button
+  var startBtn = document.createElement('button');
+  startBtn.type = 'button';
+  startBtn.id = 'wpwv-start-btn';
+  startBtn.textContent = 'Start Valuation';
+  startBtn.className = 'wpwv-start-btn wpforms-submit';
+  var submitWrap = form.querySelector('.wpforms-submit-container');
+  if(submitWrap){
+    submitWrap.appendChild(startBtn);
+  } else {
+    form.appendChild(startBtn);
+  }
+
+  // Preview container
   var container = document.createElement('div');
   container.id = 'wpwv-valuation-container';
   container.style.margin = '12px 0';
-  var submitWrap = form.querySelector('.wpforms-submit-container');
   if(submitWrap && submitWrap.parentNode){
     submitWrap.parentNode.insertBefore(container, submitWrap);
   } else {
     form.appendChild(container);
   }
 
+  // Hidden input for valuation text
   var hidden = document.createElement('input');
   hidden.type = 'hidden';
   hidden.name = 'wpwv_valuation_preview';
   hidden.id   = 'wpwv_valuation_preview';
   form.appendChild(hidden);
 
-  function showPreview(){
-    if(form.dataset.wpwvPreviewShown === '1') return;
-    var valuation = '$8,500 – $10,500';
-    container.innerHTML = ''
-      + '<div class="wpwv-preview" style="font-size:16px;margin-bottom:8px;">Estimated valuation for your watch: ' + valuation + '</div>'
-      + '<div style="margin-top:4px;font-size:14px;color:#333;">To connect with one of our valuation experts, please <a href="#" id="wpwv-submit-link" style="color:#0073aa;text-decoration:underline;">click here</a>.</div>';
-    var h = document.getElementById('wpwv_valuation_preview');
-    if(h){ h.value = valuation; }
-    form.dataset.wpwvPreviewShown = '1';
-    var link = container.querySelector('#wpwv-submit-link');
-    if(link){
-      link.addEventListener('click', function(ev){
-        ev.preventDefault();
-        form.dataset.wpwvAllowSubmit = '1';
-        form.submit();
-      });
-    }
+  // Helper to collect field values
+  function getValue(id){
+    var single = form.querySelector('[name="wpforms[fields]['+id+']"]');
+    if(single){ return single.value || ''; }
+    var checks = form.querySelectorAll('[name="wpforms[fields]['+id+'][]"]:checked');
+    if(checks && checks.length){ return Array.from(checks).map(function(i){return i.value;}); }
+    return '';
   }
 
-  // Make the original submit button act as a preview trigger only
-  if(submitBtn){
-    // Keep it visually and functionally a button, but block submission
-    submitBtn.addEventListener('click', function(e){
-      if(e && typeof e.preventDefault === 'function') e.preventDefault();
-      if(e && typeof e.stopPropagation === 'function') e.stopPropagation();
-      if(e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-      if(!form.checkValidity()){
-        form.reportValidity();
-        return;
-      }
-      showPreview();
-    });
-  }
-
-  // Block any form submission (e.g., Enter key) until the link allows it
-  form.addEventListener('submit', function(e){
-    if(form.dataset.wpwvAllowSubmit === '1') return;
-    e.preventDefault();
-    if(!form.dataset.wpwvPreviewShown){
-      if(!form.checkValidity()){
-        form.reportValidity();
-        return;
-      }
-      showPreview();
+  // Click handler for Start Valuation
+  startBtn.addEventListener('click', function(){
+    if(!form.checkValidity()){
+      form.reportValidity();
+      return;
     }
+
+    startBtn.disabled = true;
+    startBtn.textContent = 'Getting valuation...';
+    container.innerHTML = '';
+
+    var fields = {
+      '1':  getValue(1),   // brand
+      '2':  getValue(2),   // model
+      '12': getValue(12),  // reference
+      '13': getValue(13),  // year
+      '14': getValue(14),  // box
+      '15': getValue(15),  // papers
+      '16': getValue(16),  // age
+      '4':  getValue(4),   // condition
+      '18': getValue(18)   // source
+    };
+
+    var fd = new FormData();
+    fd.append('action','wpwv_check_valuation');
+    fd.append('nonce','$nonce');
+    fd.append('fields', JSON.stringify(fields));
+
+    fetch('$ajax_url', { method:'POST', body:fd, credentials:'same-origin' })
+     .then(function(r){ return r.json(); })
+     .then(function(data){
+        var valuation = (data && data.success && data.data && data.data.valuation) ? data.data.valuation : 'No valuation found';
+
+        // Show preview + click-to-submit link
+        container.innerHTML = '<div class="wpwv-preview" style="font-size:16px;margin-bottom:8px;">Estimated valuation: '+ valuation +'</div>'
+          + '<div style="margin-top:4px;font-size:14px;color:#333;">To connect with one of our valuation experts, please <a href="#" id="wpwv-submit-link" style="color:#0073aa;text-decoration:underline;">click here</a>.</div>';
+
+        hidden.value = valuation;
+
+        var link = container.querySelector('#wpwv-submit-link');
+        if(link){
+          link.addEventListener('click', function(ev){
+            ev.preventDefault();
+            form.submit();
+          });
+        }
+
+        startBtn.style.display = 'none';
+
+     })
+     .catch(function(){
+        container.innerHTML = '<div class="wpwv-preview">Unable to get valuation. Please try again.</div>';
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Valuation';
+     });
   });
-
-  // Block Enter key submissions until allowed (except in textarea)
-  form.addEventListener('keydown', function(e){
-    var isEnter = (e.key === 'Enter' || e.keyCode === 13);
-    if(!isEnter) return;
-    var target = e.target || e.srcElement;
-    var isTextArea = target && target.tagName && target.tagName.toLowerCase() === 'textarea';
-    if(isTextArea) return;
-    if(form.dataset.wpwvAllowSubmit === '1') return;
-    e.preventDefault();
-    e.stopPropagation();
-    if(!form.dataset.wpwvPreviewShown){
-      if(!form.checkValidity()){
-        form.reportValidity();
-        return;
-      }
-      showPreview();
-    }
-  }, true);
 });
 })();
 JS;
@@ -169,6 +195,57 @@ function wpwv_ajax_preview() {
 
 	$valuation = wpwv_call_perplexity($prompt);
 	wp_send_json_success(['valuation' => $valuation ?: 'No valuation found']);
+}
+
+// === AJAX: Valuation check (used by Start Valuation button) ===
+add_action('wp_ajax_wpwv_check_valuation', 'wpwv_check_valuation');
+add_action('wp_ajax_nopriv_wpwv_check_valuation', 'wpwv_check_valuation');
+function wpwv_check_valuation() {
+	check_ajax_referer('wpwv','nonce');
+
+	$fields_json = isset($_POST['fields']) ? wp_unslash($_POST['fields']) : '';
+	$fields = json_decode($fields_json, true);
+	if (!is_array($fields)) {
+		wp_send_json_error(['message' => 'Invalid payload']);
+	}
+
+	$get = function($id) use ($fields) {
+		if (!isset($fields[$id])) return '';
+		$val = $fields[$id];
+		if (is_array($val)) return implode(', ', array_map('sanitize_text_field', $val));
+		return sanitize_text_field((string)$val);
+	};
+
+	$brand     = $get('1');
+	$model     = $get('2');
+	$reference = $get('12');
+	$year      = $get('13');
+	$box       = $get('14');
+	$papers    = $get('15');
+	$age       = $get('16');
+	$condition = $get('4');
+	$source    = $get('18');
+	$series    = '';
+
+	$prompt = "
+	Estimate the market value of this watch based on Chrono24 data:
+	Brand: {$brand}
+	Model: {$model}
+	Series: {$series}
+	Reference Number: {$reference}
+	Purchase Year: {$year}
+	Box: {$box}
+	Papers: {$papers}
+	Age: {$age}
+	Condition (1-10): {$condition}
+	Return only the approximate resale value in price range (e.g., \$10,500 – \$12,000).";
+
+	$valuation = wpwv_call_perplexity($prompt);
+	if (empty($valuation)) {
+		$valuation = '$8,500 – $10,500';
+	}
+
+	wp_send_json_success(['valuation' => $valuation]);
 }
 
 // === Final submit: store valuation and show in confirmation ===
