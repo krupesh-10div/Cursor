@@ -50,14 +50,12 @@ document.addEventListener('DOMContentLoaded',function(){
       + '<div style="margin-top:4px;font-size:14px;color:#333;">To connect with one of our valuation experts, please <a href="#" id="wpwv-submit-link" style="color:#0073aa;text-decoration:underline;">click here</a>.</div>';
     var h = document.getElementById('wpwv_valuation_preview');
     if(h){ h.value = valuation; }
-    if(submitBtn){ submitBtn.disabled = true; }
     form.dataset.wpwvPreviewShown = '1';
     var link = container.querySelector('#wpwv-submit-link');
     if(link){
       link.addEventListener('click', function(ev){
         ev.preventDefault();
         form.dataset.wpwvAllowSubmit = '1';
-        if(submitBtn){ submitBtn.disabled = false; }
         form.submit();
       });
     }
@@ -65,8 +63,11 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Make the original submit button act as a preview trigger only
   if(submitBtn){
-    submitBtn.setAttribute('type','button');
-    submitBtn.addEventListener('click', function(){
+    // Keep it visually and functionally a button, but block submission
+    submitBtn.addEventListener('click', function(e){
+      if(e && typeof e.preventDefault === 'function') e.preventDefault();
+      if(e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      if(e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
       if(!form.checkValidity()){
         form.reportValidity();
         return;
@@ -87,6 +88,25 @@ document.addEventListener('DOMContentLoaded',function(){
       showPreview();
     }
   });
+
+  // Block Enter key submissions until allowed (except in textarea)
+  form.addEventListener('keydown', function(e){
+    var isEnter = (e.key === 'Enter' || e.keyCode === 13);
+    if(!isEnter) return;
+    var target = e.target || e.srcElement;
+    var isTextArea = target && target.tagName && target.tagName.toLowerCase() === 'textarea';
+    if(isTextArea) return;
+    if(form.dataset.wpwvAllowSubmit === '1') return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(!form.dataset.wpwvPreviewShown){
+      if(!form.checkValidity()){
+        form.reportValidity();
+        return;
+      }
+      showPreview();
+    }
+  }, true);
 });
 })();
 JS;
