@@ -117,6 +117,11 @@
 				form.appendChild(hiddenInput);
 			}
 			hiddenInput.value = json.data && json.data.valuation ? json.data.valuation : '';
+			// Also populate the existing WPForms hidden field so it shows in {all_fields}
+			var wpformsHidden = qs(form, '#wpforms-' + formId + '-field_20');
+			if (wpformsHidden) {
+				wpformsHidden.value = hiddenInput.value;
+			}
 			// Hide the estimate button once we have a valuation
 			hideElement(estimateBtn);
 		})
