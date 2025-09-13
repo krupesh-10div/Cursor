@@ -53,7 +53,7 @@
 	function renderEstimate(container, valuationText, submitBtn) {
 		if (!container) return;
 		var safeValuation = escapeHtml(valuationText || '');
-		container.innerHTML = "<p>Estimated valuation for your watch is " + safeValuation + ". To get in touch with our valuation expert <a href='#' style='color:#0073aa; text-decoration:underline;'>click here</a>.</p>";
+		container.innerHTML = "<p>Estimated valuation for your watch is " + safeValuation + ". To get in touch with our valuation expert <a style='color:#0073aa; text-decoration:underline;'>click here</a>.</p>";
 		var a = qs(container, 'a');
 		if (a) {
 			a.addEventListener('click', function(e) {
@@ -132,7 +132,7 @@
 		// Hide any existing Start/Submit buttons
 		var originalSubmit = qs(form, '#wpforms-submit-' + WPWV.formId);
 		var customStartBtn = qs(form, '#wpwv-start-btn');
-		var startBtnClasses = 'wpwv-estimate-btn elementor-button elementor-size-sm';
+		var startBtnClasses = 'wpwv-estimate-btn elementor-button elementor-size-sm wpforms-page-button';
 		if (customStartBtn && customStartBtn.className) {
 			startBtnClasses = customStartBtn.className + ' wpwv-estimate-btn';
 		}
@@ -171,4 +171,3 @@
 		init();
 	}
 })();
-
