@@ -8,28 +8,37 @@ Author: Your Name
 
 if (!defined('ABSPATH')) exit;
 
-// ================================
-// Enqueue front-end assets
-// ================================
+// Optional: define your API key via wp-config.php or environment
+define('WPWV_PERPLEXITY_API_KEY', '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');
+
 add_action('wp_enqueue_scripts', function() {
-	// Only enqueue on frontend
 	if (is_admin()) return;
 
 	$handle = 'wpwv-estimate';
 	$src    = plugins_url('assets/estimate.js', __FILE__);
- 	$ver    = '1.2';
+	$ver    = '1.2';
 
- 	wp_enqueue_script($handle, $src, array('jquery'), $ver, true);
+	wp_enqueue_script($handle, $src, array('jquery'), $ver, true);
 	wp_localize_script($handle, 'WPWV', array(
 		'ajax_url' => admin_url('admin-ajax.php'),
 		'nonce'    => wp_create_nonce('wpwv_nonce'),
 		'formId'   => 765,
+		// Field mapping (adjust to your WPForms field IDs)
+		'fields'   => array(
+			'brand'           => 1,
+			'model'           => 2,
+			'condition'       => 4,
+			'reference'       => 12,
+			'year'            => 13,
+			'box'             => 14,
+			'papers'          => 15,
+			'age'             => 16,
+			'source'          => 18,
+			'valuationHidden' => 20,
+		),
 	));
 });
 
-// ================================
-// AJAX: Pre-submit estimation
-// ================================
 add_action('wp_ajax_wpwv_estimate_valuation', 'wpwv_estimate_valuation');
 add_action('wp_ajax_nopriv_wpwv_estimate_valuation', 'wpwv_estimate_valuation');
 function wpwv_estimate_valuation() {
@@ -57,19 +66,24 @@ function wpwv_estimate_valuation() {
 	$series = '';
 
 	$prompt = "
-	Estimate the market value of this watch based on Chrono24 data:
-	Brand: {$brand}
-	Model: {$model}
-	Series: {$series}
-	Reference Number: {$reference}
-	Purchase Year: {$year}
-	Box: {$box}
-	Papers: {$papers}
-	Age: {$age}
-	Condition (1-10): {$condition}
-	Return only the approximate resale value in price range (e.g., $10,500 – $12,000). Do not include explanations, descriptions, references, or any other text.";
+Estimate the market value of this watch based on Chrono24 data:
+Brand: {$brand}
+Model: {$model}
+Series: {$series}
+Reference Number: {$reference}
+Purchase Year: {$year}
+Box: {$box}
+Papers: {$papers}
+Age: {$age}
+Condition (1-10): {$condition}
+Return only the approximate resale value in price range (e.g., \$10,500 – \$12,000). Do not include explanations, descriptions, references, or any other text.";
 
-	$perplexity_api_key = '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';
+	// Prefer constant or env var; fallback to empty which will error cleanly
+	$perplexity_api_key = defined('WPWV_PERPLEXITY_API_KEY') ? WPWV_PERPLEXITY_API_KEY : getenv('PPLX_API_KEY');
+	if (empty($perplexity_api_key)) {
+		wp_send_json_error(array('message' => 'API key not configured.'));
+	}
+
 	$api_url = 'https://api.perplexity.ai/chat/completions';
 
 	$response = wp_remote_post($api_url, array(
@@ -103,4 +117,3 @@ function wpwv_estimate_valuation() {
 		'valuation' => $valuation,
 	));
 }
-
