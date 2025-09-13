@@ -140,17 +140,14 @@
 		}
 		if (!form || !formId) return;
 
-		// Hide any existing Start/Submit buttons
+		// Reference existing Start/Submit buttons
 		var originalSubmit = qs(form, '#wpforms-submit-' + WPWV.formId);
 		var customStartBtn = qs(form, '#wpwv-start-btn');
-		var startBtnClasses = 'wpwv-estimate-btn elementor-button elementor-size-sm wpforms-page-button';
+		var startBtnClasses = 'wpwv-estimate-btn elementor-button elementor-size-sm';
 		if (customStartBtn && customStartBtn.className) {
-			startBtnClasses = customStartBtn.className + ' wpwv-estimate-btn';
+			startBtnClasses = (customStartBtn.className + ' wpwv-estimate-btn').replace(/\bwpforms-page-button\b/g, '').trim();
 		}
-		if (originalSubmit) {
-			originalSubmit.style.display = 'none';
-			originalSubmit.setAttribute('aria-hidden', 'true');
-		}
+		// Keep original submit visible for accessibility
 		hideElement(customStartBtn);
 
 		// Ensure a valuation container exists just above the submit container
@@ -169,6 +166,10 @@
 
 		// Insert Estimate Valuation button (match Start Valuation styles)
 		var estimateBtn = createButton('Estimate Valuation', startBtnClasses);
+		estimateBtn.removeAttribute('disabled');
+		estimateBtn.removeAttribute('aria-hidden');
+		estimateBtn.setAttribute('aria-disabled', 'false');
+		estimateBtn.style.display = '';
 		submitContainer.appendChild(estimateBtn);
 
 		estimateBtn.addEventListener('click', function() {
