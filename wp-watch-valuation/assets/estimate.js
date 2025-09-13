@@ -53,7 +53,8 @@
 	function renderEstimate(container, valuationText, submitBtn) {
 		if (!container) return;
 		var safeValuation = escapeHtml(valuationText || '');
-		container.innerHTML = "<p>Estimated valuation for your watch is " + safeValuation + ". To get in touch with our valuation expert <a style='color:#0073aa; text-decoration:underline;'>click here</a>.</p>";
+		container.style.display = '';
+		container.innerHTML = "<p>Estimated valuation for your watch is " + safeValuation + ". To get in touch with our valuation expert <a href='#' role='button' style='color:#0073aa; text-decoration:underline;'>click here</a>.</p>";
 		var a = qs(container, 'a');
 		if (a) {
 			a.addEventListener('click', function(e) {
@@ -76,6 +77,16 @@
 		var source    = getFieldValue('#wpforms-' + formId + '-field_18');
 
 		var container = qs(form, '#wpwv-valuation-container') || qs(document, '#wpwv-valuation-container');
+		if (!container) {
+			var submitContainerTmp = qs(form, '.wpforms-submit-container');
+			container = document.createElement('div');
+			container.id = 'wpwv-valuation-container';
+			if (submitContainerTmp && submitContainerTmp.parentNode) {
+				submitContainerTmp.parentNode.insertBefore(container, submitContainerTmp);
+			} else {
+				form.appendChild(container);
+			}
+		}
 		if (container) {
 			container.textContent = 'Calculating estimate…';
 		}
@@ -114,18 +125,18 @@
 	}
 
 	function init() {
-		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : '';
-		var form = null;
-		if (formId) {
-			form = qs(document, '#wpforms-form-' + formId);
+		var formId = '';
+		var form = qs(document, 'form.wpforms-form');
+		if (!form && window.WPWV && WPWV.formId) {
+			form = qs(document, '#wpforms-form-' + WPWV.formId);
 		}
-		if (!form) {
-			form = qs(document, 'form.wpforms-form');
-			formId = getFormIdFromForm(form);
-			if (formId) {
-				window.WPWV = window.WPWV || {};
-				WPWV.formId = formId;
-			}
+		formId = getFormIdFromForm(form);
+		if (!formId && window.WPWV && WPWV.formId) {
+			formId = String(WPWV.formId);
+		}
+		if (formId) {
+			window.WPWV = window.WPWV || {};
+			WPWV.formId = formId;
 		}
 		if (!form || !formId) return;
 
@@ -165,9 +176,23 @@
 		});
 	}
 
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', init);
-	} else {
+	function bootstrap() {
 		init();
+		var observed = false;
+		if ('MutationObserver' in window && !qs(document, 'form.wpforms-form')) {
+			var mo = new MutationObserver(function() {
+				if (!observed && qs(document, 'form.wpforms-form')) {
+					observed = true;
+					init();
+				}
+			});
+			mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', bootstrap);
+	} else {
+		bootstrap();
 	}
 })();
