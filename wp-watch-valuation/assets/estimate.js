@@ -65,6 +65,20 @@
 
 	function estimate(form, estimateBtn) {
 		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : getFormIdFromForm(form);
+		// Run validation first: trigger WPForms/client validation and show field-wise errors
+		var originalSubmitBtn = qs(form, '#wpforms-submit-' + formId);
+		if (originalSubmitBtn) {
+			// Intercept the submit to avoid actual submission while letting WPForms show errors
+			var intercept = function(e) { e.preventDefault(); e.stopPropagation(); };
+			form.addEventListener('submit', intercept, true);
+			originalSubmitBtn.click();
+			form.removeEventListener('submit', intercept, true);
+		}
+		// If the form is invalid per HTML5 constraints, show browser errors and stop
+		if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+			if (typeof form.reportValidity === 'function') form.reportValidity();
+			return;
+		}
 		var brand     = getFieldValue('#wpforms-' + formId + '-field_1');
 		var model     = getFieldValue('#wpforms-' + formId + '-field_2');
 		var reference = getFieldValue('#wpforms-' + formId + '-field_12');
