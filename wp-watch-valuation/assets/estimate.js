@@ -9,6 +9,15 @@
 		el.disabled = true;
 	}
 
+	function getFormIdFromForm(form) {
+		if (!form || !form.id) return '';
+		var id = form.id;
+		if (id.indexOf('wpforms-form-') === 0) {
+			return id.replace('wpforms-form-', '');
+		}
+		return '';
+	}
+
 	function createButton(text, classes) {
 		var btn = document.createElement('button');
 		btn.type = 'button';
@@ -59,15 +68,16 @@
 	}
 
 	function estimate(form) {
-		var brand     = getFieldValue('#wpforms-765-field_1');
-		var model     = getFieldValue('#wpforms-765-field_2');
-		var reference = getFieldValue('#wpforms-765-field_12');
-		var year      = getFieldValue('#wpforms-765-field_13');
-		var box       = getCheckboxValues('#wpforms-765-field_14');
-		var papers    = getCheckboxValues('#wpforms-765-field_15');
-		var age       = getFieldValue('#wpforms-765-field_16');
-		var condition = getFieldValue('#wpforms-765-field_4');
-		var source    = getFieldValue('#wpforms-765-field_18');
+		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : getFormIdFromForm(form);
+		var brand     = getFieldValue('#wpforms-' + formId + '-field_1');
+		var model     = getFieldValue('#wpforms-' + formId + '-field_2');
+		var reference = getFieldValue('#wpforms-' + formId + '-field_12');
+		var year      = getFieldValue('#wpforms-' + formId + '-field_13');
+		var box       = getCheckboxValues('#wpforms-' + formId + '-field_14');
+		var papers    = getCheckboxValues('#wpforms-' + formId + '-field_15');
+		var age       = getFieldValue('#wpforms-' + formId + '-field_16');
+		var condition = getFieldValue('#wpforms-' + formId + '-field_4');
+		var source    = getFieldValue('#wpforms-' + formId + '-field_18');
 
 		var container = qs(form, '#wpwv-valuation-container') || qs(document, '#wpwv-valuation-container');
 		if (container) {
@@ -87,7 +97,7 @@
 		formData.append('condition', condition);
 		formData.append('source', source);
 
-		var submitBtn = qs(form, '#wpforms-submit-765');
+		var submitBtn = qs(form, '#wpforms-submit-' + formId);
 
 		fetch((window.WPWV && WPWV.ajax_url) ? WPWV.ajax_url : '/wp-admin/admin-ajax.php', {
 			method: 'POST',
@@ -108,9 +118,20 @@
 	}
 
 	function init() {
-		if (!window.WPWV || !WPWV.formId) return;
-		var form = qs(document, '#wpforms-form-' + WPWV.formId);
-		if (!form) return;
+		var formId = (window.WPWV && WPWV.formId) ? WPWV.formId : '';
+		var form = null;
+		if (formId) {
+			form = qs(document, '#wpforms-form-' + formId);
+		}
+		if (!form) {
+			form = qs(document, 'form.wpforms-form');
+			formId = getFormIdFromForm(form);
+			if (formId) {
+				window.WPWV = window.WPWV || {};
+				WPWV.formId = formId;
+			}
+		}
+		if (!form || !formId) return;
 
 		// Hide any existing Start/Submit buttons
 		var originalSubmit = qs(form, '#wpforms-submit-' + WPWV.formId);
@@ -121,9 +142,21 @@
 		}
 		hideElement(customStartBtn);
 
-		// Insert Estimate Valuation button
+		// Ensure a valuation container exists just above the submit container
 		var submitContainer = qs(form, '.wpforms-submit-container');
 		if (!submitContainer) return;
+		var valuationContainer = qs(form, '#wpwv-valuation-container');
+		if (!valuationContainer) {
+			valuationContainer = document.createElement('div');
+			valuationContainer.id = 'wpwv-valuation-container';
+			if (submitContainer.parentNode) {
+				submitContainer.parentNode.insertBefore(valuationContainer, submitContainer);
+			} else {
+				form.appendChild(valuationContainer);
+			}
+		}
+
+		// Insert Estimate Valuation button
 		var estimateBtn = createButton('Estimate Valuation', 'wpwv-estimate-btn elementor-button elementor-size-sm');
 		submitContainer.appendChild(estimateBtn);
 
