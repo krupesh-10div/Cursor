@@ -174,15 +174,70 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	$short = icart_dl_trim_to_chars(sprintf('Summary of %s.', $title), 170);
+	// Generate short description from the title (API if configured; else local fallback)
+	$short = icart_dl_generate_short_from_title($title);
 	return array($title, $short);
 }
 
 /**
- * Generate title and short description via Perplexity API.
- * Returns array(title, short) or null on failure/misconfiguration.
+ * Generate a short description from a title. Uses Perplexity API when configured, else local fallback.
  */
-// Removed Perplexity API generation from helpers to avoid network calls during uploads or page loads
+function icart_dl_generate_short_from_title($title) {
+	$settings = icart_dl_get_settings();
+	$api_key = isset($settings['perplexity_api_key']) ? trim($settings['perplexity_api_key']) : '';
+	$model = isset($settings['perplexity_model']) ? $settings['perplexity_model'] : 'sonar-pro';
+	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+
+	if ($api_key === '' || $title === '') {
+		return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
+	}
+
+	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
+		'Write concise, benefit-led copy using ONLY the provided title for context. Do not repeat or restate the title. ' .
+		'Output strict JSON ONLY with key: short_description.';
+
+	$user = wp_json_encode(array(
+		'instructions' => 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title. Return JSON only.',
+		'title' => $title,
+		'brand_tone' => $brand_tone,
+		'constraints' => array(
+			'short_description_min_words' => 22,
+			'short_description_max_words' => 25,
+		),
+	));
+
+	$body = array(
+		'model' => $model,
+		'messages' => array(
+			array('role' => 'system', 'content' => $system),
+			array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
+		),
+		'temperature' => 0.4,
+		'max_tokens' => 200,
+	);
+
+	$args = array(
+		'headers' => array(
+			'Authorization' => 'Bearer ' . $api_key,
+			'Content-Type' => 'application/json',
+		),
+		'body' => wp_json_encode($body),
+		'timeout' => 20,
+	);
+
+	$response = wp_remote_post('https://api.perplexity.ai/chat/completions', $args);
+	if (is_wp_error($response)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	$code = wp_remote_retrieve_response_code($response);
+	$raw = wp_remote_retrieve_body($response);
+	if ($code < 200 || $code >= 300 || empty($raw)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	$data = json_decode($raw, true);
+	if (!isset($data['choices'][0]['message']['content'])) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	$txt = trim($data['choices'][0]['message']['content']);
+	$decoded = json_decode($txt, true);
+	if (!is_array($decoded)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	$short = isset($decoded['short_description']) ? sanitize_text_field($decoded['short_description']) : '';
+	return icart_dl_trim_to_chars($short !== '' ? $short : sprintf('Brief overview of %s.', $title), 170);
+}
 
 function icart_dl_build_json_from_landing_map() {
 	$opts = icart_dl_get_settings();
