@@ -19,12 +19,11 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
    - Place product-specific keyword CSVs in `wp-content/plugins/icart-dynamic-landing/sample/keywords/` as `<product_key>.csv` (first column keywords)
 4. No shortcode needed; visit your keyword slugs directly.
 
-## Fast JSON-Based Workflow (No API Calls)
+## Fast JSON-Based Workflow
 
-1. In Settings → iCart Dynamic Landing, check "Disable API Calls".
-2. Upload your keywords CSV(s). Files are stored under `sample/keywords/`.
-3. Click "Build landing-content.json" to generate `sample/content/landing-content.json`.
-4. The plugin will read `title` and `short_description` from this JSON for each slug.
+1. Upload your keywords CSV(s). Files are stored under `sample/keywords/`.
+2. Optionally check "Generate JSON file after upload" next to the filename field to automatically create/update `sample/content/landing-content.json`.
+3. The plugin reads `title` and `short_description` from this JSON for each slug. No API calls are made at runtime.
 
 JSON entry structure:
 
@@ -50,15 +49,13 @@ JSON entry structure:
 - Root SEO URLs from Keywords: each `slug` becomes `/slug` and routes to your landing page
 
 ## Notes
-- Use WP-CLI to build/enrich the JSON:
+- Use WP-CLI to build the JSON if needed (no enrichment at runtime):
 
 ```
 wp icart-dl build-json
-wp icart-dl enrich-json
-wp icart-dl enrich-json --force
 ```
 
-- If no API key is set, the plugin falls back to a sensible default copy.
+- If an entry is missing in JSON, the plugin falls back to a sensible default copy.
 - After uploading Keywords, permalinks are auto-flushed; if not, save permalinks manually.
 
 

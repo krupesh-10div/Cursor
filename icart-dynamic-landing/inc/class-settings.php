@@ -27,7 +27,6 @@ class ICartDL_Settings {
 		add_settings_section('icart_dl_api', __('Perplexity Settings', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('perplexity_api_key', __('API Key', 'icart-dl'), array($this, 'field_api_key'), $this->option_key, 'icart_dl_api');
 		add_settings_field('perplexity_model', __('Model', 'icart-dl'), array($this, 'field_model'), $this->option_key, 'icart_dl_api');
-		add_settings_field('disable_api', __('Disable API Calls', 'icart-dl'), array($this, 'field_disable_api'), $this->option_key, 'icart_dl_api');
 
 		add_settings_section('icart_dl_brand', __('Branding & Behavior', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
@@ -35,9 +34,6 @@ class ICartDL_Settings {
 
 		add_settings_section('icart_dl_products', __('Keywords & Landing', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('keywords_file_upload', __('Upload Keywords CSV to sample/keywords/', 'icart-dl'), array($this, 'field_keywords_file_upload'), $this->option_key, 'icart_dl_products');
-
-		add_settings_section('icart_dl_content_json', __('Content JSON', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('build_content_json', __('Build JSON from CSV', 'icart-dl'), array($this, 'field_build_content_json'), $this->option_key, 'icart_dl_content_json');
 
 		// Routing: landing page slug no longer required (direct template routing)
 	}
@@ -48,7 +44,7 @@ class ICartDL_Settings {
 		$output['perplexity_model'] = isset($input['perplexity_model']) ? sanitize_text_field($input['perplexity_model']) : 'sonar-pro';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
-		$output['disable_api'] = !empty($input['disable_api']) ? 1 : 0;
+		// remove disable_api option (no API usage at runtime)
 		// landing_page_slug removed
 
 		// Upload keywords CSV into sample/keywords/
@@ -71,15 +67,12 @@ class ICartDL_Settings {
 				copy($uploaded['file'], $dest);
 				// Trigger rescan to rebuild landing_map
 				dl_sync_landing_map_from_samples();
-				// Build content JSON immediately for faster usage
-				icart_dl_build_json_from_landing_map();
+				// Optionally build content JSON if requested this submit
+				if (!empty($input['build_json_after_upload'])) {
+					icart_dl_build_json_from_landing_map();
+				}
 				set_transient('dl_flush_rewrite', 1, 60);
 			}
-		}
-
-		// If user clicked the build JSON action, build from current landing map
-		if (!empty($input['build_content_json'])) {
-			icart_dl_build_json_from_landing_map();
 		}
 
 		// Landing map upload removed; landing map is built from sample keywords
@@ -130,17 +123,6 @@ class ICartDL_Settings {
 		<?php
 	}
 
-	public function field_disable_api() {
-		$opts = icart_dl_get_settings();
-		$checked = !empty($opts['disable_api']);
-		?>
-		<label>
-			<input type="checkbox" name="<?php echo esc_attr($this->option_key); ?>[disable_api]" value="1" <?php checked($checked, true); ?> />
-			<?php echo esc_html__('Do not call Perplexity; use JSON/fallback only.', 'icart-dl'); ?>
-		</label>
-		<?php
-	}
-
 	public function field_brand_tone() {
 		$opts = icart_dl_get_settings();
 		?>
@@ -166,19 +148,10 @@ class ICartDL_Settings {
 		<br />
 		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[keywords_filename]" value="" class="regular-text" placeholder="Optional filename, e.g., icart.csv" />
 		<p class="description">Provide a filename to save under sample/keywords/. Leave blank to keep original name.</p>
-		<?php
-	}
-
-	public function field_build_content_json() {
-		$path = icart_dl_content_json_path();
-		$exists = file_exists($path);
-		?>
-		<button type="submit" class="button button-secondary" name="<?php echo esc_attr($this->option_key); ?>[build_content_json]" value="1">Build landing-content.json</button>
-		<?php if ($exists): ?>
-			<p class="description">Current file: <code><?php echo esc_html(basename($path)); ?></code>. Location: <code>sample/content/</code></p>
-		<?php else: ?>
-			<p class="description">This will create <code>sample/content/landing-content.json</code> with title, short_description and URL per slug.</p>
-		<?php endif; ?>
+		<label>
+			<input type="checkbox" name="<?php echo esc_attr($this->option_key); ?>[build_json_after_upload]" value="1" />
+			<?php echo esc_html__('Generate JSON file after upload', 'icart-dl'); ?>
+		</label>
 		<?php
 	}
 
