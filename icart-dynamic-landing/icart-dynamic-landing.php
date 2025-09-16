@@ -28,6 +28,7 @@ spl_autoload_register(function ($class) {
 });
 
 require_once DL_PLUGIN_DIR . 'inc/helpers.php';
+require_once DL_PLUGIN_DIR . 'inc/class-cli.php';
 
 function icart_dl_init() {
 	// Ensure transients are namespaced
@@ -101,6 +102,7 @@ function icart_dl_activate() {
 		'perplexity_model' => 'sonar-pro',
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
 		'cache_ttl' => 3600,
+		'disable_api' => 1,
 		'mapping' => array(),
 		'landing_map' => array(),
 		'landing_page_slug' => 'dynamic-landing',

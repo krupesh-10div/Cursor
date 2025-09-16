@@ -116,5 +116,84 @@ function dl_sync_landing_map_from_samples() {
 	}
 }
 
+/**
+ * JSON Content Store helpers
+ */
+function icart_dl_content_json_dir() {
+	return DL_PLUGIN_DIR . 'sample/content/';
+}
+
+function icart_dl_content_json_path() {
+	return icart_dl_content_json_dir() . 'landing-content.json';
+}
+
+function icart_dl_ensure_content_dir() {
+	$dir = icart_dl_content_json_dir();
+	if (!is_dir($dir)) {
+		wp_mkdir_p($dir);
+	}
+}
+
+function icart_dl_load_content_map() {
+	$path = icart_dl_content_json_path();
+	if (!file_exists($path)) {
+		return array();
+	}
+	$raw = file_get_contents($path);
+	$data = json_decode($raw, true);
+	return is_array($data) ? $data : array();
+}
+
+function icart_dl_write_content_map($map) {
+	icart_dl_ensure_content_dir();
+	$path = icart_dl_content_json_path();
+	$payload = wp_json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+	file_put_contents($path, $payload);
+}
+
+function icart_dl_build_json_from_landing_map() {
+	$opts = icart_dl_get_settings();
+	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
+	$map = array();
+	foreach ($entries as $row) {
+		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
+		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
+		if ($slug === '') { continue; }
+		$map[$slug] = array(
+			'slug' => $slug,
+			'url' => trailingslashit(home_url('/' . $slug)),
+			'keywords' => $keywords,
+			'title' => isset($row['title']) ? sanitize_text_field($row['title']) : '',
+			'short_description' => isset($row['description']) ? sanitize_text_field($row['description']) : '',
+		);
+	}
+	if (!empty($map)) {
+		icart_dl_write_content_map($map);
+	}
+}
+
+function icart_dl_lookup_content_for_keywords($keywords) {
+	$slug = sanitize_title($keywords);
+	$entry = icart_dl_get_landing_entry();
+	if ($entry && !empty($entry['slug'])) {
+		$slug = sanitize_title($entry['slug']);
+	}
+	$map = icart_dl_load_content_map();
+	if (isset($map[$slug]) && is_array($map[$slug])) {
+		$row = $map[$slug];
+		$title = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+		$short = isset($row['short_description']) ? sanitize_text_field($row['short_description']) : '';
+		return array(
+			'title' => $title,
+			'short_description' => $short,
+			'heading' => $title,
+			'subheading' => '',
+			'explanation' => $short,
+			'cta' => '',
+		);
+	}
+	return null;
+}
+
 ?>
 

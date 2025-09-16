@@ -13,11 +13,19 @@ class ICartDL_Content_Generator {
 			return $cached;
 		}
 
+		// Attempt to source from local JSON first for fastest results
+		$json_content = icart_dl_lookup_content_for_keywords($keywords);
+		if (is_array($json_content)) {
+			set_transient($transient_key, $json_content, $cache_ttl);
+			return $json_content;
+		}
+
 		$api_key = $settings['perplexity_api_key'] ?? '';
 		$model = $settings['perplexity_model'] ?? 'sonar-pro';
 		$brand_tone = $settings['brand_tone'] ?? '';
+		$disable_api = !empty($settings['disable_api']);
 
-		if (empty($api_key)) {
+		if ($disable_api || empty($api_key)) {
 			$result = self::fallback($keywords);
 			set_transient($transient_key, $result, $cache_ttl);
 			return $result;
