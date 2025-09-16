@@ -180,24 +180,25 @@ function icart_dl_generate_25_word_description_from_keywords($keywords) {
 		if (!isset($seen[$t])) { $seen[$t] = true; $tokens[] = $t; }
 	}
 	if (empty($tokens)) { $tokens = array('description'); }
-	// Neutral connectors (no pre/post fixed phrases)
-	$connectors = array('for','with','and','to','in','on','by','from','about','toward','into','across','within','over','through');
+	// Deterministic shuffle order based on keyword hash
+	$seed = hexdec(substr(md5($kw), 0, 8));
+	$indices = range(0, count($tokens) - 1);
+	usort($indices, function($a, $b) use ($tokens, $seed) {
+		$ha = crc32($tokens[$a] . '|' . $seed);
+		$hb = crc32($tokens[$b] . '|' . $seed);
+		if ($ha === $hb) { return 0; }
+		return ($ha < $hb) ? -1 : 1;
+	});
 	$out = array();
-	$i = 0; $j = 0;
+	$rotation = 0;
 	while (count($out) < 25) {
-		if ($i < count($tokens)) {
-			$out[] = $tokens[$i];
-			$i++;
-		} else {
-			$out[] = $connectors[$j % count($connectors)];
-			$j++;
+		foreach ($indices as $pos) {
+			$pick = $tokens[($pos + $rotation) % count($tokens)];
+			if (!empty($out) && end($out) === $pick) { continue; }
+			$out[] = $pick;
+			if (count($out) >= 25) { break; }
 		}
-		// Avoid immediate duplicates
-		$cnt = count($out);
-		if ($cnt >= 2 && $out[$cnt-1] === $out[$cnt-2]) {
-			$out[$cnt-1] = $connectors[$j % count($connectors)];
-			$j++;
-		}
+		$rotation++;
 	}
 	$sentence = implode(' ', $out);
 	$sentence = mb_strtoupper(mb_substr($sentence, 0, 1)) . mb_substr($sentence, 1) . '.';
