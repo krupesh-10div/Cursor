@@ -170,16 +170,34 @@ function icart_dl_trim_to_chars($text, $max) {
 	return rtrim($truncated, "\s\.,;:!-—") . '…';
 }
 
-function icart_dl_generate_25_word_description_from_title($title) {
-	$title = trim((string)$title);
-	$tokens = preg_split('/[^a-z0-9]+/i', mb_strtolower($title), -1, PREG_SPLIT_NO_EMPTY);
+function icart_dl_generate_25_word_description_from_keywords($keywords) {
+	$kw = trim((string)$keywords);
+	$raw_tokens = preg_split('/[^a-z0-9]+/i', mb_strtolower($kw), -1, PREG_SPLIT_NO_EMPTY);
+	// Deduplicate while preserving order
+	$seen = array();
+	$tokens = array();
+	foreach ($raw_tokens as $t) {
+		if (!isset($seen[$t])) { $seen[$t] = true; $tokens[] = $t; }
+	}
 	if (empty($tokens)) { $tokens = array('description'); }
+	// Neutral connectors (no pre/post fixed phrases)
+	$connectors = array('for','with','and','to','in','on','by','from','about','toward','into','across','within','over','through');
 	$out = array();
-	$idx = 0;
-	$len = count($tokens);
+	$i = 0; $j = 0;
 	while (count($out) < 25) {
-		$out[] = $tokens[$idx % $len];
-		$idx++;
+		if ($i < count($tokens)) {
+			$out[] = $tokens[$i];
+			$i++;
+		} else {
+			$out[] = $connectors[$j % count($connectors)];
+			$j++;
+		}
+		// Avoid immediate duplicates
+		$cnt = count($out);
+		if ($cnt >= 2 && $out[$cnt-1] === $out[$cnt-2]) {
+			$out[$cnt-1] = $connectors[$j % count($connectors)];
+			$j++;
+		}
 	}
 	$sentence = implode(' ', $out);
 	$sentence = mb_strtoupper(mb_substr($sentence, 0, 1)) . mb_substr($sentence, 1) . '.';
@@ -190,8 +208,8 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	// Generate a 25-word short description from the title (no fixed prefixes)
-	$short = icart_dl_generate_25_word_description_from_title($title);
+	// Generate a 25-word short description from the original keywords (no fixed prefixes)
+	$short = icart_dl_generate_25_word_description_from_keywords($keywords);
 	return array($title, $short);
 }
 
@@ -200,7 +218,7 @@ function icart_dl_generate_title_short_local($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	$short = icart_dl_generate_25_word_description_from_title($title);
+	$short = icart_dl_generate_25_word_description_from_keywords($keywords);
 	return array($title, $short);
 }
 
