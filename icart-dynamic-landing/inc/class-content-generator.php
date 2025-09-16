@@ -7,7 +7,9 @@ class ICartDL_Content_Generator {
 	public static function generate($keywords) {
 		$settings = icart_dl_get_settings();
 		$cache_ttl = isset($settings['cache_ttl']) ? intval($settings['cache_ttl']) : 3600;
-		$transient_key = icart_dl_build_transient_key('perplexity', $keywords);
+		// Include JSON file mtime salt in cache key so updates invalidate cache
+		$json_salt = function_exists('icart_dl_get_json_cache_salt_for_keywords') ? icart_dl_get_json_cache_salt_for_keywords($keywords) : '';
+		$transient_key = icart_dl_build_transient_key('content_' . $json_salt, $keywords);
 		$cached = get_transient($transient_key);
 		if ($cached) {
 			return $cached;

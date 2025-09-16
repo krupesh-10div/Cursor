@@ -19,7 +19,7 @@ add_filter(
 	'pre_get_document_title',
 	function ( $title ) use ( $content, $keywords ) {
 		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
 		}
@@ -32,7 +32,7 @@ add_filter(
 	'wpseo_title',
 	function ( $title ) use ( $content, $keywords ) {
 		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
 		}
@@ -44,7 +44,7 @@ add_filter(
 add_filter(
 	'wpseo_metadesc',
 	function ( $desc ) use ( $content ) {
-		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : '';
 		if ( ! empty( $short ) ) {
 			return wp_strip_all_tags( $short );
 		}
@@ -84,7 +84,7 @@ add_filter(
 	'wpseo_opengraph_title',
 	function ( $t ) use ( $content, $keywords ) {
 		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
-		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
 		}
@@ -96,7 +96,7 @@ add_filter(
 add_filter(
 	'wpseo_opengraph_desc',
 	function ( $d ) use ( $content ) {
-		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : '';
 		if ( ! empty( $short ) ) {
 			return wp_strip_all_tags( $short );
 		}
@@ -108,7 +108,7 @@ add_filter(
 add_filter(
 	'wpseo_twitter_title',
 	function ( $t ) use ( $content ) {
-		$h1 = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
+		$h1 = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1;
 		}
@@ -120,7 +120,7 @@ add_filter(
 add_filter(
 	'wpseo_twitter_description',
 	function ( $d ) use ( $content ) {
-		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' );
+		$short = isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : '';
 		if ( ! empty( $short ) ) {
 			return wp_strip_all_tags( $short );
 		}
@@ -138,8 +138,8 @@ add_action(
 		}
 
 		$site_name = get_bloginfo( 'name' );
-		$title     = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : ( $content['heading'] ?? '' );
-		$desc      = wp_strip_all_tags( isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : ( $content['explanation'] ?? '' ) );
+		$title     = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
+		$desc      = wp_strip_all_tags( isset( $content['short_description'] ) && $content['short_description'] !== '' ? $content['short_description'] : '' );
 		$img       = get_site_icon_url( 512 );
 
 		echo '<meta name="robots" content="index,follow" />';

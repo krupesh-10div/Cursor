@@ -381,5 +381,18 @@ function icart_dl_lookup_content_for_keywords($keywords) {
 	return null;
 }
 
+// Returns a cache salt that changes when the relevant per-product JSON file changes
+function icart_dl_get_json_cache_salt_for_keywords($keywords) {
+	$entry = icart_dl_get_landing_entry();
+	$slug = $entry && !empty($entry['slug']) ? sanitize_title($entry['slug']) : sanitize_title($keywords);
+	$product_key = $entry && !empty($entry['product_key']) ? sanitize_title($entry['product_key']) : '';
+	if ($product_key !== '') {
+		$path = icart_dl_content_json_path_for_product($product_key);
+		$mtime = file_exists($path) ? filemtime($path) : 0;
+		return md5($product_key . '|' . $slug . '|' . $mtime);
+	}
+	return 'nojson';
+}
+
 ?>
 
