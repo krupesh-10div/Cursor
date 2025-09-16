@@ -174,7 +174,8 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	$short = sprintf('Explore %s with concise insights, benefits, and tips to help you decide quickly and confidently.', $k);
+	// Generate a short description that uses the title contextually but is not identical
+	$short = sprintf('What %s means for your store — benefits, examples, and quick steps to implement today.', mb_strtolower($title));
 	$short = icart_dl_trim_to_chars($short, 170);
 	return array($title, $short);
 }
