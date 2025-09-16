@@ -22,10 +22,10 @@ Dynamic landing page that adapts content based on search keywords using Perplexi
 ## Fast JSON-Based Workflow
 
 1. Upload your keywords CSV(s). Files are stored under `sample/keywords/`.
-2. Optionally check "Generate JSON file after upload" next to the filename field to automatically create/update `sample/content/landing-content.json`.
-3. The plugin reads `title` and `short_description` from this JSON for each slug. No API calls are made at runtime.
+2. Optionally check "Generate JSON file after upload" next to the filename field to automatically create/update per-product JSON files like `sample/content/icart.json`, `sample/content/steller.json`, `sample/content/tablepress.json`.
+3. The plugin reads `title` and `short_description` from the respective product JSON for each slug. No API calls are made at runtime.
 
-JSON entry structure:
+JSON entry structure (per product file):
 
 ```
 {

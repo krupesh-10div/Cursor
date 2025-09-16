@@ -117,14 +117,15 @@ function dl_sync_landing_map_from_samples() {
 }
 
 /**
- * JSON Content Store helpers
+ * JSON Content Store helpers (per product JSON, e.g. icart.json, steller.json)
  */
 function icart_dl_content_json_dir() {
 	return DL_PLUGIN_DIR . 'sample/content/';
 }
 
-function icart_dl_content_json_path() {
-	return icart_dl_content_json_dir() . 'landing-content.json';
+function icart_dl_content_json_path_for_product($product_key) {
+	$product_key = sanitize_title($product_key);
+	return icart_dl_content_json_dir() . $product_key . '.json';
 }
 
 function icart_dl_ensure_content_dir() {
@@ -134,8 +135,8 @@ function icart_dl_ensure_content_dir() {
 	}
 }
 
-function icart_dl_load_content_map() {
-	$path = icart_dl_content_json_path();
+function icart_dl_load_content_map_for_product($product_key) {
+	$path = icart_dl_content_json_path_for_product($product_key);
 	if (!file_exists($path)) {
 		return array();
 	}
@@ -144,31 +145,61 @@ function icart_dl_load_content_map() {
 	return is_array($data) ? $data : array();
 }
 
-function icart_dl_write_content_map($map) {
+function icart_dl_write_content_map_for_product($product_key, $map) {
 	icart_dl_ensure_content_dir();
-	$path = icart_dl_content_json_path();
+	$path = icart_dl_content_json_path_for_product($product_key);
 	$payload = wp_json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 	file_put_contents($path, $payload);
+}
+
+function icart_dl_titlecase($text) {
+	$text = trim((string)$text);
+	$text = mb_strtolower($text);
+	return mb_convert_case($text, MB_CASE_TITLE_SIMPLE, 'UTF-8');
+}
+
+function icart_dl_trim_to_chars($text, $max) {
+	$text = trim((string)$text);
+	if ($text === '' || $max <= 0) { return ''; }
+	if (mb_strlen($text) <= $max) { return $text; }
+	$truncated = mb_substr($text, 0, $max);
+	$space = mb_strrpos($truncated, ' ');
+	if ($space !== false && $space > ($max - 20)) {
+		$truncated = mb_substr($truncated, 0, $space);
+	}
+	return rtrim($truncated, "\s\.,;:!-—") . '…';
+}
+
+function icart_dl_generate_title_short_from_keywords($keywords) {
+	$k = wp_strip_all_tags($keywords);
+	$title = icart_dl_titlecase($k);
+	$title = icart_dl_trim_to_chars($title, 60);
+	$short = sprintf('Explore %s with concise insights, benefits, and tips to help you decide quickly and confidently.', $k);
+	$short = icart_dl_trim_to_chars($short, 170);
+	return array($title, $short);
 }
 
 function icart_dl_build_json_from_landing_map() {
 	$opts = icart_dl_get_settings();
 	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
-	$map = array();
+	$by_product = array();
 	foreach ($entries as $row) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
 		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
+		$product_key = isset($row['product_key']) ? sanitize_title($row['product_key']) : 'default';
 		if ($slug === '') { continue; }
-		$map[$slug] = array(
+		if (!isset($by_product[$product_key])) { $by_product[$product_key] = array(); }
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		$by_product[$product_key][$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
 			'keywords' => $keywords,
-			'title' => isset($row['title']) ? sanitize_text_field($row['title']) : '',
-			'short_description' => isset($row['description']) ? sanitize_text_field($row['description']) : '',
+			'title' => isset($row['title']) && $row['title'] !== '' ? sanitize_text_field($row['title']) : $gen_title,
+			'short_description' => isset($row['description']) && $row['description'] !== '' ? sanitize_text_field($row['description']) : $gen_short,
 		);
 	}
-	if (!empty($map)) {
-		icart_dl_write_content_map($map);
+	foreach ($by_product as $product_key => $map) {
+		icart_dl_write_content_map_for_product($product_key, $map);
 	}
 }
 
@@ -177,20 +208,42 @@ function icart_dl_lookup_content_for_keywords($keywords) {
 	$entry = icart_dl_get_landing_entry();
 	if ($entry && !empty($entry['slug'])) {
 		$slug = sanitize_title($entry['slug']);
+		$product_key = isset($entry['product_key']) ? sanitize_title($entry['product_key']) : '';
+		if ($product_key !== '') {
+			$map = icart_dl_load_content_map_for_product($product_key);
+			if (isset($map[$slug]) && is_array($map[$slug])) {
+				$row = $map[$slug];
+				$title = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+				$short = isset($row['short_description']) ? sanitize_text_field($row['short_description']) : '';
+				return array(
+					'title' => $title,
+					'short_description' => $short,
+					'heading' => $title,
+					'subheading' => '',
+					'explanation' => $short,
+					'cta' => '',
+				);
+			}
+		}
 	}
-	$map = icart_dl_load_content_map();
-	if (isset($map[$slug]) && is_array($map[$slug])) {
-		$row = $map[$slug];
-		$title = isset($row['title']) ? sanitize_text_field($row['title']) : '';
-		$short = isset($row['short_description']) ? sanitize_text_field($row['short_description']) : '';
-		return array(
-			'title' => $title,
-			'short_description' => $short,
-			'heading' => $title,
-			'subheading' => '',
-			'explanation' => $short,
-			'cta' => '',
-		);
+	// Fallback: attempt scan across all product content files
+	$files = glob(icart_dl_content_json_dir() . '*.json');
+	foreach ($files as $file) {
+		$raw = file_get_contents($file);
+		$data = json_decode($raw, true);
+		if (isset($data[$slug])) {
+			$row = $data[$slug];
+			$title = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+			$short = isset($row['short_description']) ? sanitize_text_field($row['short_description']) : '';
+			return array(
+				'title' => $title,
+				'short_description' => $short,
+				'heading' => $title,
+				'subheading' => '',
+				'explanation' => $short,
+				'cta' => '',
+			);
+		}
 	}
 	return null;
 }

@@ -17,7 +17,7 @@ if (defined('WP_CLI') && WP_CLI) {
 		 */
 		public function build_json($args, $assoc_args) {
 			icart_dl_build_json_from_landing_map();
-			\WP_CLI::success('Built sample/content/landing-content.json from landing_map.');
+			\WP_CLI::success('Built per-product JSON files in sample/content/ from landing_map.');
 		}
 
 		/**
