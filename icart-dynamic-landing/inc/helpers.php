@@ -394,5 +394,28 @@ function icart_dl_get_json_cache_salt_for_keywords($keywords) {
 	return 'nojson';
 }
 
+/**
+ * Theme helper: is current request a Dynamic Landing page?
+ */
+function icart_dl_is_dynamic_landing() {
+	return (bool) get_query_var('icart_slug');
+}
+
+/**
+ * Theme helper: get current Dynamic Landing slug (or empty string)
+ */
+function icart_dl_get_current_slug() {
+	$slug = get_query_var('icart_slug');
+	return $slug ? sanitize_title($slug) : '';
+}
+
+/**
+ * Theme helper: get current product key (icart, steller, tablepress...) if present
+ */
+function icart_dl_get_current_product_key() {
+	$entry = icart_dl_get_landing_entry();
+	return $entry && !empty($entry['product_key']) ? sanitize_title($entry['product_key']) : '';
+}
+
 ?>
 
