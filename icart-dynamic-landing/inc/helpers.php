@@ -178,6 +178,67 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	return array($title, $short);
 }
 
+/**
+ * Generate title and short description via Perplexity API.
+ * Returns array(title, short) or null on failure/misconfiguration.
+ */
+function icart_dl_perplexity_generate($keywords) {
+	$settings = icart_dl_get_settings();
+	$api_key = isset($settings['perplexity_api_key']) ? trim($settings['perplexity_api_key']) : '';
+	$model = isset($settings['perplexity_model']) ? $settings['perplexity_model'] : 'sonar-pro';
+	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	if ($api_key === '') {
+		return null;
+	}
+	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
+		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
+		'Output strict JSON ONLY with keys: title, short_description.';
+	$user = wp_json_encode(array(
+		'instructions' => 'Generate a compelling H1 title exactly 8 words long, and a short description between 22 and 25 words. Return only JSON.',
+		'brand_tone' => $brand_tone,
+		'keywords' => $keywords,
+		'constraints' => array(
+			'title_min_words' => 8,
+			'title_max_words' => 8,
+			'short_description_min_words' => 22,
+			'short_description_max_words' => 25,
+		),
+	));
+	$body = array(
+		'model' => $model,
+		'messages' => array(
+			array('role' => 'system', 'content' => $system),
+			array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
+		),
+		'temperature' => 0.4,
+		'max_tokens' => 400,
+	);
+	$args = array(
+		'headers' => array(
+			'Authorization' => 'Bearer ' . $api_key,
+			'Content-Type' => 'application/json',
+		),
+		'body' => wp_json_encode($body),
+		'timeout' => 20,
+	);
+	$response = wp_remote_post('https://api.perplexity.ai/chat/completions', $args);
+	if (is_wp_error($response)) { return null; }
+	$code = wp_remote_retrieve_response_code($response);
+	$raw = wp_remote_retrieve_body($response);
+	if ($code < 200 || $code >= 300 || empty($raw)) { return null; }
+	$data = json_decode($raw, true);
+	if (!isset($data['choices'][0]['message']['content'])) { return null; }
+	$txt = trim($data['choices'][0]['message']['content']);
+	$decoded = json_decode($txt, true);
+	if (!is_array($decoded)) { return null; }
+	$title = isset($decoded['title']) ? sanitize_text_field($decoded['title']) : '';
+	$short = isset($decoded['short_description']) ? sanitize_text_field($decoded['short_description']) : '';
+	$title = icart_dl_trim_to_chars($title, 60);
+	$short = icart_dl_trim_to_chars($short, 170);
+	if ($title === '' && $short === '') { return null; }
+	return array($title, $short);
+}
+
 function icart_dl_build_json_from_landing_map() {
 	$opts = icart_dl_get_settings();
 	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
@@ -191,7 +252,12 @@ function icart_dl_build_json_from_landing_map() {
 		$product_key = isset($row['product_key']) ? sanitize_title($row['product_key']) : 'default';
 		if ($slug === '') { continue; }
 		if (!isset($by_product[$product_key])) { $by_product[$product_key] = array(); }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		$api_pair = icart_dl_perplexity_generate($keywords);
+		if (is_array($api_pair)) {
+			list($gen_title, $gen_short) = $api_pair;
+		} else {
+			list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		}
 		$by_product[$product_key][$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
@@ -219,7 +285,12 @@ function icart_dl_build_json_for_product($product_key) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
 		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
 		if ($slug === '') { continue; }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		$api_pair = icart_dl_perplexity_generate($keywords);
+		if (is_array($api_pair)) {
+			list($gen_title, $gen_short) = $api_pair;
+		} else {
+			list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		}
 		$map[$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
