@@ -252,12 +252,7 @@ function icart_dl_build_json_from_landing_map() {
 		$product_key = isset($row['product_key']) ? sanitize_title($row['product_key']) : 'default';
 		if ($slug === '') { continue; }
 		if (!isset($by_product[$product_key])) { $by_product[$product_key] = array(); }
-		$api_pair = icart_dl_perplexity_generate($keywords);
-		if (is_array($api_pair)) {
-			list($gen_title, $gen_short) = $api_pair;
-		} else {
-			list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
-		}
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
 		$by_product[$product_key][$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
@@ -285,12 +280,7 @@ function icart_dl_build_json_for_product($product_key) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
 		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
 		if ($slug === '') { continue; }
-		$api_pair = icart_dl_perplexity_generate($keywords);
-		if (is_array($api_pair)) {
-			list($gen_title, $gen_short) = $api_pair;
-		} else {
-			list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
-		}
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
 		$map[$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
