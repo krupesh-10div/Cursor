@@ -65,11 +65,13 @@ class ICartDL_Settings {
 				}
 				$dest = $dest_dir . $filename;
 				copy($uploaded['file'], $dest);
+				// Derive product key from filename (without extension)
+				$product_key = sanitize_title(pathinfo($filename, PATHINFO_FILENAME));
 				// Trigger rescan to rebuild landing_map
 				dl_sync_landing_map_from_samples();
-				// Optionally build content JSON if requested this submit
+				// Optionally (re)build JSON only for this product, replacing existing file
 				if (!empty($input['build_json_after_upload'])) {
-					icart_dl_build_json_from_landing_map();
+					icart_dl_build_json_for_product($product_key);
 				}
 				set_transient('dl_flush_rewrite', 1, 60);
 			}

@@ -203,6 +203,29 @@ function icart_dl_build_json_from_landing_map() {
 	}
 }
 
+function icart_dl_build_json_for_product($product_key) {
+	$product_key = sanitize_title($product_key);
+	if ($product_key === '') { return; }
+	$opts = icart_dl_get_settings();
+	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
+	$map = array();
+	foreach ($entries as $row) {
+		if (!isset($row['product_key']) || sanitize_title($row['product_key']) !== $product_key) { continue; }
+		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
+		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
+		if ($slug === '') { continue; }
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		$map[$slug] = array(
+			'slug' => $slug,
+			'url' => trailingslashit(home_url('/' . $slug)),
+			'keywords' => $keywords,
+			'title' => isset($row['title']) && $row['title'] !== '' ? sanitize_text_field($row['title']) : $gen_title,
+			'short_description' => isset($row['description']) && $row['description'] !== '' ? sanitize_text_field($row['description']) : $gen_short,
+		);
+	}
+	icart_dl_write_content_map_for_product($product_key, $map);
+}
+
 function icart_dl_lookup_content_for_keywords($keywords) {
 	$slug = sanitize_title($keywords);
 	$entry = icart_dl_get_landing_entry();
