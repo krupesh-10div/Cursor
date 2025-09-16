@@ -170,12 +170,28 @@ function icart_dl_trim_to_chars($text, $max) {
 	return rtrim($truncated, "\s\.,;:!-—") . '…';
 }
 
+function icart_dl_generate_25_word_description_from_title($title) {
+	$title = trim((string)$title);
+	$tokens = preg_split('/[^a-z0-9]+/i', mb_strtolower($title), -1, PREG_SPLIT_NO_EMPTY);
+	if (empty($tokens)) { $tokens = array('description'); }
+	$out = array();
+	$idx = 0;
+	$len = count($tokens);
+	while (count($out) < 25) {
+		$out[] = $tokens[$idx % $len];
+		$idx++;
+	}
+	$sentence = implode(' ', $out);
+	$sentence = mb_strtoupper(mb_substr($sentence, 0, 1)) . mb_substr($sentence, 1) . '.';
+	return $sentence;
+}
+
 function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	// Generate short description from the title using local logic only (no API calls during build)
-	$short = icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
+	// Generate a 25-word short description from the title (no fixed prefixes)
+	$short = icart_dl_generate_25_word_description_from_title($title);
 	return array($title, $short);
 }
 
@@ -184,7 +200,7 @@ function icart_dl_generate_title_short_local($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	$short = icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
+	$short = icart_dl_generate_25_word_description_from_title($title);
 	return array($title, $short);
 }
 
@@ -198,7 +214,7 @@ function icart_dl_generate_short_from_title($title) {
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
 
 	if ($api_key === '' || $title === '') {
-		return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
+		return icart_dl_generate_25_word_description_from_title($title);
 	}
 
 	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
@@ -235,17 +251,17 @@ function icart_dl_generate_short_from_title($title) {
 	);
 
 	$response = wp_remote_post('https://api.perplexity.ai/chat/completions', $args);
-	if (is_wp_error($response)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	if (is_wp_error($response)) { return icart_dl_generate_25_word_description_from_title($title); }
 	$code = wp_remote_retrieve_response_code($response);
 	$raw = wp_remote_retrieve_body($response);
-	if ($code < 200 || $code >= 300 || empty($raw)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	if ($code < 200 || $code >= 300 || empty($raw)) { return icart_dl_generate_25_word_description_from_title($title); }
 	$data = json_decode($raw, true);
-	if (!isset($data['choices'][0]['message']['content'])) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	if (!isset($data['choices'][0]['message']['content'])) { return icart_dl_generate_25_word_description_from_title($title); }
 	$txt = trim($data['choices'][0]['message']['content']);
 	$decoded = json_decode($txt, true);
-	if (!is_array($decoded)) { return icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170); }
+	if (!is_array($decoded)) { return icart_dl_generate_25_word_description_from_title($title); }
 	$short = isset($decoded['short_description']) ? sanitize_text_field($decoded['short_description']) : '';
-	return icart_dl_trim_to_chars($short !== '' ? $short : sprintf('Brief overview of %s.', $title), 170);
+	return icart_dl_trim_to_chars($short !== '' ? $short : icart_dl_generate_25_word_description_from_title($title), 170);
 }
 
 function icart_dl_build_json_from_landing_map() {
