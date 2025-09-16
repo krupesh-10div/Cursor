@@ -174,24 +174,7 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	$seed = hexdec(substr(md5($k), 0, 8));
-	$rand = function() use (&$seed) { $seed = ($seed * 1664525 + 1013904223) % 0xffffffff; return $seed; };
-	$pick = function($list) use (&$rand) { $idx = $rand() % max(1, count($list)); return $list[$idx]; };
-	$audiences = array('Shopify stores','ecommerce teams','marketers','growing brands','small businesses');
-	$values = array('higher conversions','cleaner merchandising','stronger engagement','streamlined operations','scalable growth');
-	$qualities = array('intuitive setup','flexible options','reliable results','fast insights','clear structure');
-	$usecases = array('campaign launches','product discovery','checkout flows','catalog updates','promotions');
-	$outcomes = array('higher AOV','smoother journeys','informed decisions','faster workflows','repeat purchases');
-	$topic = $title;
-	$sentence = sprintf('%s helps %s achieve %s with %s — ideal for %s and %s.',
-		$topic,
-		$pick($audiences),
-		$pick($values),
-		$pick($qualities),
-		$pick($usecases),
-		$pick($outcomes)
-	);
-	$short = icart_dl_trim_to_chars($sentence, 170);
+	$short = icart_dl_trim_to_chars(sprintf('Summary of %s.', $title), 170);
 	return array($title, $short);
 }
 
