@@ -71,6 +71,13 @@ function icart_dl_init() {
 	// Route to plugin template when icart_slug is present
 	add_filter('template_include', function($template){
 		if (get_query_var('icart_slug')) {
+			// Prefer theme override if present: icart-dl/landing.php
+			if (function_exists('locate_template')) {
+				$theme_tpl = locate_template(array('icart-dl/landing.php'));
+				if (!empty($theme_tpl)) {
+					return $theme_tpl;
+				}
+			}
 			$tpl = DL_PLUGIN_DIR . 'templates/landing.php';
 			if (file_exists($tpl)) {
 				return $tpl;

@@ -184,7 +184,13 @@ get_header();
 		
 
 		<?php
-		$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title( $product_key ) . '.php';
+		$partial = '';
+		if ( function_exists( 'locate_template' ) ) {
+			$partial = locate_template( array( 'icart-dl/product-sections/' . sanitize_title( $product_key ) . '.php' ) );
+		}
+		if ( ! $partial ) {
+			$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title( $product_key ) . '.php';
+		}
 		if ( $product_key && file_exists( $partial ) ) {
 			include $partial;
 		}
