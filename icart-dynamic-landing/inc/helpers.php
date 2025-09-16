@@ -174,8 +174,17 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 	$k = wp_strip_all_tags($keywords);
 	$title = icart_dl_titlecase($k);
 	$title = icart_dl_trim_to_chars($title, 60);
-	// Generate short description from the title (API if configured; else local fallback)
-	$short = icart_dl_generate_short_from_title($title);
+	// Generate short description from the title using local logic only (no API calls during build)
+	$short = icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
+	return array($title, $short);
+}
+
+// Local-only generator for use during CSV->JSON builds (avoids any network calls)
+function icart_dl_generate_title_short_local($keywords) {
+	$k = wp_strip_all_tags($keywords);
+	$title = icart_dl_titlecase($k);
+	$title = icart_dl_trim_to_chars($title, 60);
+	$short = icart_dl_trim_to_chars(sprintf('Brief overview of %s.', $title), 170);
 	return array($title, $short);
 }
 
@@ -252,7 +261,7 @@ function icart_dl_build_json_from_landing_map() {
 		$product_key = isset($row['product_key']) ? sanitize_title($row['product_key']) : 'default';
 		if ($slug === '') { continue; }
 		if (!isset($by_product[$product_key])) { $by_product[$product_key] = array(); }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_local($keywords);
 		$by_product[$product_key][$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
@@ -280,7 +289,7 @@ function icart_dl_build_json_for_product($product_key) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
 		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
 		if ($slug === '') { continue; }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_from_keywords($keywords);
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_local($keywords);
 		$map[$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),

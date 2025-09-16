@@ -75,7 +75,11 @@ class ICartDL_Settings {
 				}
 				// Optionally (re)build JSON only for this product, replacing existing file
 				if (!empty($input['build_json_after_upload'])) {
-					icart_dl_build_json_for_product($product_key);
+					// Build in shutdown to avoid delaying the admin response if IO is slow
+					$product_key_for_build = $product_key;
+					add_action('shutdown', function() use ($product_key_for_build) {
+						icart_dl_build_json_for_product($product_key_for_build);
+					});
 				}
 				set_transient('dl_flush_rewrite', 1, 60);
 			}
