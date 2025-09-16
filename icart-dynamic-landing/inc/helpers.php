@@ -182,6 +182,9 @@ function icart_dl_generate_title_short_from_keywords($keywords) {
 function icart_dl_build_json_from_landing_map() {
 	$opts = icart_dl_get_settings();
 	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
+	if (empty($entries)) {
+		$entries = icart_dl_scan_sample_keywords();
+	}
 	$by_product = array();
 	foreach ($entries as $row) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
@@ -208,6 +211,9 @@ function icart_dl_build_json_for_product($product_key) {
 	if ($product_key === '') { return; }
 	$opts = icart_dl_get_settings();
 	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
+	if (empty($entries)) {
+		$entries = icart_dl_scan_sample_keywords();
+	}
 	$map = array();
 	foreach ($entries as $row) {
 		if (!isset($row['product_key']) || sanitize_title($row['product_key']) !== $product_key) { continue; }

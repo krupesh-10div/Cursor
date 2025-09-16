@@ -67,8 +67,12 @@ class ICartDL_Settings {
 				copy($uploaded['file'], $dest);
 				// Derive product key from filename (without extension)
 				$product_key = sanitize_title(pathinfo($filename, PATHINFO_FILENAME));
-				// Trigger rescan to rebuild landing_map
+				// Trigger rescan to rebuild landing_map and refresh $output in memory
 				dl_sync_landing_map_from_samples();
+				$refreshed = icart_dl_get_settings();
+				if (isset($refreshed['landing_map'])) {
+					$output['landing_map'] = $refreshed['landing_map'];
+				}
 				// Optionally (re)build JSON only for this product, replacing existing file
 				if (!empty($input['build_json_after_upload'])) {
 					icart_dl_build_json_for_product($product_key);
