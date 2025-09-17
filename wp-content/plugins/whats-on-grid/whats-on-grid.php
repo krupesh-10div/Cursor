@@ -53,11 +53,11 @@ function whats_on_grid_normalize_base_url( $base_url ) {
 	if ( 0 === strpos( $base_url, '/' ) ) {
 		$base_url = home_url( $base_url );
 	}
-	return untrailingslashit( remove_query_arg( array( 'page', 'paged' ), $base_url ) );
+	return remove_query_arg( array( 'page', 'paged' ), $base_url );
 }
 
 /**
- * Server-render grid and pretty pagination (/page/N/).
+ * Server-render grid and pagination (query-string ?page=N).
  */
 function whats_on_grid_render( $attributes ) {
 	$defaults = array(
@@ -79,17 +79,8 @@ function whats_on_grid_render( $attributes ) {
 	$columns = max( 1, (int) $attributes['columns'] );
 	$base_url = whats_on_grid_normalize_base_url( $attributes['baseUrl'] );
 
-	// Determine current page: prefer WP 'paged', otherwise parse /page/N/ in request under base path
-	$paged = max( 1, (int) get_query_var( 'paged', 1 ) );
-	if ( $paged < 2 ) {
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-		$base_path = wp_parse_url( $base_url, PHP_URL_PATH );
-		if ( $base_path && strpos( $request_uri, untrailingslashit( $base_path ) . '/page/' ) === 0 ) {
-			if ( preg_match( '#/page/(\d+)/?#', $request_uri, $m ) ) {
-				$paged = max( 1, (int) $m[1] );
-			}
-		}
-	}
+	// Read current page from ?page=N (fallback to paged)
+	$paged = isset( $_GET['page'] ) ? max( 1, (int) $_GET['page'] ) : max( 1, (int) get_query_var( 'paged', 1 ) );
 
 	$tax_query = array();
 	if ( ! empty( $taxonomy ) && ! empty( $term_ids ) ) {
@@ -126,7 +117,7 @@ function whats_on_grid_render( $attributes ) {
 		<?php
 		$total_pages = (int) $query->max_num_pages;
 		if ( $total_pages > 1 ) {
-			$base = trailingslashit( $base_url ) . 'page/%#%/';
+			$base = add_query_arg( array( 'page' => '%#%' ), $base_url );
 			$pagination_links = paginate_links( array(
 				'base'      => $base,
 				'format'    => '',
