@@ -98,10 +98,34 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 				</article>
 			<?php endwhile; endif; ?>
 		</div>
-		<?php if ( $q->max_num_pages > $current_page ) : ?>
-			<?php $next_page = $current_page + 1; $href = add_query_arg( array( $query_var => $next_page ), $base_url ); ?>
-			<a class="gb-button gb-button-e4720bfe gb-button-text" href="<?php echo esc_url( $href ); ?>">Next</a>
-		<?php endif; ?>
+		<?php
+		$total_pages = (int) $q->max_num_pages;
+		if ( $total_pages > 1 ) :
+			echo '<nav class="whats-on-grid__pagination" aria-label="Pagination">';
+			// Previous
+			if ( $current_page > 1 ) {
+				$prev_page = $current_page - 1;
+				$href = add_query_arg( array( $query_var => $prev_page ), $base_url );
+				echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">Previous</a>';
+			}
+			// Numbers
+			for ( $i = 1; $i <= $total_pages; $i++ ) {
+				if ( $i === (int) $current_page ) {
+					echo '<span class="whats-on-grid__page current">' . (int) $i . '</span>';
+				} else {
+					$href = add_query_arg( array( $query_var => $i ), $base_url );
+					echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">' . (int) $i . '</a>';
+				}
+			}
+			// Next
+			if ( $current_page < $total_pages ) {
+				$next_page = $current_page + 1;
+				$href = add_query_arg( array( $query_var => $next_page ), $base_url );
+				echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">Next</a>';
+			}
+			echo '</nav>';
+		endif;
+		?>
 	</div>
 	<?php
 	wp_reset_postdata();
