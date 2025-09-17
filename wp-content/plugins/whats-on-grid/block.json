@@ -11,14 +11,11 @@
   "editorScript": "whats-on-grid-editor",
   "attributes": {
     "perPage": { "type": "number", "default": 30 },
-    "idsString": { "type": "string", "default": "429,615,450,614,434,511" },
-    "includeChildren": { "type": "boolean", "default": true },
+    "postType": { "type": "string", "default": "post" },
     "taxonomy": { "type": "string", "default": "category" },
     "termIds": { "type": "array", "items": { "type": "number" }, "default": [429,615,450,614,434,511] },
+    "includeChildren": { "type": "boolean", "default": true },
     "columns": { "type": "number", "default": 3 },
-    "postType": { "type": "string", "default": "post" },
-    "baseUrl": { "type": "string", "default": "/whats-on/" },
-    "queryVar": { "type": "string", "default": "pg" },
-    "prettyPagination": { "type": "boolean", "default": false }
+    "baseUrl": { "type": "string", "default": "/whats-on/" }
   }
 }

@@ -74,9 +74,7 @@
 						el(TextControl, { label: __('Posts per page', 'whats-on-grid'), type: 'number', min: 1, value: a.perPage || 30, onChange: set('perPage') }),
 						el(ToggleControl, { label: __('Include child terms', 'whats-on-grid'), checked: !!a.includeChildren, onChange: set('includeChildren') }),
 						el(RangeControl, { label: __('Columns', 'whats-on-grid'), value: a.columns || 3, min: 1, max: 6, onChange: set('columns') }),
-						el(TextControl, { label: __('Base URL for pagination', 'whats-on-grid'), value: a.baseUrl || '/whats-on/', onChange: set('baseUrl') }),
-						el(TextControl, { label: __('Query var name', 'whats-on-grid'), value: a.queryVar || 'pg', onChange: set('queryVar') }),
-						el(ToggleControl, { label: __('Pretty pagination (/page/N/)', 'whats-on-grid'), checked: !!a.prettyPagination, onChange: set('prettyPagination') })
+						el(TextControl, { label: __('Base URL (page path)', 'whats-on-grid'), value: a.baseUrl || '/whats-on/', onChange: set('baseUrl') })
 					)
 				),
 				el(ServerSideRender, { block: 'custom/whats-on-grid', attributes: props.attributes })
