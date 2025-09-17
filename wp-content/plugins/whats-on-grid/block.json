@@ -18,6 +18,7 @@
     "columns": { "type": "number", "default": 3 },
     "postType": { "type": "string", "default": "post" },
     "baseUrl": { "type": "string", "default": "/whats-on/" },
-    "queryVar": { "type": "string", "default": "pg" }
+    "queryVar": { "type": "string", "default": "pg" },
+    "prettyPagination": { "type": "boolean", "default": false }
   }
 }

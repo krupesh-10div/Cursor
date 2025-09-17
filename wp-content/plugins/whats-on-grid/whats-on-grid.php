@@ -31,9 +31,6 @@ function whats_on_grid_register_block() {
 }
 add_action( 'init', 'whats_on_grid_register_block' );
 
-/**
- * Normalize a base URL (relative or absolute) into a site-absolute URL without trailing query.
- */
 function whats_on_grid_normalize_base_url( $base_url ) {
 	$base_url = trim( (string) $base_url );
 	if ( $base_url === '' ) {
@@ -42,9 +39,8 @@ function whats_on_grid_normalize_base_url( $base_url ) {
 	if ( 0 === strpos( $base_url, '/' ) ) {
 		$base_url = home_url( $base_url );
 	}
-	// Strip existing pagination-like vars to avoid canonical redirects
 	$base_url = remove_query_arg( array( 'pg', 'page', 'paged' ), $base_url );
-	return $base_url;
+	return untrailingslashit( $base_url );
 }
 
 /**
@@ -60,6 +56,7 @@ function whats_on_grid_render( $attributes ) {
 		'columns' => 3,
 		'baseUrl' => '/whats-on/',
 		'queryVar' => 'pg',
+		'prettyPagination' => false,
 	);
 	$attributes = wp_parse_args( (array) $attributes, $defaults );
 
@@ -71,6 +68,7 @@ function whats_on_grid_render( $attributes ) {
 	$columns = max( 1, (int) $attributes['columns'] );
 	$base_url = whats_on_grid_normalize_base_url( $attributes['baseUrl'] );
 	$query_var = preg_replace( '/[^a-zA-Z0-9_\-]/', '', (string) $attributes['queryVar'] );
+	$pretty = ! empty( $attributes['prettyPagination'] );
 
 	$paged = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : max( 1, (int) get_query_var( 'paged', 1 ) );
 
@@ -109,11 +107,19 @@ function whats_on_grid_render( $attributes ) {
 		<?php
 		$total_pages = (int) $query->max_num_pages;
 		if ( $total_pages > 1 ) {
-			$base = add_query_arg( array( $query_var => '%#%' ), $base_url );
+			if ( $pretty ) {
+				$base = trailingslashit( $base_url ) . 'page/%#%/';
+				$format = '';
+				$current = $paged;
+			} else {
+				$base = add_query_arg( array( $query_var => '%#%' ), $base_url );
+				$format = '';
+				$current = $paged;
+			}
 			$pagination_links = paginate_links( array(
 				'base'      => $base,
-				'format'    => '',
-				'current'   => $paged,
+				'format'    => $format,
+				'current'   => $current,
 				'total'     => $total_pages,
 				'prev_text' => '« Prev',
 				'next_text' => 'Next »',
