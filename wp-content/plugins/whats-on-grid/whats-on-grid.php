@@ -17,11 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
-	// Register the editor script with required dependencies so it loads in Gutenberg
+	// Register editor script (no build) with dependencies
 	wp_register_script(
 		'whats-on-grid-editor',
 		plugins_url( 'index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-editor' ),
+		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-editor', 'wp-components', 'wp-server-side-render', 'wp-data' ),
 		'1.0.0',
 		true
 	);
@@ -33,18 +33,30 @@ function whats_on_grid_register_block() {
 add_action( 'init', 'whats_on_grid_register_block' );
 
 /**
- * Server-render the block so we can output Next pagination link.
+ * Server-render the grid and pagination link.
  */
 function whats_on_grid_render( $attributes, $content, $block ) {
-	// Extract attributes with defaults
-	$per_page = isset( $attributes['perPage'] ) ? (int) $attributes['perPage'] : 30;
-	$ids_string = isset( $attributes['idsString'] ) ? (string) $attributes['idsString'] : '429,615,450,614,434,511';
+	$defaults = array(
+		'perPage' => 30,
+		'idsString' => '429,615,450,614,434,511',
+		'includeChildren' => true,
+		'columns' => 3,
+		'baseUrl' => '/whats-on/',
+		'queryVar' => 'page',
+	);
+	$attributes = wp_parse_args( $attributes, $defaults );
+
+	$per_page = (int) $attributes['perPage'];
+	$ids_string = (string) $attributes['idsString'];
 	$include_children = ! empty( $attributes['includeChildren'] );
+	$columns = max( 1, (int) $attributes['columns'] );
+	$base_url = trim( (string) $attributes['baseUrl'] );
+	$query_var = preg_replace( '/[^a-zA-Z0-9_\-]/', '', (string) $attributes['queryVar'] );
 
-	// Determine current page from query var "page" (fallback to paged)
-	$current_page = isset( $_GET['page'] ) ? max( 1, (int) $_GET['page'] ) : get_query_var( 'paged', 1 );
+	// Current page from custom query var fallback to paged
+	$current_page = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : get_query_var( 'paged', 1 );
 
-	// Build tax query
+	// Build taxonomy filter
 	$ids = array_filter( array_map( 'intval', preg_split( '/\s*,\s*/', $ids_string ) ) );
 	$tax_query = array();
 	if ( ! empty( $ids ) ) {
@@ -65,22 +77,33 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 		'tax_query' => $tax_query,
 	) );
 
-	// Let the InnerBlocks (core/query) render as authored in editor
-	$inner = $content;
-
-	// Build Next link if there are more pages
-	$next_link = '';
-	if ( $q->max_num_pages > $current_page ) {
-		$next_page = $current_page + 1;
+	// Build base URL for Next link. If relative path provided, resolve to site URL
+	if ( empty( $base_url ) ) {
 		$base_url = get_permalink();
-		if ( ! $base_url ) {
-			$base_url = home_url( add_query_arg( null, null ) );
-		}
-		$href = add_query_arg( array( 'page' => $next_page ), $base_url );
-		$next_link = '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">Next</a>';
+	}
+	if ( 0 === strpos( $base_url, '/' ) ) {
+		$base_url = home_url( $base_url );
 	}
 
+	ob_start();
+	?>
+	<div class="whats-on-grid-wrapper">
+		<div class="whats-on-grid" style="display:grid;grid-template-columns:repeat(<?php echo (int) $columns; ?>,1fr);gap:24px;">
+			<?php if ( $q->have_posts() ) : while ( $q->have_posts() ) : $q->the_post(); ?>
+				<article class="whats-on-grid__item">
+					<?php if ( has_post_thumbnail() ) : ?>
+						<a href="<?php the_permalink(); ?>" class="whats-on-grid__thumb"><?php the_post_thumbnail( 'large' ); ?></a>
+					<?php endif; ?>
+					<h3 class="whats-on-grid__title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+				</article>
+			<?php endwhile; endif; ?>
+		</div>
+		<?php if ( $q->max_num_pages > $current_page ) : ?>
+			<?php $next_page = $current_page + 1; $href = add_query_arg( array( $query_var => $next_page ), $base_url ); ?>
+			<a class="gb-button gb-button-e4720bfe gb-button-text" href="<?php echo esc_url( $href ); ?>">Next</a>
+		<?php endif; ?>
+	</div>
+	<?php
 	wp_reset_postdata();
-
-	return '<div class="whats-on-grid-wrapper">' . $inner . $next_link . '</div>';
+	return ob_get_clean();
 }
