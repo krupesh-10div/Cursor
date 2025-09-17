@@ -17,11 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
-	// Register minimal editor script handle; file can be empty, it's referenced by block.json
+	// Register minimal editor script handle; file can be empty or minimal UI
 	wp_register_script(
 		'whats-on-grid-editor',
 		plugins_url( 'index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-i18n' ),
+		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-components', 'wp-server-side-render' ),
 		'1.0.0',
 		true
 	);
@@ -41,12 +41,14 @@ function whats_on_grid_render( $attributes ) {
 		'idsString' => '429,615,450,614,434,511',
 		'includeChildren' => true,
 		'columns' => 3,
+		'postType' => 'post',
 		'baseUrl' => '/whats-on/',
 		'queryVar' => 'page',
 	);
 	$attributes = wp_parse_args( (array) $attributes, $defaults );
 
 	$per_page = (int) $attributes['perPage'];
+	$post_type = sanitize_key( $attributes['postType'] );
 	$ids_string = (string) $attributes['idsString'];
 	$include_children = ! empty( $attributes['includeChildren'] );
 	$columns = max( 1, (int) $attributes['columns'] );
@@ -57,7 +59,7 @@ function whats_on_grid_render( $attributes ) {
 
 	$ids = array_filter( array_map( 'intval', preg_split( '/\s*,\s*/', $ids_string ) ) );
 	$tax_query = array();
-	if ( ! empty( $ids ) ) {
+	if ( 'post' === $post_type && ! empty( $ids ) ) {
 		$tax_query[] = array(
 			'taxonomy' => 'category',
 			'field' => 'term_id',
@@ -68,14 +70,13 @@ function whats_on_grid_render( $attributes ) {
 	}
 
 	$query = new WP_Query( array(
-		'post_type' => 'post',
+		'post_type' => $post_type,
 		'posts_per_page' => $per_page,
 		'paged' => $paged,
 		'ignore_sticky_posts' => true,
 		'tax_query' => $tax_query,
 	) );
 
-	// Resolve base URL; allow relative paths (e.g., /whats-on/)
 	if ( empty( $base_url ) ) {
 		$base_url = get_permalink();
 	}

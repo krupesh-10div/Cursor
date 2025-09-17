@@ -14,6 +14,7 @@
     "idsString": { "type": "string", "default": "429,615,450,614,434,511" },
     "includeChildren": { "type": "boolean", "default": true },
     "columns": { "type": "number", "default": 3 },
+    "postType": { "type": "string", "default": "post" },
     "baseUrl": { "type": "string", "default": "/whats-on/" },
     "queryVar": { "type": "string", "default": "page" }
   }
