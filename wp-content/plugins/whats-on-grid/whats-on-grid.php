@@ -3,7 +3,7 @@
  * Plugin Name: What's On Grid
  * Description: Custom Gutenberg block that renders a reusable grid of posts filtered by categories with pagination.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Sydney Travel Guide
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Text Domain: whats-on-grid
@@ -28,9 +28,23 @@ function whats_on_grid_register_block() {
 	register_block_type( __DIR__, array(
 		'render_callback' => 'whats_on_grid_render',
 	) );
+	wp_enqueue_style(
+        'whats-on-grid-editor-style',
+        plugins_url( 'style.css', __FILE__ ),
+        array( 'wp-edit-blocks' ),
+        '1.0.0'
+    );
 }
 add_action( 'init', 'whats_on_grid_register_block' );
 
+add_action( 'wp_enqueue_scripts', function() {
+    wp_enqueue_style(
+        'whats-on-grid-style',
+        plugins_url( 'style.css', __FILE__ ),
+        array(),
+        '1.0.0'
+    );
+});
 function whats_on_grid_normalize_base_url( $base_url ) {
 	$base_url = trim( (string) $base_url );
 	if ( $base_url === '' ) {
@@ -103,9 +117,9 @@ function whats_on_grid_render( $attributes ) {
 			<?php if ( $query->have_posts() ) : while ( $query->have_posts() ) : $query->the_post(); ?>
 				<article class="whats-on-grid__item">
 					<?php if ( has_post_thumbnail() ) : ?>
-						<a href="<?php the_permalink(); ?>" class="whats-on-grid__thumb"><?php the_post_thumbnail( 'large' ); ?></a>
+						<a href="<?php the_permalink(); ?>" class="whats-on-grid__thumb gb-block-image-7f8874c3"><?php the_post_thumbnail( array('373', '210') ); ?></a>
 					<?php endif; ?>
-					<h3 class="whats-on-grid__title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+					<h2 class="whats-on-grid__title gb-headline-795bb9ef"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 				</article>
 			<?php endwhile; endif; ?>
 		</div>
@@ -125,12 +139,39 @@ function whats_on_grid_render( $attributes ) {
 
 			if ( ! empty( $pagination_links ) ) {
 				echo '<nav class="whats-on-grid__pagination" aria-label="Pagination">';
+
 				foreach ( $pagination_links as $link ) {
-					$link = preg_replace( '/<a\s+/', '<a class="gb-button gb-button-e4720bfe gb-button-text" ', $link, 1 );
+					// Add base button classes
+					$link = preg_replace(
+						'/<a\s+/',
+						'<a class="gb-button gb-button-e4720bfe gb-button-text page-numbers" ',
+						$link,
+						1
+					);
+
+					// Add specific classes for previous/next
+					if ( strpos( $link, 'prev' ) !== false ) {
+						$link = preg_replace(
+							'/class="/',
+							'class="whats-on-grid__prev ',
+							$link,
+							1
+						);
+					} elseif ( strpos( $link, 'next' ) !== false ) {
+						$link = preg_replace(
+							'/class="/',
+							'class="whats-on-grid__next ',
+							$link,
+							1
+						);
+					}
+
 					echo $link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
+
 				echo '</nav>';
 			}
+
 		}
 		?>
 	</div>
