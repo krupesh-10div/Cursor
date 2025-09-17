@@ -10,5 +10,5 @@
     "html": false
   },
   "textdomain": "whats-on-grid",
-  "editorScript": "file:./index.js"
+  "editorScript": "whats-on-grid-editor"
 }

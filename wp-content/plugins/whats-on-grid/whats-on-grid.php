@@ -17,6 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
+	// Register the editor script with required dependencies so it loads in Gutenberg
+	wp_register_script(
+		'whats-on-grid-editor',
+		plugins_url( 'index.js', __FILE__ ),
+		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-editor' ),
+		'1.0.0',
+		true
+	);
+
 	register_block_type( __DIR__ );
 }
 add_action( 'init', 'whats_on_grid_register_block' );
