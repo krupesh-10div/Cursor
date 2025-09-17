@@ -10,29 +10,13 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-\texit;
+	exit;
 }
 
 /**
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
-\tregister_block_type( __DIR__ );
+	register_block_type( __DIR__ );
 }
 add_action( 'init', 'whats_on_grid_register_block' );
-
-<?php
-/**
- * Plugin Name: What's On Grid
- * Description: Custom Gutenberg block that renders a 3-column grid of selected categories.
- * Version: 1.0.0
- * Author: Cursor AI
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-add_action( 'init', function() {
-	register_block_type( __DIR__ );
-} );
