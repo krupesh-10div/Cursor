@@ -1,0 +1,23 @@
+h2.gb-headline-795bb9ef {
+    font-size: 1.4em;
+}
+.whats-on-grid__pagination{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.whats-on-grid__pagination .page-numbers {
+    display: inline-flex;
+    padding: 15px 20px;
+    border: 0 solid var(--accent);
+    color: var(--contrast);
+    text-decoration: none;
+}
+.whats-on-grid__pagination .page-numbers:hover {
+  background-color: var(--accent);
+    color: #fff;
+}
+@media only screen and (max-width: 768px) {
+    .whats-on-grid{grid-template-columns: repeat(1, 1fr) !important;}
+}
