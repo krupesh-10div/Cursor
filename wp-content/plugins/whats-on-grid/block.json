@@ -5,10 +5,8 @@
   "title": "What's On Grid",
   "category": "widgets",
   "icon": "grid-view",
-  "description": "Preconfigured Query Loop showing a 3-column grid of posts filtered by categories.",
-  "supports": {
-    "html": false
-  },
+  "description": "Dynamic grid of posts with server-side pagination.",
+  "supports": { "html": false },
   "textdomain": "whats-on-grid",
   "editorScript": "whats-on-grid-editor",
   "attributes": {

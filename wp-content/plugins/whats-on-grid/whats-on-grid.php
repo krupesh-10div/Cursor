@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: What's On Grid
- * Description: Custom Gutenberg block that renders a reusable grid of posts filtered by categories.
+ * Description: Custom Gutenberg block that renders a reusable grid of posts filtered by categories with pagination.
  * Version: 1.0.0
  * Author: Your Name
  * Requires at least: 6.2
@@ -17,11 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
-	// Register editor script (no build) with dependencies
+	// Register minimal editor script handle; file can be empty, it's referenced by block.json
 	wp_register_script(
 		'whats-on-grid-editor',
 		plugins_url( 'index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-editor', 'wp-components', 'wp-server-side-render', 'wp-data' ),
+		array( 'wp-blocks', 'wp-element', 'wp-i18n' ),
 		'1.0.0',
 		true
 	);
@@ -33,9 +33,9 @@ function whats_on_grid_register_block() {
 add_action( 'init', 'whats_on_grid_register_block' );
 
 /**
- * Server-render the grid and pagination link.
+ * Server-render grid of posts and paginate_links() navigation.
  */
-function whats_on_grid_render( $attributes, $content, $block ) {
+function whats_on_grid_render( $attributes ) {
 	$defaults = array(
 		'perPage' => 30,
 		'idsString' => '429,615,450,614,434,511',
@@ -44,7 +44,7 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 		'baseUrl' => '/whats-on/',
 		'queryVar' => 'page',
 	);
-	$attributes = wp_parse_args( $attributes, $defaults );
+	$attributes = wp_parse_args( (array) $attributes, $defaults );
 
 	$per_page = (int) $attributes['perPage'];
 	$ids_string = (string) $attributes['idsString'];
@@ -53,10 +53,8 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 	$base_url = trim( (string) $attributes['baseUrl'] );
 	$query_var = preg_replace( '/[^a-zA-Z0-9_\-]/', '', (string) $attributes['queryVar'] );
 
-	// Current page from custom query var fallback to paged
-	$current_page = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : get_query_var( 'paged', 1 );
+	$paged = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : max( 1, (int) get_query_var( 'paged', 1 ) );
 
-	// Build taxonomy filter
 	$ids = array_filter( array_map( 'intval', preg_split( '/\s*,\s*/', $ids_string ) ) );
 	$tax_query = array();
 	if ( ! empty( $ids ) ) {
@@ -69,15 +67,15 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 		);
 	}
 
-	$q = new WP_Query( array(
+	$query = new WP_Query( array(
 		'post_type' => 'post',
 		'posts_per_page' => $per_page,
-		'paged' => $current_page,
+		'paged' => $paged,
 		'ignore_sticky_posts' => true,
 		'tax_query' => $tax_query,
 	) );
 
-	// Build base URL for Next link. If relative path provided, resolve to site URL
+	// Resolve base URL; allow relative paths (e.g., /whats-on/)
 	if ( empty( $base_url ) ) {
 		$base_url = get_permalink();
 	}
@@ -89,7 +87,7 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 	?>
 	<div class="whats-on-grid-wrapper">
 		<div class="whats-on-grid" style="display:grid;grid-template-columns:repeat(<?php echo (int) $columns; ?>,1fr);gap:24px;">
-			<?php if ( $q->have_posts() ) : while ( $q->have_posts() ) : $q->the_post(); ?>
+			<?php if ( $query->have_posts() ) : while ( $query->have_posts() ) : $query->the_post(); ?>
 				<article class="whats-on-grid__item">
 					<?php if ( has_post_thumbnail() ) : ?>
 						<a href="<?php the_permalink(); ?>" class="whats-on-grid__thumb"><?php the_post_thumbnail( 'large' ); ?></a>
@@ -99,32 +97,28 @@ function whats_on_grid_render( $attributes, $content, $block ) {
 			<?php endwhile; endif; ?>
 		</div>
 		<?php
-		$total_pages = (int) $q->max_num_pages;
-		if ( $total_pages > 1 ) :
-			echo '<nav class="whats-on-grid__pagination" aria-label="Pagination">';
-			// Previous
-			if ( $current_page > 1 ) {
-				$prev_page = $current_page - 1;
-				$href = add_query_arg( array( $query_var => $prev_page ), $base_url );
-				echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">Previous</a>';
-			}
-			// Numbers
-			for ( $i = 1; $i <= $total_pages; $i++ ) {
-				if ( $i === (int) $current_page ) {
-					echo '<span class="whats-on-grid__page current">' . (int) $i . '</span>';
-				} else {
-					$href = add_query_arg( array( $query_var => $i ), $base_url );
-					echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">' . (int) $i . '</a>';
+		$total_pages = (int) $query->max_num_pages;
+		if ( $total_pages > 1 ) {
+			$base = add_query_arg( array( $query_var => '%#%' ), $base_url );
+			$pagination_links = paginate_links( array(
+				'base'      => $base,
+				'format'    => '',
+				'current'   => $paged,
+				'total'     => $total_pages,
+				'prev_text' => '« Prev',
+				'next_text' => 'Next »',
+				'type'      => 'array',
+			) );
+
+			if ( ! empty( $pagination_links ) ) {
+				echo '<nav class="whats-on-grid__pagination" aria-label="Pagination">';
+				foreach ( $pagination_links as $link ) {
+					$link = preg_replace( '/<a\s+/', '<a class="gb-button gb-button-e4720bfe gb-button-text" ', $link, 1 );
+					echo $link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
+				echo '</nav>';
 			}
-			// Next
-			if ( $current_page < $total_pages ) {
-				$next_page = $current_page + 1;
-				$href = add_query_arg( array( $query_var => $next_page ), $base_url );
-				echo '<a class="gb-button gb-button-e4720bfe gb-button-text" href="' . esc_url( $href ) . '">Next</a>';
-			}
-			echo '</nav>';
-		endif;
+		}
 		?>
 	</div>
 	<?php
