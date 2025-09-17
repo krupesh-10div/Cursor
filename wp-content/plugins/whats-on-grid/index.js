@@ -105,6 +105,11 @@
             ['core/post-featured-image', { isLink: false }],
             ['core/post-title', { isLink: true }]
           ]],
+          ['core/query-pagination', {}, [
+            ['core/query-pagination-previous', { label: 'Previous' }],
+            ['core/query-pagination-numbers'],
+            ['core/query-pagination-next', { label: 'Next' }]
+          ]],
           ['core/query-no-results']
         ]]
       ]]

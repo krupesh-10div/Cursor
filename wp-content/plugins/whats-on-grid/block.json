@@ -10,5 +10,11 @@
     "html": false
   },
   "textdomain": "whats-on-grid",
-  "editorScript": "whats-on-grid-editor"
+  "editorScript": "whats-on-grid-editor",
+  "attributes": {
+    "perPage": { "type": "number", "default": 30 },
+    "idsString": { "type": "string", "default": "429,615,450,614,434,511" },
+    "includeChildren": { "type": "boolean", "default": true },
+    "columns": { "type": "number", "default": 3 }
+  }
 }
