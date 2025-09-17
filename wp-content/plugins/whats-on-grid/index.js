@@ -18,21 +18,12 @@
 		edit: function(props){
 			var a = props.attributes;
 			function set(attr){ return function(value){ var o={}; o[attr]=value; props.setAttributes(o); }; }
-
 			return el(
 				Fragment,
 				null,
 				el(InspectorControls, null,
 					el(PanelBody, { title: __('Settings', 'whats-on-grid'), initialOpen: true },
-						el(SelectControl, {
-							label: __('Post Type', 'whats-on-grid'),
-							value: a.postType || 'post',
-							options: [
-								{ label: 'Posts', value: 'post' },
-								{ label: 'Pages', value: 'page' }
-							],
-							onChange: set('postType')
-						}),
+						el(SelectControl, { label: __('Post Type', 'whats-on-grid'), value: a.postType || 'post', options: [ { label: 'Posts', value: 'post' }, { label: 'Pages', value: 'page' } ], onChange: set('postType') }),
 						el(TextControl, { label: __('Posts per page', 'whats-on-grid'), type: 'number', min: 1, value: a.perPage || 30, onChange: set('perPage') }),
 						el(TextControl, { label: __('Category IDs (comma-separated)', 'whats-on-grid'), value: a.idsString || '', onChange: set('idsString') }),
 						el(ToggleControl, { label: __('Include child terms', 'whats-on-grid'), checked: !!a.includeChildren, onChange: set('includeChildren') }),
