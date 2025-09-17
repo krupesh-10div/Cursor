@@ -60,16 +60,23 @@
 \t} );
 } )( window.wp.blocks, window.wp.blockEditor, window.wp.i18n, window.wp.element );
 
-( function( wp ) {
-    const { registerBlockType } = wp.blocks;
-    const { __ } = wp.i18n;
-    const { useBlockProps, InnerBlocks } = wp.blockEditor || wp.editor;
-    const el = wp.element.createElement;
+(function (wp) {
+    var blocks = wp.blocks;
+    var i18n = wp.i18n;
+    var blockEditor = wp.blockEditor || wp.editor;
+    var element = wp.element;
 
-    const TEMPLATE = [
-        [ 'core/group', { className: 'whats-on-container' }, [
-            [ 'core/group', { className: 'whats-on-inner-container' }, [
-                [ 'core/query', {
+    var registerBlockType = blocks.registerBlockType;
+    var __ = i18n.__;
+    var useBlockProps = blockEditor.useBlockProps;
+    var InnerBlocks = blockEditor.InnerBlocks;
+    var el = element.createElement;
+
+    // Template: Group > Group > Query (grid 3 columns) with featured image and linked title
+    var TEMPLATE = [
+        ['core/group', {}, [
+            ['core/group', {}, [
+                ['core/query', {
                     query: {
                         perPage: 30,
                         postType: 'post',
@@ -77,7 +84,7 @@
                             {
                                 taxonomy: 'category',
                                 field: 'term_id',
-                                terms: [ 429, 615, 450, 614, 434, 511 ],
+                                terms: [429, 615, 450, 614, 434, 511],
                                 includeChildren: true,
                                 operator: 'IN'
                             }
@@ -86,29 +93,25 @@
                     displayLayout: { type: 'grid', columns: 3 },
                     tagName: 'div'
                 }, [
-                    [ 'core/post-template', {}, [
-                        [ 'core/post-featured-image', { isLink: false } ],
-                        [ 'core/post-title', { isLink: true } ],
-                    ] ],
-                    [ 'core/query-no-results' ]
-                ] ]
-            ] ]
-        ] ]
+                    ['core/post-template', {}, [
+                        ['core/post-featured-image', { isLink: false }],
+                        ['core/post-title', { isLink: true }]
+                    ]],
+                    ['core/query-no-results']
+                ]]
+            ]]
+        ]]
     ];
 
-    registerBlockType( 'custom/whats-on-grid', {
-        title: "What's On Grid",
-        description: __( 'Displays a 3-column grid of posts from selected categories', 'whats-on-grid' ),
-        edit: function Edit() {
-            const blockProps = useBlockProps();
-            return el(
-                'div',
-                blockProps,
-                el( InnerBlocks, { template: TEMPLATE, templateLock: 'all' } )
-            );
+    registerBlockType('custom/whats-on-grid', {
+        title: __("What's On Grid", 'whats-on-grid'),
+        description: __('Displays a 3-column grid of posts from selected categories', 'whats-on-grid'),
+        edit: function () {
+            var blockProps = useBlockProps();
+            return el('div', blockProps, el(InnerBlocks, { template: TEMPLATE, templateLock: 'all' }));
         },
-        save: function Save() {
-            return el( InnerBlocks.Content, null );
+        save: function () {
+            return el(InnerBlocks.Content, null);
         }
-    } );
-} )( window.wp );
+    });
+})(window.wp);

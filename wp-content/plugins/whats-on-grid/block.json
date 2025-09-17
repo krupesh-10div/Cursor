@@ -12,19 +12,3 @@
   "textdomain": "whats-on-grid",
   "editorScript": "file:./index.js"
 }
-{
-  "apiVersion": 3,
-  "name": "custom/whats-on-grid",
-  "title": "What's On Grid",
-  "category": "widgets",
-  "icon": "grid-view",
-  "description": "Grid of posts filtered by selected categories.",
-  "supports": { "html": false },
-  "editorScript": "file:./index.js",
-  "attributes": {},
-  "usesContext": [
-    "queryId",
-    "postId",
-    "postType"
-  ]
-}
