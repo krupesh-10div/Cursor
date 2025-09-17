@@ -32,6 +32,22 @@ function whats_on_grid_register_block() {
 add_action( 'init', 'whats_on_grid_register_block' );
 
 /**
+ * Normalize a base URL (relative or absolute) into a site-absolute URL without trailing query.
+ */
+function whats_on_grid_normalize_base_url( $base_url ) {
+	$base_url = trim( (string) $base_url );
+	if ( $base_url === '' ) {
+		$base_url = get_permalink();
+	}
+	if ( 0 === strpos( $base_url, '/' ) ) {
+		$base_url = home_url( $base_url );
+	}
+	// Strip existing pagination-like vars to avoid canonical redirects
+	$base_url = remove_query_arg( array( 'pg', 'page', 'paged' ), $base_url );
+	return $base_url;
+}
+
+/**
  * Server-render grid of posts and paginate_links() navigation.
  */
 function whats_on_grid_render( $attributes ) {
@@ -43,7 +59,7 @@ function whats_on_grid_render( $attributes ) {
 		'includeChildren' => true,
 		'columns' => 3,
 		'baseUrl' => '/whats-on/',
-		'queryVar' => 'page',
+		'queryVar' => 'pg',
 	);
 	$attributes = wp_parse_args( (array) $attributes, $defaults );
 
@@ -53,7 +69,7 @@ function whats_on_grid_render( $attributes ) {
 	$term_ids = array_filter( array_map( 'intval', (array) $attributes['termIds'] ) );
 	$include_children = ! empty( $attributes['includeChildren'] );
 	$columns = max( 1, (int) $attributes['columns'] );
-	$base_url = trim( (string) $attributes['baseUrl'] );
+	$base_url = whats_on_grid_normalize_base_url( $attributes['baseUrl'] );
 	$query_var = preg_replace( '/[^a-zA-Z0-9_\-]/', '', (string) $attributes['queryVar'] );
 
 	$paged = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : max( 1, (int) get_query_var( 'paged', 1 ) );
@@ -76,13 +92,6 @@ function whats_on_grid_render( $attributes ) {
 		'ignore_sticky_posts' => true,
 		'tax_query' => $tax_query,
 	) );
-
-	if ( empty( $base_url ) ) {
-		$base_url = get_permalink();
-	}
-	if ( 0 === strpos( $base_url, '/' ) ) {
-		$base_url = home_url( $base_url );
-	}
 
 	ob_start();
 	?>
