@@ -17,11 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the block using the metadata loaded from the `block.json` file.
  */
 function whats_on_grid_register_block() {
-	// Register minimal editor script handle; file can be empty or minimal UI
 	wp_register_script(
 		'whats-on-grid-editor',
 		plugins_url( 'index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-components', 'wp-server-side-render' ),
+		array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-data' ),
 		'1.0.0',
 		true
 	);
@@ -38,18 +37,20 @@ add_action( 'init', 'whats_on_grid_register_block' );
 function whats_on_grid_render( $attributes ) {
 	$defaults = array(
 		'perPage' => 30,
-		'idsString' => '429,615,450,614,434,511',
+		'postType' => 'post',
+		'taxonomy' => 'category',
+		'termIds' => array( 429, 615, 450, 614, 434, 511 ),
 		'includeChildren' => true,
 		'columns' => 3,
-		'postType' => 'post',
 		'baseUrl' => '/whats-on/',
 		'queryVar' => 'page',
 	);
 	$attributes = wp_parse_args( (array) $attributes, $defaults );
 
-	$per_page = (int) $attributes['perPage'];
+	$per_page = max( 1, (int) $attributes['perPage'] );
 	$post_type = sanitize_key( $attributes['postType'] );
-	$ids_string = (string) $attributes['idsString'];
+	$taxonomy = sanitize_key( $attributes['taxonomy'] );
+	$term_ids = array_filter( array_map( 'intval', (array) $attributes['termIds'] ) );
 	$include_children = ! empty( $attributes['includeChildren'] );
 	$columns = max( 1, (int) $attributes['columns'] );
 	$base_url = trim( (string) $attributes['baseUrl'] );
@@ -57,13 +58,12 @@ function whats_on_grid_render( $attributes ) {
 
 	$paged = isset( $_GET[ $query_var ] ) ? max( 1, (int) $_GET[ $query_var ] ) : max( 1, (int) get_query_var( 'paged', 1 ) );
 
-	$ids = array_filter( array_map( 'intval', preg_split( '/\s*,\s*/', $ids_string ) ) );
 	$tax_query = array();
-	if ( 'post' === $post_type && ! empty( $ids ) ) {
+	if ( ! empty( $taxonomy ) && ! empty( $term_ids ) ) {
 		$tax_query[] = array(
-			'taxonomy' => 'category',
+			'taxonomy' => $taxonomy,
 			'field' => 'term_id',
-			'terms' => $ids,
+			'terms' => $term_ids,
 			'include_children' => $include_children,
 			'operator' => 'IN',
 		);

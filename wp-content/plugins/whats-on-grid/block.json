@@ -13,6 +13,8 @@
     "perPage": { "type": "number", "default": 30 },
     "idsString": { "type": "string", "default": "429,615,450,614,434,511" },
     "includeChildren": { "type": "boolean", "default": true },
+    "taxonomy": { "type": "string", "default": "category" },
+    "termIds": { "type": "array", "items": { "type": "number" }, "default": [429,615,450,614,434,511] },
     "columns": { "type": "number", "default": 3 },
     "postType": { "type": "string", "default": "post" },
     "baseUrl": { "type": "string", "default": "/whats-on/" },
