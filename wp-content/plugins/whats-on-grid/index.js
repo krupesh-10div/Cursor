@@ -32,6 +32,15 @@
 		}, [taxonomy, search]);
 	}
 
+	function useTermsByIds(taxonomy, ids){
+		return useSelect(function(select){
+			if (!taxonomy || !ids || !ids.length) return [];
+			var core = select('core');
+			var terms = core.getEntityRecords('taxonomy', taxonomy, { include: ids, per_page: ids.length }) || [];
+			return terms;
+		}, [taxonomy, (ids || []).join(',')]);
+	}
+
 	registerBlockType('custom/whats-on-grid', {
 		title: __("What's On Grid", 'whats-on-grid'),
 		description: __('Dynamic grid of posts with server-side pagination', 'whats-on-grid'),
@@ -44,6 +53,7 @@
 			var termSearch = termQuery[0];
 			var setTermSearch = termQuery[1];
 			var termOptions = useTermSearch(a.taxonomy || 'category', termSearch);
+			var selectedTerms = useTermsByIds(a.taxonomy || 'category', Array.isArray(a.termIds) ? a.termIds : []);
 
 			function addTerm(id){
 				var current = Array.isArray(a.termIds) ? a.termIds.slice() : [];
@@ -65,8 +75,12 @@
 						el(ComboboxControl, { label: __('Search terms', 'whats-on-grid'), value: '', onChange: function(val){ if (val) { addTerm(val); setTermSearch(''); } }, onInputChange: setTermSearch, options: termOptions }),
 						el('div', { className: 'whats-on-grid__selected-terms' },
 							(Array.isArray(a.termIds) ? a.termIds : []).map(function(id){
+								var name = String(id);
+								for (var i=0;i<selectedTerms.length;i++){
+									if (selectedTerms[i] && selectedTerms[i].id === id){ name = selectedTerms[i].name; break; }
+								}
 								return el('span', { key: id, className: 'token' },
-									String(id),
+									name,
 									el('button', { onClick: function(){ removeTerm(id); }, type: 'button', className: 'remove' }, '×')
 								);
 							})
