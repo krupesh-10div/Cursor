@@ -1,3 +1,65 @@
+( function( wpBlocks, wpBlockEditor, wpI18n, wpElement ) {
+\tconst { registerBlockType } = wpBlocks;
+\tconst { __ } = wpI18n;
+\tconst { useBlockProps, InnerBlocks } = wpBlockEditor;
+\tconst { createElement: el, Fragment } = wpElement;
+
+\t// Preload the structure shown in the screenshot:
+\t// Group (container) > Group (container) > Query (grid, 3 columns)
+\t// with Post Template rendering Featured Image above linked Title.
+\tconst TEMPLATE = [
+\t\t[ 'core/group', {}, [
+\t\t\t[ 'core/group', {}, [
+\t\t\t\t[
+\t\t\t\t\t'core/query',
+\t\t\t\t\t{
+\t\t\t\t\t\tquery: {
+\t\t\t\t\t\t\tperPage: 30,
+\t\t\t\t\t\t\tpostType: 'post',
+\t\t\t\t\t\t\t// Filter by categories by term IDs and include children.
+\t\t\t\t\t\t\ttaxQuery: [
+\t\t\t\t\t\t\t\t{
+\t\t\t\t\t\t\t\t\ttaxonomy: 'category',
+\t\t\t\t\t\t\t\t\tfield: 'term_id',
+\t\t\t\t\t\t\t\t\tterms: [ 429, 615, 450, 614, 434, 511 ],
+\t\t\t\t\t\t\t\t\tincludeChildren: true
+\t\t\t\t\t\t\t\t}
+\t\t\t\t\t\t\t],
+\t\t\t\t\t\t\tinherit: false
+\t\t\t\t\t\t},
+\t\t\t\t\t\tdisplayLayout: { type: 'grid', columns: 3 }
+\t\t\t\t\t},
+\t\t\t\t\t[
+\t\t\t\t\t\t[ 'core/post-template', {}, [
+\t\t\t\t\t\t\t[ 'core/post-featured-image', { isLink: true, sizeSlug: 'large' } ],
+\t\t\t\t\t\t\t[ 'core/post-title', { isLink: true } ]
+\t\t\t\t\t\t] ]
+\t\t\t\t\t]
+\t\t\t\t]
+\t\t\t] ]
+\t];
+
+\tconst Edit = () => {
+\t\tconst blockProps = useBlockProps();
+\t\treturn el(
+\t\t\t'div',
+\t\t\tblockProps,
+\t\t\tel( InnerBlocks, { template: TEMPLATE, templateLock: 'all' } )
+\t\t);
+\t};
+
+\tconst Save = () => {
+\t\tconst blockProps = useBlockProps.save();
+\t\treturn el( 'div', blockProps, el( InnerBlocks.Content, null ) );
+\t};
+
+\tregisterBlockType( 'custom/whats-on-grid', {
+\t\ttitle: __( "What's On Grid", 'whats-on-grid' ),
+\t\tedit: Edit,
+\t\tsave: Save
+\t} );
+} )( window.wp.blocks, window.wp.blockEditor, window.wp.i18n, window.wp.element );
+
 ( function( wp ) {
     const { registerBlockType } = wp.blocks;
     const { __ } = wp.i18n;
