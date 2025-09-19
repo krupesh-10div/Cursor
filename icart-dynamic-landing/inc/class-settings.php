@@ -24,9 +24,9 @@ class ICartDL_Settings {
 	public function register_settings() {
 		register_setting($this->option_key, $this->option_key, array($this, 'sanitize_settings'));
 
-		add_settings_section('icart_dl_api', __('Perplexity Settings', 'icart-dl'), '__return_false', $this->option_key);
-		add_settings_field('perplexity_api_key', __('API Key', 'icart-dl'), array($this, 'field_api_key'), $this->option_key, 'icart_dl_api');
-		add_settings_field('perplexity_model', __('Model', 'icart-dl'), array($this, 'field_model'), $this->option_key, 'icart_dl_api');
+		add_settings_section('icart_dl_api', __('OpenAI Settings', 'icart-dl'), '__return_false', $this->option_key);
+		add_settings_field('openai_api_key', __('API Key', 'icart-dl'), array($this, 'field_api_key'), $this->option_key, 'icart_dl_api');
+		add_settings_field('openai_model', __('Model', 'icart-dl'), array($this, 'field_model'), $this->option_key, 'icart_dl_api');
 
 		add_settings_section('icart_dl_brand', __('Branding & Behavior', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
@@ -40,8 +40,8 @@ class ICartDL_Settings {
 
 	public function sanitize_settings($input) {
 		$output = icart_dl_get_settings();
-		$output['perplexity_api_key'] = isset($input['perplexity_api_key']) ? sanitize_text_field($input['perplexity_api_key']) : '';
-		$output['perplexity_model'] = isset($input['perplexity_model']) ? sanitize_text_field($input['perplexity_model']) : 'sonar-pro';
+		$output['openai_api_key'] = isset($input['openai_api_key']) ? sanitize_text_field($input['openai_api_key']) : '';
+		$output['openai_model'] = isset($input['openai_model']) ? sanitize_text_field($input['openai_model']) : 'gpt-4o-mini';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		// remove disable_api option (no API usage at runtime)
@@ -78,7 +78,11 @@ class ICartDL_Settings {
 					// Build in shutdown to avoid delaying the admin response if IO is slow
 					$product_key_for_build = $product_key;
 					add_action('shutdown', function() use ($product_key_for_build) {
-						icart_dl_build_json_for_product($product_key_for_build);
+						if (function_exists('icart_dl_build_json_for_product_auto')) {
+							icart_dl_build_json_for_product_auto($product_key_for_build);
+						} else {
+							icart_dl_build_json_for_product($product_key_for_build);
+						}
 					});
 				}
 				set_transient('dl_flush_rewrite', 1, 60);
@@ -116,17 +120,17 @@ class ICartDL_Settings {
 	public function field_api_key() {
 		$opts = icart_dl_get_settings();
 		?>
-		<input type="password" name="<?php echo esc_attr($this->option_key); ?>[perplexity_api_key]" value="<?php echo esc_attr($opts['perplexity_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
-		<p class="description">Store your Perplexity API key securely here.</p>
+		<input type="password" name="<?php echo esc_attr($this->option_key); ?>[openai_api_key]" value="<?php echo esc_attr($opts['openai_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+		<p class="description">Store your OpenAI API key securely here.</p>
 		<?php
 	}
 
 	public function field_model() {
 		$opts = icart_dl_get_settings();
-		$model = $opts['perplexity_model'] ?? 'sonar-pro';
+		$model = $opts['openai_model'] ?? 'gpt-4o-mini';
 		?>
-		<select name="<?php echo esc_attr($this->option_key); ?>[perplexity_model]">
-			<?php foreach (array('sonar-pro','sonar-medium','sonar-small') as $m): ?>
+		<select name="<?php echo esc_attr($this->option_key); ?>[openai_model]">
+			<?php foreach (array('gpt-4o-mini','gpt-4o') as $m): ?>
 				<option value="<?php echo esc_attr($m); ?>" <?php selected($model, $m); ?>><?php echo esc_html($m); ?></option>
 			<?php endforeach; ?>
 		</select>
