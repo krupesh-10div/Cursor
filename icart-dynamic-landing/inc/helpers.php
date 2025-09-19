@@ -276,21 +276,27 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 /**
  * Generate title and 22-25 word short description from keywords using OpenAI. Fallback to local if API fails.
  */
-function icart_dl_generate_title_short_openai($keywords) {
+function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	$slug = isset($options['slug']) ? sanitize_title($options['slug']) : '';
+	$product_key = isset($options['product_key']) ? sanitize_title($options['product_key']) : '';
+	$uniqueness_seed = md5($slug . '|' . $product_key);
 	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
 		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
+		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Generate a compelling H1 title exactly 8 words long, and a short description between 22 and 25 words. Return only JSON.',
+		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: 25 to 35 words, distinct, specific, and engaging. Avoid generic openings such as "Discover", "Explore", "Unlock", "Find"; vary opening structure so many outputs do not start the same way. Return only JSON.',
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
+		'slug' => $slug,
+		'uniqueness_seed' => $uniqueness_seed,
 		'constraints' => array(
-			'title_min_words' => 8,
-			'title_max_words' => 8,
-			'short_description_min_words' => 22,
-			'short_description_max_words' => 25,
+			'title_generated_min_words' => 8,
+			'title_generated_max_words' => 12,
+			'short_description_min_words' => 25,
+			'short_description_max_words' => 35,
 		),
 	));
 	$result = icart_dl_openai_chat(array(

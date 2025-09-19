@@ -73,7 +73,7 @@ if (defined('WP_CLI') && WP_CLI) {
 					$current_title = isset($map[$slug]['title']) ? trim($map[$slug]['title']) : '';
 					$current_short = isset($map[$slug]['short_description']) ? trim($map[$slug]['short_description']) : '';
 					if (!$force && $current_title !== '' && $current_short !== '') { continue; }
-					list($title, $short) = icart_dl_generate_title_short_openai($keywords);
+					list($title, $short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
 					$map[$slug] = array(
 						'slug' => $slug,
 						'url' => trailingslashit(home_url('/' . $slug)),

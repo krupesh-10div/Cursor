@@ -182,7 +182,7 @@ class ICartDL_Settings {
 			$row = $job['rows'][$job['index']];
 			$slug = $row['slug'];
 			$keywords = $row['keywords'];
-			list($title, $short) = icart_dl_generate_title_short_openai($keywords);
+			list($title, $short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
 			$map[$slug] = array(
 				'slug' => $slug,
 				'url' => trailingslashit(home_url('/' . $slug)),
