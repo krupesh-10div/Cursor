@@ -9,6 +9,9 @@ class ICartDL_Settings {
 	public function __construct() {
 		add_action('admin_menu', array($this, 'add_menu'));
 		add_action('admin_init', array($this, 'register_settings'));
+		add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+		add_action('wp_ajax_icart_dl_upload_keywords', array($this, 'ajax_upload_keywords'));
+		add_action('wp_ajax_icart_dl_process_keywords', array($this, 'ajax_process_keywords'));
 	}
 
 	public function add_menu() {
@@ -113,8 +116,140 @@ class ICartDL_Settings {
 				<?php echo esc_html__('Shortcode:', 'icart-dl'); ?>
 				<code>[icart_dynamic_page]</code>
 			</p>
+			<div id="icart-dl-ajax-upload">
+				<h2><?php echo esc_html__('AJAX CSV Upload & Generate', 'icart-dl'); ?></h2>
+				<input type="file" id="icart-dl-ajax-file" accept=".csv" />
+				<input type="text" id="icart-dl-ajax-filename" class="regular-text" placeholder="<?php echo esc_attr__('Optional filename, e.g., icart.csv', 'icart-dl'); ?>" />
+				<label style="display:block;margin-top:6px;">
+					<input type="checkbox" id="icart-dl-ajax-build-json" value="1" checked />
+					<?php echo esc_html__('Generate JSON file after upload', 'icart-dl'); ?>
+				</label>
+				<p>
+					<button class="button button-primary" id="icart-dl-ajax-start"><?php echo esc_html__('Upload via AJAX & Generate', 'icart-dl'); ?></button>
+				</p>
+				<div id="icart-dl-progress" style="display:none;max-width:600px;">
+					<div id="icart-dl-progress-bar" style="height:16px;background:#e2e8f0;border-radius:8px;overflow:hidden;">
+						<div id="icart-dl-progress-fill" style="height:100%;width:0;background:#2271b1;"></div>
+					</div>
+					<p id="icart-dl-progress-text" style="margin-top:6px;"></p>
+				</div>
+			</div>
 		</div>
 		<?php
+	}
+
+	public function enqueue_admin_assets($hook) {
+		if ($hook !== 'settings_page_icart-dl-settings') { return; }
+		wp_register_script('icart-dl-admin', DL_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), DL_VERSION, true);
+		wp_localize_script('icart-dl-admin', 'ICartDLAdmin', array(
+			'ajaxUrl' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('icart_dl_ajax'),
+		));
+		wp_enqueue_script('icart-dl-admin');
+	}
+
+	private function build_job_from_file($file_path, $product_key) {
+		$rows = array();
+		if (($handle = fopen($file_path, 'r')) !== false) {
+			$line = 0;
+			while (($data = fgetcsv($handle)) !== false) {
+				$line++;
+				if ($line === 1) { continue; }
+				$kw = isset($data[0]) ? trim($data[0]) : '';
+				if ($kw === '' || strtolower($kw) === 'keyword' || strtolower($kw) === 'keywords') { continue; }
+				$rows[] = array(
+					'slug' => sanitize_title($kw),
+					'keywords' => $kw,
+				);
+			}
+			fclose($handle);
+		}
+		$job_id = 'job_' . substr(md5(uniqid('', true) . '|' . get_current_user_id()), 0, 12);
+		$job = array(
+			'id' => $job_id,
+			'product_key' => sanitize_title($product_key),
+			'rows' => $rows,
+			'total' => count($rows),
+			'index' => 0,
+			'created_at' => time(),
+			'user_id' => get_current_user_id(),
+		);
+		set_transient('icart_dl_' . $job_id, $job, 2 * HOUR_IN_SECONDS);
+		return $job;
+	}
+
+	public function ajax_upload_keywords() {
+		check_ajax_referer('icart_dl_ajax', 'nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => 'Unauthorized'), 403);
+		}
+		if (empty($_FILES['file']['name'])) {
+			wp_send_json_error(array('message' => 'No file provided'), 400);
+		}
+		$uploaded = wp_handle_upload($_FILES['file'], array('test_form' => false));
+		if (isset($uploaded['error'])) {
+			wp_send_json_error(array('message' => $uploaded['error']), 400);
+		}
+		$dest_dir = DL_PLUGIN_DIR . 'sample/keywords/';
+		if (!is_dir($dest_dir)) { wp_mkdir_p($dest_dir); }
+		$filename = isset($_POST['filename']) ? sanitize_file_name(wp_unslash($_POST['filename'])) : '';
+		if ($filename === '') { $filename = basename($uploaded['file']); }
+		if (substr(strtolower($filename), -4) !== '.csv') { $filename .= '.csv'; }
+		$dest = $dest_dir . $filename;
+		copy($uploaded['file'], $dest);
+		$product_key = sanitize_title(pathinfo($filename, PATHINFO_FILENAME));
+		// refresh landing map
+		dl_sync_landing_map_from_samples();
+		$job = $this->build_job_from_file($dest, $product_key);
+		wp_send_json_success(array(
+			'job_id' => $job['id'],
+			'product_key' => $product_key,
+			'total' => $job['total'],
+		));
+	}
+
+	public function ajax_process_keywords() {
+		check_ajax_referer('icart_dl_ajax', 'nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => 'Unauthorized'), 403);
+		}
+		$job_id = isset($_POST['job_id']) ? sanitize_text_field(wp_unslash($_POST['job_id'])) : '';
+		$batch = isset($_POST['batch']) ? intval($_POST['batch']) : 5;
+		$job = get_transient('icart_dl_' . $job_id);
+		if (!$job) { wp_send_json_error(array('message' => 'Job not found or expired'), 404); }
+		if (!isset($job['rows']) || !is_array($job['rows'])) { wp_send_json_error(array('message' => 'Invalid job'), 400); }
+		$product_key = $job['product_key'];
+		$map = icart_dl_load_content_map_for_product($product_key);
+		$processed = 0;
+		for ($i = 0; $i < $batch; $i++) {
+			if ($job['index'] >= $job['total']) { break; }
+			$row = $job['rows'][$job['index']];
+			$slug = $row['slug'];
+			$keywords = $row['keywords'];
+			list($title, $short) = icart_dl_generate_title_short_openai($keywords);
+			$map[$slug] = array(
+				'slug' => $slug,
+				'url' => trailingslashit(home_url('/' . $slug)),
+				'keywords' => $keywords,
+				'title' => $title,
+				'short_description' => $short,
+			);
+			$job['index']++;
+			$processed++;
+		}
+		if ($processed > 0) {
+			icart_dl_write_content_map_for_product($product_key, $map);
+		}
+		set_transient('icart_dl_' . $job_id, $job, 2 * HOUR_IN_SECONDS);
+		$done = ($job['index'] >= $job['total']);
+		$percent = $job['total'] > 0 ? floor(($job['index'] / $job['total']) * 100) : 100;
+		wp_send_json_success(array(
+			'processed' => $processed,
+			'completed' => $job['index'],
+			'total' => $job['total'],
+			'percent' => $percent,
+			'done' => $done,
+		));
 	}
 
 	public function field_api_key() {
