@@ -245,6 +245,8 @@ function icart_dl_generate_short_from_title($title) {
 		'title' => $title,
 		'brand_tone' => $brand_tone,
 		'constraints' => array(
+				'title_min_words' => 8,
+				'title_max_words' => 8,
 			'short_description_min_words' => 22,
 			'short_description_max_words' => 25,
 		),

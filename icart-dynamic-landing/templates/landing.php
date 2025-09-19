@@ -18,7 +18,7 @@ $product_key = isset( $landing['product_key'] ) ? $landing['product_key'] : '';
 add_filter(
 	'pre_get_document_title',
 	function ( $title ) use ( $content, $keywords ) {
-		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$k = ' | ' . get_bloginfo( 'name' );
 		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
@@ -31,7 +31,7 @@ add_filter(
 add_filter(
 	'wpseo_title',
 	function ( $title ) use ( $content, $keywords ) {
-		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$k = ' | ' . get_bloginfo( 'name' );
 		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
@@ -83,7 +83,7 @@ add_filter(
 add_filter(
 	'wpseo_opengraph_title',
 	function ( $t ) use ( $content, $keywords ) {
-		$k   = ! empty( $keywords ) ? ' | ' . sanitize_text_field( $keywords ) : '';
+		$k = ' | ' . get_bloginfo( 'name' );
 		$h1  = isset( $content['title'] ) && $content['title'] !== '' ? $content['title'] : '';
 		if ( ! empty( $h1 ) ) {
 			return $h1 . $k;
@@ -184,13 +184,7 @@ get_header();
 		
 
 		<?php
-		$partial = '';
-		if ( function_exists( 'locate_template' ) ) {
-			$partial = locate_template( array( 'icart-dl/product-sections/' . sanitize_title( $product_key ) . '.php' ) );
-		}
-		if ( ! $partial ) {
-			$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title( $product_key ) . '.php';
-		}
+		$partial = DL_PLUGIN_DIR . 'templates/product-sections/' . sanitize_title( $product_key ) . '.php';
 		if ( $product_key && file_exists( $partial ) ) {
 			include $partial;
 		}

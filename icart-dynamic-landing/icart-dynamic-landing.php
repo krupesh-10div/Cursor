@@ -71,13 +71,6 @@ function icart_dl_init() {
 	// Route to plugin template when icart_slug is present
 	add_filter('template_include', function($template){
 		if (get_query_var('icart_slug')) {
-			// Prefer theme override if present: icart-dl/landing.php
-			if (function_exists('locate_template')) {
-				$theme_tpl = locate_template(array('icart-dl/landing.php'));
-				if (!empty($theme_tpl)) {
-					return $theme_tpl;
-				}
-			}
 			$tpl = DL_PLUGIN_DIR . 'templates/landing.php';
 			if (file_exists($tpl)) {
 				return $tpl;
@@ -99,6 +92,9 @@ add_action('plugins_loaded', 'icart_dl_init');
 function icart_dl_enqueue_assets() {
 	wp_register_style('icart-dl-style', DL_PLUGIN_URL . 'assets/css/style.css', array(), DL_VERSION);
 	wp_enqueue_style('icart-dl-style');
+	wp_register_script('icart-dl-script', DL_PLUGIN_URL . 'assets/js/general.js', array(), DL_VERSION, true);
+	wp_enqueue_script('icart-dl-script');
+
 }
 add_action('wp_enqueue_scripts', 'icart_dl_enqueue_assets');
 
