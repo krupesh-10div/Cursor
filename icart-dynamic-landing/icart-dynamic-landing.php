@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Dynamic Landing Page
-Description: Dynamic landing page that adapts to user search keywords with Perplexity-generated content and CSV-based product recommendations.
+Description: Dynamic landing page that adapts to user search keywords with ChatGPT-generated content and CSV-based product recommendations.
 Version: 1.0.0
 Author: Identixweb
 */
@@ -101,14 +101,12 @@ add_action('wp_enqueue_scripts', 'icart_dl_enqueue_assets');
 // Activation hook to ensure default options
 function icart_dl_activate() {
 	$defaults = array(
-		'perplexity_api_key' => '',
-		'perplexity_model' => 'sonar-pro',
+		'openai_api_key' => '',
+		'openai_model' => 'gpt-5',
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
 		'cache_ttl' => 3600,
-		'disable_api' => 1,
 		'mapping' => array(),
 		'landing_map' => array(),
-		'landing_page_slug' => 'dynamic-landing',
 	);
 	$options = get_option('icart_dl_settings', array());
 	update_option('icart_dl_settings', wp_parse_args($options, $defaults));
