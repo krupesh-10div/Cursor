@@ -241,7 +241,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	if ($api_key === '') {
 		return new \WP_Error('missing_api_key', 'OpenAI API key is not configured.');
 	}
-	$model = $model ? $model : (isset($settings['openai_model']) ? $settings['openai_model'] : 'gpt-4o-mini');
+	$model = $model ? $model : (isset($settings['openai_model']) ? $settings['openai_model'] : 'gpt-5');
 
 	$body = array(
 		'model' => $model,

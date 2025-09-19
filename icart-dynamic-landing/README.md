@@ -13,7 +13,7 @@ Dynamic landing page that adapts content based on search keywords using ChatGPT 
 1. Upload the `icart-dynamic-landing` folder to `wp-content/plugins/`.
 2. Activate the plugin in WordPress admin.
 3. Go to Settings → iCart Dynamic Landing and:
-   - Enter your OpenAI API key and choose a model (e.g., gpt-4o-mini)
+   - Enter your OpenAI API key and choose a model (e.g., gpt-5)
    - Set your brand tone
    - Set a cache TTL
    - Place product-specific keyword CSVs in `wp-content/plugins/icart-dynamic-landing/sample/keywords/` as `<product_key>.csv` (first column keywords)

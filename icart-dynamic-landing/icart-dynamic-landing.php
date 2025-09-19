@@ -102,7 +102,7 @@ add_action('wp_enqueue_scripts', 'icart_dl_enqueue_assets');
 function icart_dl_activate() {
 	$defaults = array(
 		'openai_api_key' => '',
-		'openai_model' => 'gpt-4o-mini',
+		'openai_model' => 'gpt-5',
 		'brand_tone' => 'Clear, helpful, confident, conversion-focused. Keep it concise and benefit-led.',
 		'cache_ttl' => 3600,
 		'mapping' => array(),
