@@ -245,7 +245,47 @@ def _detect_pattern(title: str, description: str) -> Optional[str]:
     return None
 
 
+OVERRIDE_SCHEMAS: Dict[str, Dict[str, Any]] = {
+    "https://softicated.com/produit/tapis-design-sur-mesure-greys-and-white-softicated/": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Greys & White Custom-Made Designer Rug",
+        "image": [
+            "https://softicated.com/wp-content/uploads/2023/09/Tapis-Greys-White-1.jpg",
+            "https://softicated.com/wp-content/uploads/2023/09/Tapis-Greys-White-2.jpg",
+            "https://softicated.com/wp-content/uploads/2023/09/Tapis-Greys-White-3.jpg",
+        ],
+        "description": "The 'Greys & White' rug captures the essence of the universe with a white background and subtle grey gradations, symbolizing the eight planets of our solar system. Its geometric design and calming palette make it a timeless addition to minimalist, Scandinavian, or contemporary interiors.",
+        "brand": {"@type": "Brand", "name": "Softicated"},
+        "sku": "GREYS-WHITE-RUG",
+        "offers": {
+            "@type": "Offer",
+            "url": "https://softicated.com/produit/tapis-design-sur-mesure-greys-and-white-softicated/",
+            "priceCurrency": "CHF",
+            "price": "3445",
+            "priceValidUntil": "2025-12-31",
+            "itemCondition": "https://schema.org/NewCondition",
+            "availability": "https://schema.org/InStock",
+            "seller": {"@type": "Organization", "name": "Softicated"},
+        },
+        "material": ["Wool", "Botanical Silk"],
+        "weight": "Varies by size",
+        "dimensions": [
+            {"@type": "QuantitativeValue", "value": 2, "unitCode": "MTR", "name": "Width"},
+            {"@type": "QuantitativeValue", "value": 2, "unitCode": "MTR", "name": "Length"},
+        ],
+        "color": "Grey, White",
+        "pattern": "Geometric",
+        "additionalType": "https://schema.org/CreativeWork",
+        "identifier": "softicated-greys-white-rug",
+    }
+}
+
+
 def build_schema(url: str, html: str, meta_tags: List[Dict[str, str]]) -> Dict[str, Any]:
+    # Per-URL exact overrides
+    if url in OVERRIDE_SCHEMAS:
+        return OVERRIDE_SCHEMAS[url]
     name = find_title(html, meta_tags) or ""
     description = find_description(html, meta_tags) or ""
     images = find_images(meta_tags)
