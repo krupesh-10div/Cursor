@@ -178,6 +178,73 @@ def find_attribute_value(html: str, labels: List[str]) -> Optional[str]:
     return None
 
 
+def _parse_material_list(material_text: str) -> List[str]:
+    parts = re.split(r",|/|\band\b|\bet\b|\+", material_text, flags=re.I)
+    cleaned: List[str] = []
+    for p in parts:
+        token = unescape(p).strip()
+        if not token:
+            continue
+        # Normalize common French terms
+        lower = token.lower()
+        if lower in {"laine"}:
+            token = "Wool"
+        elif "soie" in lower or "viscose" in lower:
+            token = "Botanical Silk"
+        cleaned.append(token)
+    # Deduplicate preserving order
+    seen = set()
+    out: List[str] = []
+    for c in cleaned:
+        if c not in seen:
+            seen.add(c)
+            out.append(c)
+    return out
+
+
+def _cm_to_m_value(cm_text: str) -> Optional[float]:
+    if not cm_text:
+        return None
+    # Extract first number
+    m = re.search(r"([0-9]+(?:[\.,][0-9]+)?)", cm_text)
+    if not m:
+        return None
+    num = m.group(1).replace(",", ".")
+    try:
+        cm_val = float(num)
+        return round(cm_val / 100.0, 3)
+    except ValueError:
+        return None
+
+
+def _build_dimensions(width_cm: str, depth_cm: str, height_cm: str) -> List[Dict[str, Any]]:
+    dims: List[Dict[str, Any]] = []
+    width_m = _cm_to_m_value(width_cm) if width_cm else None
+    length_m = _cm_to_m_value(depth_cm) if depth_cm else None
+    # Rugs typically use Width and Length
+    if width_m is not None:
+        dims.append({"@type": "QuantitativeValue", "value": width_m, "unitCode": "MTR", "name": "Width"})
+    if length_m is not None:
+        dims.append({"@type": "QuantitativeValue", "value": length_m, "unitCode": "MTR", "name": "Length"})
+    return dims
+
+
+def _derive_identifier(url: str) -> str:
+    slug = url.strip().rstrip("/").split("/")[-1]
+    return slug
+
+
+def _detect_pattern(title: str, description: str) -> Optional[str]:
+    text = f"{title} {description}".lower()
+    if re.search(r"geo(metri|métr)\w*", text):
+        return "Geometric"
+    if re.search(r"ray[ée]s?|striped", text):
+        return "Striped"
+    if re.search(r"uni\b|solid", text):
+        return "Solid"
+    return None
+
+
 def build_schema(url: str, html: str, meta_tags: List[Dict[str, str]]) -> Dict[str, Any]:
     name = find_title(html, meta_tags) or ""
     description = find_description(html, meta_tags) or ""
@@ -185,45 +252,45 @@ def build_schema(url: str, html: str, meta_tags: List[Dict[str, str]]) -> Dict[s
     price, currency = find_price_and_currency(meta_tags, html)
     sku = find_sku(html) or ""
 
-    # Attempt to find some attributes (en + fr labels)
-    color = find_attribute_value(html, ["Color", "Couleur"]) or ""
-    material = find_attribute_value(html, ["Material", "Matière", "Matériau", "Materiau"]) or ""
-    weight = find_attribute_value(html, ["Weight", "Poids"]) or ""
+    # Attempt to find attributes (en + fr labels)
+    material_text = find_attribute_value(html, ["Material", "Matière", "Matériau", "Materiau"]) or ""
+    material_list = _parse_material_list(material_text) if material_text else []
+    weight = find_attribute_value(html, ["Weight", "Poids"]) or "Varies by size"
     width_cm = find_attribute_value(html, ["Width", "Largeur"]) or ""
     depth_cm = find_attribute_value(html, ["Depth", "Profondeur"]) or ""
     height_cm = find_attribute_value(html, ["Height", "Hauteur"]) or ""
-    usage = find_attribute_value(html, ["Usage", "Utilisation"]) or ""
-    origin = find_attribute_value(html, ["Origin", "Origine"]) or ""
-    collection = find_attribute_value(html, ["Collection"]) or "Signet Ring"
+    dimensions = _build_dimensions(width_cm, depth_cm, height_cm)
+
+    color = find_attribute_value(html, ["Color", "Couleur"]) or ""
+    pattern = _detect_pattern(name, description) or ""
+
+    identifier = _derive_identifier(url)
 
     schema: Dict[str, Any] = {
-        "@context": "https://schema.org/",
+        "@context": "https://schema.org",
         "@type": "Product",
         "name": name,
         "image": images,
         "description": description,
-        "sku": sku,
         "brand": {"@type": "Brand", "name": "Softicated"},
+        "sku": sku,
         "offers": {
             "@type": "Offer",
             "url": url,
             "priceCurrency": currency or "",
             "price": price or "",
-            "availability": "https://schema.org/InStock",
+            "priceValidUntil": "2025-12-31",
             "itemCondition": "https://schema.org/NewCondition",
+            "availability": "https://schema.org/InStock",
             "seller": {"@type": "Organization", "name": "Softicated"},
         },
-        "color": color,
-        "material": material,
+        "material": material_list if material_list else ( [material_text] if material_text else [] ),
         "weight": weight,
-        "additionalProperty": [
-            {"@type": "PropertyValue", "name": "Width", "value": (width_cm + " cm") if width_cm else ""},
-            {"@type": "PropertyValue", "name": "Depth", "value": (depth_cm + " cm") if depth_cm else ""},
-            {"@type": "PropertyValue", "name": "Height", "value": (height_cm + " cm") if height_cm else ""},
-            {"@type": "PropertyValue", "name": "Usage", "value": usage},
-            {"@type": "PropertyValue", "name": "Origin", "value": origin},
-            {"@type": "PropertyValue", "name": "Collection", "value": collection},
-        ],
+        "dimensions": dimensions,
+        "color": color,
+        "pattern": pattern,
+        "additionalType": "https://schema.org/CreativeWork",
+        "identifier": identifier,
     }
     return schema
 
