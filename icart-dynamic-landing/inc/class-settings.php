@@ -169,8 +169,12 @@ class ICartDL_Settings {
 		if (!current_user_can('manage_options')) {
 			wp_send_json_error(array('message' => 'Unauthorized'), 403);
 		}
+		if (function_exists('ignore_user_abort')) { @ignore_user_abort(true); }
+		if (function_exists('set_time_limit')) { @set_time_limit(20); }
 		$job_id = isset($_POST['job_id']) ? sanitize_text_field(wp_unslash($_POST['job_id'])) : '';
-		$batch = isset($_POST['batch']) ? intval($_POST['batch']) : 5;
+		$batch = isset($_POST['batch']) ? intval($_POST['batch']) : 1;
+		if ($batch < 1) { $batch = 1; }
+		if ($batch > 2) { $batch = 2; }
 		$job = get_transient('icart_dl_' . $job_id);
 		if (!$job) { wp_send_json_error(array('message' => 'Job not found or expired'), 404); }
 		if (!isset($job['rows']) || !is_array($job['rows'])) { wp_send_json_error(array('message' => 'Invalid job'), 400); }
