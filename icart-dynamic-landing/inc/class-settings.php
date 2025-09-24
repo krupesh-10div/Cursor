@@ -154,8 +154,8 @@ class ICartDL_Settings {
 		$dest = $dest_dir . $filename;
 		copy($uploaded['file'], $dest);
 		$product_key = sanitize_title(pathinfo($filename, PATHINFO_FILENAME));
-		// refresh landing map
-		dl_sync_landing_map_from_samples();
+		// Make upload fast: defer global landing map sync to later processes
+		if (function_exists('set_time_limit')) { @set_time_limit(15); }
 		$job = $this->build_job_from_file($dest, $product_key);
 		wp_send_json_success(array(
 			'job_id' => $job['id'],

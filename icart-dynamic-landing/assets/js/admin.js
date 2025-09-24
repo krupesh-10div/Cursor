@@ -56,7 +56,8 @@
 			var json = {};
 			try { json = JSON.parse(text); } catch(parseErr){ alert('Processing failed: invalid server response'); return; }
 			if(!json || !json.success){
-				alert('Processing failed' + (json && json.data && json.data.message ? (': ' + json.data.message) : ''));
+				var msg = (json && json.data && json.data.message) ? json.data.message : text.slice(0, 180);
+				alert('Processing failed: ' + msg);
 				return;
 			}
 			setProgress(json.data.completed, json.data.total, json.data.percent);
