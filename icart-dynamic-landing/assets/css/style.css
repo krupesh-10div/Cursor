@@ -1,7 +1,5 @@
-.container {
-    max-width: 1424px !important;
-    margin: 0 auto;
-    padding: 0 12px;
+.iw-dyc-space .container {
+    max-width: 1424px;
 }
 
 .iw-apps-header .badge.badge-gredient::before {
