@@ -155,7 +155,8 @@ function icart_dl_write_content_map_for_product($product_key, $map) {
 function icart_dl_titlecase($text) {
 	$text = trim((string)$text);
 	$text = mb_strtolower($text);
-	return mb_convert_case($text, MB_CASE_TITLE_SIMPLE, 'UTF-8');
+	$mode = defined('MB_CASE_TITLE_SIMPLE') ? MB_CASE_TITLE_SIMPLE : MB_CASE_TITLE;
+	return mb_convert_case($text, $mode, 'UTF-8');
 }
 
 function icart_dl_trim_to_chars($text, $max) {
@@ -172,37 +173,62 @@ function icart_dl_trim_to_chars($text, $max) {
 
 function icart_dl_generate_25_word_description_from_keywords($keywords) {
 	$kw = trim((string)$keywords);
-	$raw_tokens = preg_split('/[^a-z0-9]+/i', mb_strtolower($kw), -1, PREG_SPLIT_NO_EMPTY);
-	// Deduplicate while preserving order
-	$seen = array();
-	$tokens = array();
-	foreach ($raw_tokens as $t) {
-		if (!isset($seen[$t])) { $seen[$t] = true; $tokens[] = $t; }
-	}
-	if (empty($tokens)) { $tokens = array('description'); }
-	// Deterministic shuffle order based on keyword hash
-	$seed = hexdec(substr(md5($kw), 0, 8));
-	$indices = range(0, count($tokens) - 1);
-	usort($indices, function($a, $b) use ($tokens, $seed) {
-		$ha = crc32($tokens[$a] . '|' . $seed);
-		$hb = crc32($tokens[$b] . '|' . $seed);
+	if ($kw === '') { $kw = 'iCart for Shopify'; }
+
+	// Allowed benefit phrases per spec
+	$benefits = array(
+		'Upselling & Cross-selling',
+		'Product Bundles & Volume Discounts',
+		'Progress Bars & Free Gifts',
+		'Sticky/Slide Cart Drawer & Cart Popups',
+		'In-cart Offers to Boost AOV',
+	);
+
+	// Deterministic selection to ensure uniqueness per keyword while avoiding repetition across keywords
+	$seed = hexdec(substr(md5(mb_strtolower($kw)), 0, 8));
+	$idx = range(0, count($benefits) - 1);
+	usort($idx, function($a, $b) use ($benefits, $seed){
+		$ha = crc32($benefits[$a] . '|' . $seed);
+		$hb = crc32($benefits[$b] . '|' . $seed);
 		if ($ha === $hb) { return 0; }
 		return ($ha < $hb) ? -1 : 1;
 	});
-	$out = array();
-	$rotation = 0;
-	while (count($out) < 25) {
-		foreach ($indices as $pos) {
-			$pick = $tokens[($pos + $rotation) % count($tokens)];
-			if (!empty($out) && end($out) === $pick) { continue; }
-			$out[] = $pick;
-			if (count($out) >= 25) { break; }
+	// Pick 3–4 benefits
+	$count = 3 + ($seed % 2); // 3 or 4
+	$chosen = array();
+	for ($i = 0; $i < $count; $i++) { $chosen[] = $benefits[$idx[$i]]; }
+
+	// Build a natural, friendly sentence of ~25–30 words using only allowed benefits
+	$openers = array('Looking for', 'Exploring', 'Searching for', 'Interested in');
+	$verbs = array('helps', 'supports', 'empowers');
+	$closers = array('to increase average order value', 'to lift AOV', 'to boost average order value');
+	$opener = $openers[$seed % count($openers)];
+	$verb = $verbs[$seed % count($verbs)];
+	$closer = $closers[$seed % count($closers)];
+
+	// Compose parts
+	$part1 = $opener . ' "' . icart_dl_trim_to_chars($kw, 70) . '"?';
+	$part2 = 'iCart ' . $verb . ' Shopify merchants with ' . $chosen[0] . ', ' . $chosen[1] . (isset($chosen[2]) ? ', and ' . $chosen[2] : '') . '.';
+	$part3 = 'Enjoy a friendly, merchant-focused experience with ' . (isset($chosen[3]) ? $chosen[3] . ' and smart guidance ' : 'smart guidance ') . $closer . '.';
+	$text = trim($part1 . ' ' . $part2 . ' ' . $part3);
+
+	// Normalize to 25–30 words by trimming or lightly padding with safe adjectives
+	$words = preg_split('/\s+/', wp_strip_all_tags($text), -1, PREG_SPLIT_NO_EMPTY);
+	$targetMin = 25; $targetMax = 30;
+	if (count($words) > $targetMax) {
+		$words = array_slice($words, 0, $targetMax);
+		$text = rtrim(implode(' ', $words), ".,;!?") . '.';
+	} elseif (count($words) < $targetMin) {
+		$pad = array('clearly', 'simply', 'confidently', 'seamlessly', 'effectively');
+		$pi = 0;
+		while (count($words) < $targetMin) {
+			$words[] = $pad[$pi % count($pad)];
+			$pi++;
 		}
-		$rotation++;
+		$text = rtrim(implode(' ', $words), ".,;!?") . '.';
 	}
-	$sentence = implode(' ', $out);
-	$sentence = mb_strtoupper(mb_substr($sentence, 0, 1)) . mb_substr($sentence, 1) . '.';
-	return $sentence;
+
+	return $text;
 }
 
 // Simple wrapper for title-based fallback generation
@@ -287,16 +313,17 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a fresh, human-like description (25-30 words) related to the keyword. The description should focus on the benefits of the iCart Shopify upsell app, emphasizing features like upselling, cross-selling, product bundles, and increasing AOV. Ensure the tone is friendly, engaging, and informative for Shopify merchants. Avoid using AI-sounding language or technical jargon, keep it natural and approachable. Make each description unique to avoid repetition and better appeal to Shopify store owners. Return only JSON.',
+		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a unique, natural-sounding description (25–30 words) about iCart. Highlight ONLY the following benefits in a friendly, engaging way for Shopify merchants: Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Avoid AI-sounding or overly technical language. Keep the tone approachable, benefit-driven, and merchant-friendly. Ensure each description is different and related to the query to prevent repetition while staying focused on increasing average order value (AOV) with iCart. Return only JSON.',
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
+		'specific_keyword' => (string) $keywords,
 		'slug' => $slug,
 		'uniqueness_seed' => $uniqueness_seed,
 		'constraints' => array(
 			'title_generated_min_words' => 8,
 			'title_generated_max_words' => 12,
 			'short_description_min_words' => 25,
-			'short_description_max_words' => 35,
+			'short_description_max_words' => 30,
 		),
 	));
 	$result = icart_dl_openai_chat(array(

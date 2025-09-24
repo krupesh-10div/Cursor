@@ -26,8 +26,10 @@
 		if(filenameInput && filenameInput.value){ fd.append('filename', filenameInput.value); }
 		try{
 			var res = await fetch(ICartDLAdmin.ajaxUrl, { method: 'POST', body: fd });
-			var json = await res.json();
-			if(!json || !json.success){ throw new Error(json && json.data && json.data.message ? json.data.message : 'Upload failed'); }
+			var text = await res.text();
+			var json = {};
+			try { json = JSON.parse(text); } catch(parseErr){ throw new Error('Upload failed: invalid server response'); }
+			if(!json || !json.success){ throw new Error((json && json.data && json.data.message) ? json.data.message : 'Upload failed'); }
 			var jobId = json.data.job_id;
 			var total = json.data.total || 0;
 			setProgress(0, total, 0);
@@ -50,9 +52,11 @@
 			fd.append('job_id', jobId);
 			fd.append('batch', '5');
 			var res = await fetch(ICartDLAdmin.ajaxUrl, { method: 'POST', body: fd });
-			var json = await res.json();
+			var text = await res.text();
+			var json = {};
+			try { json = JSON.parse(text); } catch(parseErr){ alert('Processing failed: invalid server response'); return; }
 			if(!json || !json.success){
-				alert('Processing failed');
+				alert('Processing failed' + (json && json.data && json.data.message ? (': ' + json.data.message) : ''));
 				return;
 			}
 			setProgress(json.data.completed, json.data.total, json.data.percent);
