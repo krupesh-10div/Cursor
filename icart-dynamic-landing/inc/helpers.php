@@ -250,7 +250,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 		'model' => $model,
 		'messages' => $messages,
 		'temperature' => $temperature,
-		'max_tokens' => $max_tokens,
+		'max_completion_tokens' => $max_tokens,
 	);
 
 	$args = array(
@@ -261,6 +261,20 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 		'body' => wp_json_encode($body),
 		'timeout' => 30,
 	);
+
+	if (function_exists('icart_dl_log')) {
+		try {
+			$roles = array();
+			foreach ($messages as $m) { $roles[] = isset($m['role']) ? $m['role'] : '?'; }
+			icart_dl_log(array(
+				'event' => 'openai_request',
+				'model' => $model,
+				'max_completion_tokens' => $max_tokens,
+				'temperature' => $temperature,
+				'message_roles' => $roles,
+			));
+		} catch (\Throwable $e) {}
+	}
 
 	$response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
 	if (is_wp_error($response)) { return $response; }
@@ -275,6 +289,12 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	if (!isset($data['choices'][0]['message']['content'])) {
 		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_malformed', 'body' => $raw)); }
 		return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
+	}
+	if (function_exists('icart_dl_log')) {
+		try {
+			$usage = isset($data['usage']) ? $data['usage'] : null;
+			icart_dl_log(array('event' => 'openai_ok', 'model' => $model, 'usage' => $usage));
+		} catch (\Throwable $e) {}
 	}
 	return $data['choices'][0]['message']['content'];
 }
