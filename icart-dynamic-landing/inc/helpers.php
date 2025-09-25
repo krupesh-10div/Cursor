@@ -245,10 +245,16 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 	$slug = isset($options['slug']) ? sanitize_title($options['slug']) : '';
 	$product_key = isset($options['product_key']) ? sanitize_title($options['product_key']) : '';
 	$uniqueness_seed = md5($slug . '|' . $product_key);
-	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
-		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
-		'Ensure titles follow rules and descriptions are varied and engaging. ' .
-		'Output strict JSON ONLY with keys: title, short_description.';
+	$system_parts = array(
+		'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling.',
+		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords.',
+		'Ensure titles follow rules and descriptions are varied and engaging.',
+		'Output strict JSON ONLY with keys: title, short_description.'
+	);
+	if ($brand_tone !== '') {
+		$system_parts[] = 'Adopt this brand tone throughout: ' . wp_strip_all_tags($brand_tone);
+	}
+	$system = implode(' ', $system_parts);
 	$user = wp_json_encode(array(
 		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set the title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, write a new H1 title of 8–12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a unique, natural-sounding description (25–30 words) about iCart. Highlight only the following benefits in a friendly, engaging way for Shopify merchants: Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Avoid AI-sounding or overly technical language. Keep the tone approachable, benefit-driven, and merchant-friendly. Ensure each description is different and related to the query to prevent repetition while staying focused on increasing average order value (AOV) with iCart. Return ONLY JSON with keys: title, short_description.',
 		'brand_tone' => $brand_tone,
@@ -297,9 +303,15 @@ function icart_dl_generate_short_from_title($title) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
 	if ($title === '') { return icart_dl_generate_25_word_description_from_title($title); }
-	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
-		'Write concise, benefit-led copy using ONLY the provided title for context. Do not repeat or restate the title. ' .
-		'Output strict JSON ONLY with key: short_description.';
+	$system_parts = array(
+		'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling.',
+		'Write concise, benefit-led copy using ONLY the provided title for context. Do not repeat or restate the title.',
+		'Output strict JSON ONLY with key: short_description.'
+	);
+	if ($brand_tone !== '') {
+		$system_parts[] = 'Adopt this brand tone throughout: ' . wp_strip_all_tags($brand_tone);
+	}
+	$system = implode(' ', $system_parts);
 	$user = wp_json_encode(array(
 		'instructions' => 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title. Return JSON only.',
 		'title' => (string) $title,
