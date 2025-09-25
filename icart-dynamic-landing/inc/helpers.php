@@ -3,6 +3,13 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
+function icart_dl_log($message) {
+	if (defined('WP_DEBUG') && WP_DEBUG) {
+		$message = is_scalar($message) ? (string)$message : wp_json_encode($message);
+		error_log('[ICartDL] ' . $message);
+	}
+}
+
 function icart_dl_get_settings() {
 	return get_option('icart_dl_settings', array());
 }
@@ -260,10 +267,13 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	$code = wp_remote_retrieve_response_code($response);
 	$raw = wp_remote_retrieve_body($response);
 	if ($code < 200 || $code >= 300 || empty($raw)) {
-		return new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
+		$error = new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_http', 'code' => $code, 'body' => $raw)); }
+		return $error;
 	}
 	$data = json_decode($raw, true);
 	if (!isset($data['choices'][0]['message']['content'])) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_malformed', 'body' => $raw)); }
 		return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
 	}
 	return $data['choices'][0]['message']['content'];
@@ -306,6 +316,7 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 	), null, 500, 0.4);
 	if (is_wp_error($result)) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_title_short', 'message' => $result->get_error_message())); }
 		return icart_dl_generate_title_short_local($keywords);
 	}
 	$txt = trim((string)$result);
@@ -353,6 +364,7 @@ function icart_dl_generate_short_from_title($title) {
 		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 	), null, 250, 0.4);
 	if (is_wp_error($result)) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_short_from_title', 'message' => $result->get_error_message())); }
 		return icart_dl_generate_25_word_description_from_title($title);
 	}
 	$txt = trim((string)$result);
