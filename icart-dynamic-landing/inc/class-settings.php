@@ -42,7 +42,7 @@ class ICartDL_Settings {
 	public function sanitize_settings($input) {
 		$output = icart_dl_get_settings();
 		$output['openai_api_key'] = isset($input['openai_api_key']) ? sanitize_text_field($input['openai_api_key']) : '';
-		$output['openai_model'] = isset($input['openai_model']) ? sanitize_text_field($input['openai_model']) : 'gpt-5';
+		$output['openai_model'] = isset($input['openai_model']) ? sanitize_text_field($input['openai_model']) : 'gpt-4o-mini';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		// remove disable_api option (no API usage at runtime)
@@ -200,6 +200,7 @@ class ICartDL_Settings {
 		$product_key = $job['product_key'];
 		$map = icart_dl_load_content_map_for_product($product_key);
 		$processed = 0;
+		$errors = 0;
 		for ($i = 0; $i < $batch; $i++) {
 			if ($job['index'] >= $job['total']) { break; }
 			$row = $job['rows'][$job['index']];
@@ -208,7 +209,9 @@ class ICartDL_Settings {
 			// Use ChatGPT API for generation per requirement
 			list($title, $short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
 			if ($title === '' && $short === '') {
-				wp_send_json_error(array('message' => 'OpenAI generation failed for: ' . $slug), 500);
+				$errors++;
+				$job['index']++;
+				continue;
 			}
 			$map[$slug] = array(
 				'slug' => $slug,
@@ -232,6 +235,7 @@ class ICartDL_Settings {
 			'total' => $job['total'],
 			'percent' => $percent,
 			'done' => $done,
+			'errors' => $errors,
 		));
 	}
 
@@ -245,10 +249,10 @@ class ICartDL_Settings {
 
 	public function field_model() {
 		$opts = icart_dl_get_settings();
-		$model = $opts['openai_model'] ?? 'gpt-5';
+		$model = $opts['openai_model'] ?? 'gpt-4o-mini';
 		?>
-		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[openai_model]" value="<?php echo esc_attr($model); ?>" class="regular-text" placeholder="gpt-5" />
-		<p class="description">Enter your OpenAI model ID, e.g., gpt-5</p>
+		<input type="text" name="<?php echo esc_attr($this->option_key); ?>[openai_model]" value="<?php echo esc_attr($model); ?>" class="regular-text" placeholder="gpt-4o-mini" />
+		<p class="description">Enter your OpenAI model ID, e.g., gpt-4o-mini</p>
 		<?php
 	}
 

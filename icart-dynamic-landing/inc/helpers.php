@@ -185,7 +185,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	if ($api_key === '') {
 		return new \WP_Error('missing_api_key', 'OpenAI API key is not configured.');
 	}
-	$model = $model ? $model : (isset($settings['openai_model']) ? $settings['openai_model'] : 'gpt-5');
+    $model = $model ? $model : (isset($settings['openai_model']) ? $settings['openai_model'] : 'gpt-4o-mini');
 
 	$body = array(
 		'model' => $model,
@@ -203,18 +203,30 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 		'timeout' => 30,
 	);
 
-	$response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
+    $response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
 	if (is_wp_error($response)) { return $response; }
 	$code = wp_remote_retrieve_response_code($response);
 	$raw = wp_remote_retrieve_body($response);
 	if ($code < 200 || $code >= 300 || empty($raw)) {
-		return new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
+        return new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
 	}
 	$data = json_decode($raw, true);
-	if (!isset($data['choices'][0]['message']['content'])) {
-		return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
-	}
-	return $data['choices'][0]['message']['content'];
+    $content = '';
+    if (isset($data['choices'][0]['message']['content'])) {
+        $content = $data['choices'][0]['message']['content'];
+    } elseif (isset($data['choices'][0]['delta']['content'])) {
+        $content = $data['choices'][0]['delta']['content'];
+    } else {
+        return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
+    }
+    // Try to extract JSON if the model returned text around it
+    $content = trim((string)$content);
+    if ($content !== '' && $content[0] !== '{') {
+        if (preg_match('/\{[\s\S]*\}/', $content, $m)) {
+            $content = $m[0];
+        }
+    }
+    return $content;
 }
 
 /**
@@ -244,12 +256,17 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 			'short_description_max_words' => 30,
 		),
 	));
-	$result = icart_dl_openai_chat(array(
-		array('role' => 'system', 'content' => $system),
-		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
-	), null, 500, 0.4);
+    $result = icart_dl_openai_chat(array(
+        array('role' => 'system', 'content' => $system),
+        array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
+    ), null, 500, 0.4);
     if (is_wp_error($result)) {
-        return array('', '');
+        // try a fallback lightweight model
+        $result = icart_dl_openai_chat(array(
+            array('role' => 'system', 'content' => $system),
+            array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
+        ), 'gpt-4o-mini', 500, 0.5);
+        if (is_wp_error($result)) { return array('', ''); }
     }
 	$txt = trim((string)$result);
 	$decoded = json_decode($txt, true);
