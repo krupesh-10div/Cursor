@@ -188,6 +188,12 @@ class ICartDL_Settings {
 		$batch = isset($_POST['batch']) ? intval($_POST['batch']) : 1;
 		if ($batch < 1) { $batch = 1; }
 		if ($batch > 2) { $batch = 2; }
+		// Require OpenAI API key for generation
+		$settings = icart_dl_get_settings();
+		$api_key = isset($settings['openai_api_key']) ? trim($settings['openai_api_key']) : '';
+		if ($api_key === '') {
+			wp_send_json_error(array('message' => 'OpenAI API key is not configured in settings.'), 400);
+		}
 		$job = get_transient('icart_dl_' . $job_id);
 		if (!$job) { wp_send_json_error(array('message' => 'Job not found or expired'), 404); }
 		if (!isset($job['rows']) || !is_array($job['rows'])) { wp_send_json_error(array('message' => 'Invalid job'), 400); }
@@ -199,8 +205,8 @@ class ICartDL_Settings {
 			$row = $job['rows'][$job['index']];
 			$slug = $row['slug'];
 			$keywords = $row['keywords'];
-			// Use local generator here to keep AJAX requests fast and reliable
-			list($title, $short) = icart_dl_generate_title_short_local($keywords);
+			// Use ChatGPT API for generation per requirement
+			list($title, $short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
 			$map[$slug] = array(
 				'slug' => $slug,
 				'url' => trailingslashit(home_url('/' . $slug)),

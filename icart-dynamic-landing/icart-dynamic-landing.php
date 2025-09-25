@@ -47,11 +47,7 @@ function icart_dl_init() {
 		new ICartDL_Settings();
 	}
 
-    // Schedule landing map sync asynchronously to avoid blocking admin/page loads
-    add_action('icart_dl_cron_sync', 'dl_sync_landing_map_from_samples');
-    if (!wp_next_scheduled('icart_dl_cron_sync')) {
-        wp_schedule_single_event(time() + 5, 'icart_dl_cron_sync');
-    }
+    // Defer landing map sync to plugin actions only when needed to avoid blocking loads
 
 	// Register rewrite rules and query vars
 	add_filter('query_vars', function($vars){

@@ -454,7 +454,7 @@ function icart_dl_build_json_for_product($product_key) {
 		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
 		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
 		if ($slug === '') { continue; }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_local($keywords);
+		list($gen_title, $gen_short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
 		$map[$slug] = array(
 			'slug' => $slug,
 			'url' => trailingslashit(home_url('/' . $slug)),
@@ -466,32 +466,7 @@ function icart_dl_build_json_for_product($product_key) {
 	icart_dl_write_content_map_for_product($product_key, $map);
 }
 
-// Build JSON for a given product key using OpenAI when configured (auto generation)
-function icart_dl_build_json_for_product_auto($product_key) {
-	$product_key = sanitize_title($product_key);
-	if ($product_key === '') { return; }
-	$opts = icart_dl_get_settings();
-	$entries = isset($opts['landing_map']) && is_array($opts['landing_map']) ? $opts['landing_map'] : array();
-	if (empty($entries)) {
-		$entries = icart_dl_scan_sample_keywords();
-	}
-	$map = array();
-	foreach ($entries as $row) {
-		if (!isset($row['product_key']) || sanitize_title($row['product_key']) !== $product_key) { continue; }
-		$slug = isset($row['slug']) ? sanitize_title($row['slug']) : '';
-		$keywords = isset($row['keywords']) ? sanitize_text_field($row['keywords']) : '';
-		if ($slug === '') { continue; }
-		list($gen_title, $gen_short) = icart_dl_generate_title_short_openai($keywords);
-		$map[$slug] = array(
-			'slug' => $slug,
-			'url' => trailingslashit(home_url('/' . $slug)),
-			'keywords' => $keywords,
-			'title' => isset($row['title']) && $row['title'] !== '' ? sanitize_text_field($row['title']) : $gen_title,
-			'short_description' => isset($row['description']) && $row['description'] !== '' ? sanitize_text_field($row['description']) : $gen_short,
-		);
-	}
-	icart_dl_write_content_map_for_product($product_key, $map);
-}
+// Remove unused auto generation with OpenAI (generation happens per keyword on demand)
 
 function icart_dl_lookup_content_for_keywords($keywords) {
 	$slug = sanitize_title($keywords);
