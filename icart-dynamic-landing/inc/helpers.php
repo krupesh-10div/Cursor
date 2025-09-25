@@ -234,10 +234,6 @@ function icart_dl_generate_title_short_local($keywords) {
 function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temperature = 0.4) {
 	$settings = icart_dl_get_settings();
 	$api_key = isset($settings['openai_api_key']) ? trim($settings['openai_api_key']) : '';
-	// Back-compat: allow legacy key to be used if present
-	if ($api_key === '' && isset($settings['perplexity_api_key'])) {
-		$api_key = trim($settings['perplexity_api_key']);
-	}
 	if ($api_key === '') {
 		return new \WP_Error('missing_api_key', 'OpenAI API key is not configured.');
 	}

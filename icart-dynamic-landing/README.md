@@ -1,10 +1,10 @@
 # iCart Dynamic Landing
 
-Dynamic landing page that adapts content based on search keywords using Perplexity and keywords-defined landing URLs (no WooCommerce dependency).
+Dynamic landing page that adapts content based on search keywords using OpenAI (ChatGPT) and keywords-defined landing URLs (no WooCommerce dependency).
 
 ## Features
 - No page or shortcode needed; URLs map directly to a plugin template
-- Perplexity-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
+- OpenAI-generated heading, subheading, explanation, and CTA tailored to user search keywords (`s`, `q`, or `keywords` query params)
 - Caching with transients
 - Admin settings for API key, model, brand tone, description prompt, cache TTL
 - Auto-scan sample keyword CSVs in `sample/keywords/*.csv` to create root-level SEO URLs that all route to a single landing page

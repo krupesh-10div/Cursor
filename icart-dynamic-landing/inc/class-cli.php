@@ -37,7 +37,6 @@ if (defined('WP_CLI') && WP_CLI) {
 		public function enrich_json($args, $assoc_args) {
 			$opts = icart_dl_get_settings();
 			$api_key = isset($opts['openai_api_key']) ? $opts['openai_api_key'] : '';
-			if (empty($api_key) && isset($opts['perplexity_api_key'])) { $api_key = $opts['perplexity_api_key']; }
 			$brand_tone = isset($opts['brand_tone']) ? $opts['brand_tone'] : '';
 			$force = !empty($assoc_args['force']);
 
