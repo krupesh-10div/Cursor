@@ -212,11 +212,11 @@ function icart_dl_generate_25_word_description_from_keywords($keywords) {
 	);
 	// Natural paraphrases for friendlier copy while staying within allowed scope
 	$benefit_synonyms = array(
-		'Upselling & Cross-selling' => 'upselling and cross-selling',
-		'Product Bundles & Volume Discounts' => 'product bundles and volume discounts',
-		'Progress Bars & Free Gifts' => 'progress bars and free gifts',
-		'Sticky/Slide Cart Drawer & Cart Popups' => 'a sticky cart drawer and cart popups',
-		'In-cart Offers to Boost AOV' => 'in-cart offers that boost AOV',
+		'Upselling & Cross-selling' => 'smart upselling and cross‑selling',
+		'Product Bundles & Volume Discounts' => 'flexible product bundles and volume discounts',
+		'Progress Bars & Free Gifts' => 'engaging progress bars with free gifts',
+		'Sticky/Slide Cart Drawer & Cart Popups' => 'a seamless sticky cart drawer and eye‑catching cart popups',
+		'In-cart Offers to Boost AOV' => 'intuitive in‑cart offers to boost AOV',
 	);
 
 	// Deterministic selection to ensure uniqueness per keyword while avoiding repetition across keywords
@@ -243,16 +243,11 @@ function icart_dl_generate_25_word_description_from_keywords($keywords) {
 
 	// Template variants to reduce repetition across keywords
 	$templates = array(
-		// 0
-		'iCart {verb} Shopify merchants with {b1}, {b2}, and {b3}. Add {b4} to {closer} naturally.',
-		// 1
-		'Designed for Shopify merchants, iCart delivers {b1}, {b2}, and {b3}. Use {b4} to {closer}.',
-		// 2
-		'With iCart, Shopify merchants get {b1}, {b2}, and {b3}. These in-cart improvements help {closer}.',
-		// 3
-		'iCart brings {b1}, {b2}, and {b3} to Shopify merchants. Add {b4} to {closer} without friction.',
-		// 4
-		'For Shopify merchants, iCart adds {b1}, {b2}, and {b3}. Together with {b4}, they help {closer}.',
+		'iCart {verb} Shopify merchants drive more revenue with {b1}, {b2}, and {b3}, encouraging easy add‑ons with {b4}.',
+		'Boost conversions with iCart’s {b1}, {b2}, and {b3} for Shopify merchants, designed to {closer}.',
+		'Create seamless shopping experiences using iCart’s {b1}, {b2}, and {b3} so Shopify merchants can {closer}.',
+		'Raise order value with iCart: {b1}, {b2}, and {b3} tailored for Shopify merchants to {closer}.',
+		'With iCart, Shopify merchants get {b1}, {b2}, and {b3}, plus {b4} that supports smooth customer engagement to {closer}.',
 	);
 	$tpl = $templates[$seed % count($templates)];
 	$b1 = $chosen_syn[0];
@@ -350,7 +345,7 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set the title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, write a new H1 title of 8–12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Write ONE unique description of 25–30 words about iCart for Shopify merchants. Use only these benefit areas (you may paraphrase labels; do not add new features): Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Select 3–4, vary order, vary sentence structure, avoid templates and questions. Mention “iCart” once and “Shopify merchants” once. End with a complete sentence. Use the provided uniqueness_seed to diversify phrasing across keywords. Return ONLY JSON with keys: title, short_description.',
+		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set the title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, write a new H1 title of 8–12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Write ONE unique description of 25–30 words about iCart for Shopify merchants. Use only these benefit areas (paraphrase labels but add no new features): Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Select 3–4 benefits and vary order and sentence structure. Start with varied natural openings like “iCart helps…”, “Boost… with iCart…”, or “Create… using iCart…”. Do NOT ask questions. Ban repetitive phrases such as “Add … to”, “Use smart offers”, “naturally”, and “Enjoy”. Mention “iCart” once and “Shopify merchants” once. End with a complete sentence. Use uniqueness_seed to diversify phrasing across keywords. Return ONLY JSON with keys: title, short_description.',
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
 		'specific_keyword' => (string) $keywords,
