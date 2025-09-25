@@ -233,29 +233,37 @@ function icart_dl_generate_25_word_description_from_keywords($keywords) {
 	$chosen = array();
 	for ($i = 0; $i < $count; $i++) { $chosen[] = $benefits[$idx[$i]]; }
 
-	// Build a natural, friendly 1–2 sentence description (~25–30 words). No questions.
-	$verbs = array('helps', 'supports', 'empowers');
+	// Build a natural, friendly description (~25–30 words). No questions. Mention iCart once and Shopify merchants once.
+	$verbs = array('helps','supports','empowers','equips','enables');
 	$verb = $verbs[$seed % count($verbs)];
-
-	$parts = array();
 	$chosen_syn = array();
-	foreach ($chosen as $label) {
-		$chosen_syn[] = isset($benefit_synonyms[$label]) ? $benefit_synonyms[$label] : strtolower($label);
-	}
-	// First sentence
-	$first = 'iCart ' . $verb . ' Shopify merchants with ' . $chosen_syn[0] . ', ' . $chosen_syn[1] . (isset($chosen_syn[2]) ? ', and ' . $chosen_syn[2] : '') . '.';
-	$parts[] = $first;
-	// Optional second sentence using remaining/related benefits to lift AOV
-	$lifting_phrases = array('lift AOV','increase average order value','boost AOV');
-	$lift = $lifting_phrases[$seed % count($lifting_phrases)];
-	if (isset($chosen_syn[3])) {
-		$second = 'Add ' . $chosen_syn[3] . ' to ' . $lift . ' naturally.';
-		$parts[] = $second;
-	} else {
-		$second = 'Use smart offers and guidance to ' . $lift . ' naturally.';
-		$parts[] = $second;
-	}
-	$text = trim(implode(' ', $parts));
+	foreach ($chosen as $label) { $chosen_syn[] = isset($benefit_synonyms[$label]) ? $benefit_synonyms[$label] : strtolower($label); }
+	$closers = array('increase average order value','lift AOV','boost average order value','raise AOV');
+	$closer = $closers[$seed % count($closers)];
+
+	// Template variants to reduce repetition across keywords
+	$templates = array(
+		// 0
+		'iCart {verb} Shopify merchants with {b1}, {b2}, and {b3}. Add {b4} to {closer} naturally.',
+		// 1
+		'Designed for Shopify merchants, iCart delivers {b1}, {b2}, and {b3}. Use {b4} to {closer}.',
+		// 2
+		'With iCart, Shopify merchants get {b1}, {b2}, and {b3}. These in-cart improvements help {closer}.',
+		// 3
+		'iCart brings {b1}, {b2}, and {b3} to Shopify merchants. Add {b4} to {closer} without friction.',
+		// 4
+		'For Shopify merchants, iCart adds {b1}, {b2}, and {b3}. Together with {b4}, they help {closer}.',
+	);
+	$tpl = $templates[$seed % count($templates)];
+	$b1 = $chosen_syn[0];
+	$b2 = $chosen_syn[1];
+	$b3 = isset($chosen_syn[2]) ? $chosen_syn[2] : $chosen_syn[0];
+	$b4 = isset($chosen_syn[3]) ? $chosen_syn[3] : $chosen_syn[1];
+	$text = str_replace(
+		array('{verb}','{b1}','{b2}','{b3}','{b4}','{closer}'),
+		array($verb, $b1, $b2, $b3, $b4, $closer),
+		$tpl
+	);
 	return icart_dl_normalize_short_description($text, 25, 30);
 }
 
@@ -342,7 +350,7 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set the title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, write a new H1 title of 8–12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Write 25–30 WORDS about iCart for Shopify merchants. Highlight only these benefits (paraphrasing allowed, no new features): Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Select 3–4. Avoid questions and AI-sounding language. Keep tone friendly, benefit-driven, and merchant-friendly. Ensure each description is unique to the query and ends as a complete sentence. Return ONLY JSON with keys: title, short_description.',
+		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set the title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, write a new H1 title of 8–12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Write ONE unique description of 25–30 words about iCart for Shopify merchants. Use only these benefit areas (you may paraphrase labels; do not add new features): Upselling & Cross-selling; Product Bundles & Volume Discounts; Progress Bars & Free Gifts; Sticky/Slide Cart Drawer & Cart Popups; In-cart Offers to Boost AOV. Select 3–4, vary order, vary sentence structure, avoid templates and questions. Mention “iCart” once and “Shopify merchants” once. End with a complete sentence. Use the provided uniqueness_seed to diversify phrasing across keywords. Return ONLY JSON with keys: title, short_description.',
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
 		'specific_keyword' => (string) $keywords,
