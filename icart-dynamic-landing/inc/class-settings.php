@@ -33,6 +33,7 @@ class ICartDL_Settings {
 
 		add_settings_section('icart_dl_brand', __('Branding & Behavior', 'icart-dl'), '__return_false', $this->option_key);
 		add_settings_field('brand_tone', __('Brand Tone', 'icart-dl'), array($this, 'field_brand_tone'), $this->option_key, 'icart_dl_brand');
+		add_settings_field('description_prompt', __('Description Prompt', 'icart-dl'), array($this, 'field_description_prompt'), $this->option_key, 'icart_dl_brand');
 		add_settings_field('cache_ttl', __('Cache TTL (seconds)', 'icart-dl'), array($this, 'field_cache_ttl'), $this->option_key, 'icart_dl_brand');
 
 		// Routing: landing page slug no longer required (direct template routing)
@@ -43,6 +44,7 @@ class ICartDL_Settings {
 		$output['openai_api_key'] = isset($input['openai_api_key']) ? sanitize_text_field($input['openai_api_key']) : '';
 		$output['openai_model'] = isset($input['openai_model']) ? sanitize_text_field($input['openai_model']) : 'gpt-5';
 		$output['brand_tone'] = isset($input['brand_tone']) ? wp_kses_post($input['brand_tone']) : '';
+		$output['description_prompt'] = isset($input['description_prompt']) ? wp_kses_post($input['description_prompt']) : '';
 		$output['cache_ttl'] = isset($input['cache_ttl']) ? max(60, intval($input['cache_ttl'])) : 3600;
 		// remove disable_api option (no API usage at runtime)
 		// landing_page_slug removed
@@ -230,6 +232,14 @@ class ICartDL_Settings {
 		?>
 		<textarea name="<?php echo esc_attr($this->option_key); ?>[brand_tone]" rows="4" class="large-text"><?php echo esc_textarea($opts['brand_tone'] ?? ''); ?></textarea>
 		<p class="description">Describe your brand voice. E.g., Clear, helpful, confident, conversion-focused.</p>
+		<?php
+	}
+
+	public function field_description_prompt() {
+		$opts = icart_dl_get_settings();
+		?>
+		<textarea name="<?php echo esc_attr($this->option_key); ?>[description_prompt]" rows="5" class="large-text" placeholder="Customize how descriptions are written. E.g., Focus on benefits, avoid jargon, mention upsells."><?php echo esc_textarea($opts['description_prompt'] ?? ''); ?></textarea>
+		<p class="description">Optional. Additional instructions used when generating short descriptions.</p>
 		<?php
 	}
 

@@ -279,6 +279,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	$description_prompt = isset($settings['description_prompt']) ? trim((string)$settings['description_prompt']) : '';
 	$slug = isset($options['slug']) ? sanitize_title($options['slug']) : '';
 	$product_key = isset($options['product_key']) ? sanitize_title($options['product_key']) : '';
 	$uniqueness_seed = md5($slug . '|' . $product_key);
@@ -286,8 +287,13 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
 		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
+	$base_instructions = 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a fresh, human-like description (25-30 words) related to the keyword. The description should focus on the benefits of the iCart Shopify upsell app, emphasizing features like upselling, cross-selling, product bundles, and increasing AOV. Ensure the tone is friendly, engaging, and informative for Shopify merchants. Avoid using AI-sounding language or technical jargon, keep it natural and approachable. Make each description unique to avoid repetition and better appeal to Shopify store owners.';
+	if ($description_prompt !== '') {
+		$base_instructions .= ' Additional instructions: ' . $description_prompt;
+	}
+	$base_instructions .= ' Return only JSON.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a fresh, human-like description (25-30 words) related to the keyword. The description should focus on the benefits of the iCart Shopify upsell app, emphasizing features like upselling, cross-selling, product bundles, and increasing AOV. Ensure the tone is friendly, engaging, and informative for Shopify merchants. Avoid using AI-sounding language or technical jargon, keep it natural and approachable. Make each description unique to avoid repetition and better appeal to Shopify store owners. Return only JSON.',
+		'instructions' => $base_instructions,
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
 		'slug' => $slug,
@@ -327,12 +333,18 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 function icart_dl_generate_short_from_title($title) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	$description_prompt = isset($settings['description_prompt']) ? trim((string)$settings['description_prompt']) : '';
 	if ($title === '') { return icart_dl_generate_25_word_description_from_title($title); }
 	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
 		'Write concise, benefit-led copy using ONLY the provided title for context. Do not repeat or restate the title. ' .
 		'Output strict JSON ONLY with key: short_description.';
+	$instructions = 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title.';
+	if ($description_prompt !== '') {
+		$instructions .= ' Additional instructions: ' . $description_prompt;
+	}
+	$instructions .= ' Return JSON only.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title. Return JSON only.',
+		'instructions' => $instructions,
 		'title' => (string) $title,
 		'brand_tone' => $brand_tone,
 		'constraints' => array(
