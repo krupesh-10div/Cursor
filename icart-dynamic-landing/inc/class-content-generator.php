@@ -23,7 +23,7 @@ class ICartDL_Content_Generator {
 		}
 
 		// No API calls: return fallback if not found in JSON
-		$result = self::fallback($keywords);
+		$result = self::generate_with_openai($keywords);
 		set_transient($transient_key, $result, $cache_ttl);
 		return $result;
 	}
@@ -39,6 +39,27 @@ class ICartDL_Content_Generator {
 			'title' => $title,
 			'short_description' => $short,
 			// Backward-compatible fields
+			'heading' => $title,
+			'subheading' => '',
+			'explanation' => $short,
+			'cta' => '',
+		);
+	}
+
+	private static function generate_with_openai($keywords) {
+		$keywords = trim((string)$keywords);
+		if ($keywords === '') {
+			return self::fallback($keywords);
+		}
+		if (!function_exists('icart_dl_generate_title_short_openai')) {
+			return self::fallback($keywords);
+		}
+		list($title, $short) = icart_dl_generate_title_short_openai($keywords, array());
+		$title = self::trim_to_chars($title, 50);
+		$short = self::trim_to_chars($short, 170);
+		return array(
+			'title' => $title,
+			'short_description' => $short,
 			'heading' => $title,
 			'subheading' => '',
 			'explanation' => $short,
