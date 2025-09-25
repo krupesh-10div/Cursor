@@ -86,6 +86,9 @@
 				return;
 			}
 			setProgress(json.data.completed, json.data.total, json.data.percent);
+			if (json.data.errors && json.data.errors > 0) {
+				console.warn('Generation errors in last batch:', json.data.errors);
+			}
 			done = !!json.data.done;
 			if(!done){
 				await new Promise(function(r){ setTimeout(r, 400); });

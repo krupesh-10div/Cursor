@@ -175,7 +175,7 @@ function icart_dl_trim_to_chars($text, $max) {
 /**
  * Call OpenAI Chat Completions API and return the assistant message content or WP_Error.
  */
-function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temperature = 0.4) {
+function icart_dl_openai_chat($messages, $model = null, $max_tokens = 220, $temperature = 0.2) {
 	$settings = icart_dl_get_settings();
 	$api_key = isset($settings['openai_api_key']) ? trim($settings['openai_api_key']) : '';
 	// Back-compat: allow legacy key to be used if present
@@ -187,11 +187,12 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	}
     $model = $model ? $model : (isset($settings['openai_model']) ? $settings['openai_model'] : 'gpt-4o-mini');
 
-	$body = array(
+    $body = array(
 		'model' => $model,
 		'messages' => $messages,
 		'temperature' => $temperature,
 		'max_tokens' => $max_tokens,
+        'response_format' => array('type' => 'json_object'),
 	);
 
 	$args = array(
@@ -199,8 +200,8 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 			'Authorization' => 'Bearer ' . $api_key,
 			'Content-Type' => 'application/json',
 		),
-		'body' => wp_json_encode($body),
-		'timeout' => 30,
+        'body' => wp_json_encode($body),
+        'timeout' => 60,
 	);
 
     $response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
@@ -210,17 +211,23 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 	if ($code < 200 || $code >= 300 || empty($raw)) {
         return new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
 	}
-	$data = json_decode($raw, true);
+    $data = json_decode($raw, true);
     $content = '';
     if (isset($data['choices'][0]['message']['content'])) {
         $content = $data['choices'][0]['message']['content'];
     } elseif (isset($data['choices'][0]['delta']['content'])) {
         $content = $data['choices'][0]['delta']['content'];
     } else {
+        if (function_exists('error_log')) { error_log('[icart-dl] OpenAI bad response: ' . substr($raw, 0, 300)); }
         return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
     }
     // Try to extract JSON if the model returned text around it
     $content = trim((string)$content);
+    // Strip code fences if present
+    if (strpos($content, '```') !== false) {
+        $content = preg_replace('/```(?:json)?\s*([\s\S]*?)\s*```/i', '$1', $content);
+        $content = trim($content);
+    }
     if ($content !== '' && $content[0] !== '{') {
         if (preg_match('/\{[\s\S]*\}/', $content, $m)) {
             $content = $m[0];
