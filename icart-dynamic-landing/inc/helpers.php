@@ -3,6 +3,13 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
+function icart_dl_log($message) {
+	if (defined('WP_DEBUG') && WP_DEBUG) {
+		$message = is_scalar($message) ? (string)$message : wp_json_encode($message);
+		error_log('[ICartDL] ' . $message);
+	}
+}
+
 function icart_dl_get_settings() {
 	return get_option('icart_dl_settings', array());
 }
@@ -234,10 +241,6 @@ function icart_dl_generate_title_short_local($keywords) {
 function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temperature = 0.4) {
 	$settings = icart_dl_get_settings();
 	$api_key = isset($settings['openai_api_key']) ? trim($settings['openai_api_key']) : '';
-	// Back-compat: allow legacy key to be used if present
-	if ($api_key === '' && isset($settings['perplexity_api_key'])) {
-		$api_key = trim($settings['perplexity_api_key']);
-	}
 	if ($api_key === '') {
 		return new \WP_Error('missing_api_key', 'OpenAI API key is not configured.');
 	}
@@ -247,7 +250,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 		'model' => $model,
 		'messages' => $messages,
 		'temperature' => $temperature,
-		'max_tokens' => $max_tokens,
+		'max_completion_tokens' => $max_tokens,
 	);
 
 	$args = array(
@@ -259,16 +262,39 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 		'timeout' => 30,
 	);
 
+	if (function_exists('icart_dl_log')) {
+		try {
+			$roles = array();
+			foreach ($messages as $m) { $roles[] = isset($m['role']) ? $m['role'] : '?'; }
+			icart_dl_log(array(
+				'event' => 'openai_request',
+				'model' => $model,
+				'max_completion_tokens' => $max_tokens,
+				'temperature' => $temperature,
+				'message_roles' => $roles,
+			));
+		} catch (\Throwable $e) {}
+	}
+
 	$response = wp_remote_post('https://api.openai.com/v1/chat/completions', $args);
 	if (is_wp_error($response)) { return $response; }
 	$code = wp_remote_retrieve_response_code($response);
 	$raw = wp_remote_retrieve_body($response);
 	if ($code < 200 || $code >= 300 || empty($raw)) {
-		return new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
+		$error = new \WP_Error('bad_http_status', 'OpenAI API HTTP ' . intval($code));
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_http', 'code' => $code, 'body' => $raw)); }
+		return $error;
 	}
 	$data = json_decode($raw, true);
 	if (!isset($data['choices'][0]['message']['content'])) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_malformed', 'body' => $raw)); }
 		return new \WP_Error('bad_response', 'OpenAI API returned malformed response.');
+	}
+	if (function_exists('icart_dl_log')) {
+		try {
+			$usage = isset($data['usage']) ? $data['usage'] : null;
+			icart_dl_log(array('event' => 'openai_ok', 'model' => $model, 'usage' => $usage));
+		} catch (\Throwable $e) {}
 	}
 	return $data['choices'][0]['message']['content'];
 }
@@ -279,6 +305,7 @@ function icart_dl_openai_chat($messages, $model = null, $max_tokens = 400, $temp
 function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	$description_prompt = isset($settings['description_prompt']) ? trim((string)$settings['description_prompt']) : '';
 	$slug = isset($options['slug']) ? sanitize_title($options['slug']) : '';
 	$product_key = isset($options['product_key']) ? sanitize_title($options['product_key']) : '';
 	$uniqueness_seed = md5($slug . '|' . $product_key);
@@ -286,8 +313,13 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		'Write concise, benefit-led, keyword-aware copy. Do not include brand names unless present in keywords. ' .
 		'Ensure titles follow rules and descriptions are varied and engaging. ' .
 		'Output strict JSON ONLY with keys: title, short_description.';
+	$base_instructions = 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a fresh, human-like description (25-30 words) related to the keyword. The description should focus on the benefits of the iCart Shopify upsell app, emphasizing features like upselling, cross-selling, product bundles, and increasing AOV. Ensure the tone is friendly, engaging, and informative for Shopify merchants. Avoid using AI-sounding language or technical jargon, keep it natural and approachable. Make each description unique to avoid repetition and better appeal to Shopify store owners.';
+	if ($description_prompt !== '') {
+		$base_instructions .= ' Additional instructions: ' . $description_prompt;
+	}
+	$base_instructions .= ' Return only JSON.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Title rules: (1) If the corrected keyword contains 8 or more words, set title EQUAL to the corrected keyword EXACTLY (no extra words). (2) If fewer than 8 words, generate a new H1 title of 8 to 12 words that preserves the core meaning of the keyword. Correct obvious spelling errors. Description rules: Whenever a user visits the site for the keyword [specific_keyword], generate a fresh, human-like description (25-30 words) related to the keyword. The description should focus on the benefits of the iCart Shopify upsell app, emphasizing features like upselling, cross-selling, product bundles, and increasing AOV. Ensure the tone is friendly, engaging, and informative for Shopify merchants. Avoid using AI-sounding language or technical jargon, keep it natural and approachable. Make each description unique to avoid repetition and better appeal to Shopify store owners. Return only JSON.',
+		'instructions' => $base_instructions,
 		'brand_tone' => $brand_tone,
 		'keywords' => (string) $keywords,
 		'slug' => $slug,
@@ -304,6 +336,7 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 	), null, 500, 0.4);
 	if (is_wp_error($result)) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_title_short', 'message' => $result->get_error_message())); }
 		return icart_dl_generate_title_short_local($keywords);
 	}
 	$txt = trim((string)$result);
@@ -327,12 +360,18 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 function icart_dl_generate_short_from_title($title) {
 	$settings = icart_dl_get_settings();
 	$brand_tone = isset($settings['brand_tone']) ? $settings['brand_tone'] : '';
+	$description_prompt = isset($settings['description_prompt']) ? trim((string)$settings['description_prompt']) : '';
 	if ($title === '') { return icart_dl_generate_25_word_description_from_title($title); }
 	$system = 'You are a senior marketing copywriter. Use flawless American English with correct grammar and spelling. ' .
 		'Write concise, benefit-led copy using ONLY the provided title for context. Do not repeat or restate the title. ' .
 		'Output strict JSON ONLY with key: short_description.';
+	$instructions = 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title.';
+	if ($description_prompt !== '') {
+		$instructions .= ' Additional instructions: ' . $description_prompt;
+	}
+	$instructions .= ' Return JSON only.';
 	$user = wp_json_encode(array(
-		'instructions' => 'Using ONLY the provided title, write a short description between 22 and 25 words. Do not repeat the title. Return JSON only.',
+		'instructions' => $instructions,
 		'title' => (string) $title,
 		'brand_tone' => $brand_tone,
 		'constraints' => array(
@@ -345,6 +384,7 @@ function icart_dl_generate_short_from_title($title) {
 		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 	), null, 250, 0.4);
 	if (is_wp_error($result)) {
+		if (function_exists('icart_dl_log')) { icart_dl_log(array('error' => 'openai_short_from_title', 'message' => $result->get_error_message())); }
 		return icart_dl_generate_25_word_description_from_title($title);
 	}
 	$txt = trim((string)$result);
