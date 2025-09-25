@@ -47,8 +47,11 @@ function icart_dl_init() {
 		new ICartDL_Settings();
 	}
 
-	// Sync landing map from sample keywords folder
-	dl_sync_landing_map_from_samples();
+    // Schedule landing map sync asynchronously to avoid blocking admin/page loads
+    add_action('icart_dl_cron_sync', 'dl_sync_landing_map_from_samples');
+    if (!wp_next_scheduled('icart_dl_cron_sync')) {
+        wp_schedule_single_event(time() + 5, 'icart_dl_cron_sync');
+    }
 
 	// Register rewrite rules and query vars
 	add_filter('query_vars', function($vars){

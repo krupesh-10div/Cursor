@@ -12,6 +12,7 @@ class ICartDL_Settings {
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
 		add_action('wp_ajax_icart_dl_upload_keywords', array($this, 'ajax_upload_keywords'));
 		add_action('wp_ajax_icart_dl_process_keywords', array($this, 'ajax_process_keywords'));
+		add_action('wp_ajax_icart_dl_cancel_job', array($this, 'ajax_cancel_job'));
 	}
 
 	public function add_menu() {
@@ -83,7 +84,8 @@ class ICartDL_Settings {
 				<p>
 					<button class="button button-primary" id="icart-dl-ajax-start"><?php echo esc_html__('Upload via AJAX & Generate', 'icart-dl'); ?></button>
 				</p>
-				<div id="icart-dl-progress" style="display:none;max-width:600px;">
+		<div id="icart-dl-progress" style="display:none;max-width:600px;position:relative;">
+			<button type="button" id="icart-dl-cancel" title="Cancel" style="position:absolute;right:0;top:-6px;border:none;background:transparent;color:#666;font-size:18px;line-height:1;cursor:pointer;">×</button>
 					<div id="icart-dl-progress-bar" style="height:16px;background:#e2e8f0;border-radius:8px;overflow:hidden;">
 						<div id="icart-dl-progress-fill" style="height:100%;width:0;background:#2271b1;"></div>
 					</div>
@@ -162,6 +164,17 @@ class ICartDL_Settings {
 			'product_key' => $product_key,
 			'total' => $job['total'],
 		));
+	}
+
+	public function ajax_cancel_job() {
+		check_ajax_referer('icart_dl_ajax', 'nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => 'Unauthorized'), 403);
+		}
+		$job_id = isset($_POST['job_id']) ? sanitize_text_field(wp_unslash($_POST['job_id'])) : '';
+		if ($job_id === '') { wp_send_json_error(array('message' => 'Missing job_id'), 400); }
+		delete_transient('icart_dl_' . $job_id);
+		wp_send_json_success(array('message' => 'Job cancelled'));
 	}
 
 	public function ajax_process_keywords() {
