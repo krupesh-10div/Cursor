@@ -207,6 +207,9 @@ class ICartDL_Settings {
 			$keywords = $row['keywords'];
 			// Use ChatGPT API for generation per requirement
 			list($title, $short) = icart_dl_generate_title_short_openai($keywords, array('slug' => $slug, 'product_key' => $product_key));
+			if ($title === '' && $short === '') {
+				wp_send_json_error(array('message' => 'OpenAI generation failed for: ' . $slug), 500);
+			}
 			$map[$slug] = array(
 				'slug' => $slug,
 				'url' => trailingslashit(home_url('/' . $slug)),

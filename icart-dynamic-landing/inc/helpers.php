@@ -171,120 +171,6 @@ function icart_dl_trim_to_chars($text, $max) {
 	return rtrim($truncated, "\s\.,;:!-—") . '…';
 }
 
-function icart_dl_normalize_short_description($text, $min_words = 25, $max_words = 30) {
-	$text = trim(wp_strip_all_tags((string)$text));
-	$text = preg_replace('/\s+/', ' ', $text);
-	if ($text === '') { return ''; }
-	$words = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
-	// Remove trailing stop-words that cause dangling fragments
-	$bad_endings = array('a','an','and','or','to','with','for','of','in','on','at','by','from','the');
-	while (!empty($words) && in_array(strtolower(end($words)), $bad_endings, true)) {
-		array_pop($words);
-	}
-	// Enforce word bounds
-	if (count($words) > $max_words) {
-		$words = array_slice($words, 0, $max_words);
-	}
-	if (count($words) < $min_words) {
-		$pad = array('clearly','simply','confidently','seamlessly','effectively');
-		$pi = 0;
-		while (count($words) < $min_words) {
-			$words[] = $pad[$pi % count($pad)];
-			$pi++;
-		}
-	}
-	$out = implode(' ', $words);
-	$out = rtrim($out, ' .,!?:;');
-	return $out . '.';
-}
-
-function icart_dl_generate_25_word_description_from_keywords($keywords) {
-	$kw = trim((string)$keywords);
-	if ($kw === '') { $kw = 'iCart for Shopify'; }
-
-	// Allowed benefits per spec
-	$benefits = array(
-		'Upselling & Cross-selling',
-		'Product Bundles & Volume Discounts',
-		'Progress Bars & Free Gifts',
-		'Sticky/Slide Cart Drawer & Cart Popups',
-		'In-cart Offers to Boost AOV',
-	);
-	// Natural paraphrases for friendlier copy while staying within allowed scope
-	$benefit_synonyms = array(
-		'Upselling & Cross-selling' => 'smart upselling and cross‑selling',
-		'Product Bundles & Volume Discounts' => 'flexible product bundles and volume discounts',
-		'Progress Bars & Free Gifts' => 'engaging progress bars with free gifts',
-		'Sticky/Slide Cart Drawer & Cart Popups' => 'a seamless sticky cart drawer and eye‑catching cart popups',
-		'In-cart Offers to Boost AOV' => 'intuitive in‑cart offers to boost AOV',
-	);
-
-	// Deterministic selection to ensure uniqueness per keyword while avoiding repetition across keywords
-	$seed = hexdec(substr(md5(mb_strtolower($kw)), 0, 8));
-	$idx = range(0, count($benefits) - 1);
-	usort($idx, function($a, $b) use ($benefits, $seed){
-		$ha = crc32($benefits[$a] . '|' . $seed);
-		$hb = crc32($benefits[$b] . '|' . $seed);
-		if ($ha === $hb) { return 0; }
-		return ($ha < $hb) ? -1 : 1;
-	});
-	// Pick 3–4 benefits
-	$count = 3 + ($seed % 2); // 3 or 4
-	$chosen = array();
-	for ($i = 0; $i < $count; $i++) { $chosen[] = $benefits[$idx[$i]]; }
-
-	// Build a natural, friendly description (~25–30 words). No questions. Mention iCart once and Shopify merchants once.
-	$verbs = array('helps','supports','empowers','equips','enables');
-	$verb = $verbs[$seed % count($verbs)];
-	$chosen_syn = array();
-	foreach ($chosen as $label) { $chosen_syn[] = isset($benefit_synonyms[$label]) ? $benefit_synonyms[$label] : strtolower($label); }
-	$closers = array('increase average order value','lift AOV','boost average order value','raise AOV');
-	$closer = $closers[$seed % count($closers)];
-
-	// Template variants to reduce repetition across keywords
-	$templates = array(
-		'iCart {verb} Shopify merchants drive more revenue with {b1}, {b2}, and {b3}, encouraging easy add‑ons with {b4}.',
-		'Boost conversions with iCart’s {b1}, {b2}, and {b3} for Shopify merchants, designed to {closer}.',
-		'Create seamless shopping experiences using iCart’s {b1}, {b2}, and {b3} so Shopify merchants can {closer}.',
-		'Raise order value with iCart: {b1}, {b2}, and {b3} tailored for Shopify merchants to {closer}.',
-		'With iCart, Shopify merchants get {b1}, {b2}, and {b3}, plus {b4} that supports smooth customer engagement to {closer}.',
-	);
-	$tpl = $templates[$seed % count($templates)];
-	$b1 = $chosen_syn[0];
-	$b2 = $chosen_syn[1];
-	$b3 = isset($chosen_syn[2]) ? $chosen_syn[2] : $chosen_syn[0];
-	$b4 = isset($chosen_syn[3]) ? $chosen_syn[3] : $chosen_syn[1];
-	$text = str_replace(
-		array('{verb}','{b1}','{b2}','{b3}','{b4}','{closer}'),
-		array($verb, $b1, $b2, $b3, $b4, $closer),
-		$tpl
-	);
-	return icart_dl_normalize_short_description($text, 25, 30);
-}
-
-// Simple wrapper for title-based fallback generation
-function icart_dl_generate_25_word_description_from_title($title) {
-	return icart_dl_generate_25_word_description_from_keywords($title);
-}
-
-function icart_dl_generate_title_short_from_keywords($keywords) {
-	$k = wp_strip_all_tags($keywords);
-	$title = icart_dl_titlecase($k);
-	$title = icart_dl_trim_to_chars($title, 60);
-	// Generate a 25-word short description from the original keywords (no fixed prefixes)
-	$short = icart_dl_generate_25_word_description_from_keywords($keywords);
-	return array($title, $short);
-}
-
-// Local-only generator for use during CSV->JSON builds (avoids any network calls)
-function icart_dl_generate_title_short_local($keywords) {
-	$k = wp_strip_all_tags($keywords);
-	$title = icart_dl_titlecase($k);
-	$title = icart_dl_trim_to_chars($title, 60);
-	$short = icart_dl_generate_25_word_description_from_keywords($keywords);
-	$short = icart_dl_normalize_short_description($short, 25, 30);
-	return array($title, $short);
-}
 
 /**
  * Call OpenAI Chat Completions API and return the assistant message content or WP_Error.
@@ -362,21 +248,21 @@ function icart_dl_generate_title_short_openai($keywords, $options = array()) {
 		array('role' => 'system', 'content' => $system),
 		array('role' => 'user', 'content' => 'Return JSON only. No prefixes, no markdown. Payload: ' . $user),
 	), null, 500, 0.4);
-	if (is_wp_error($result)) {
-		return icart_dl_generate_title_short_local($keywords);
-	}
+    if (is_wp_error($result)) {
+        return array('', '');
+    }
 	$txt = trim((string)$result);
 	$decoded = json_decode($txt, true);
-	if (!is_array($decoded)) {
-		return icart_dl_generate_title_short_local($keywords);
-	}
+    if (!is_array($decoded)) {
+        return array('', '');
+    }
 	$title = isset($decoded['title']) ? sanitize_text_field($decoded['title']) : '';
 	$short = isset($decoded['short_description']) ? sanitize_text_field($decoded['short_description']) : '';
-	if ($title === '' && $short === '') {
-		return icart_dl_generate_title_short_local($keywords);
-	}
-	$title = $title !== '' ? icart_dl_trim_to_chars($title, 60) : icart_dl_generate_title_short_local($keywords)[0];
-	$short = $short !== '' ? icart_dl_normalize_short_description($short, 25, 30) : icart_dl_generate_title_short_local($keywords)[1];
+    if ($title === '' && $short === '') {
+        return array('', '');
+    }
+    $title = $title !== '' ? icart_dl_trim_to_chars($title, 60) : '';
+    $short = $short !== '' ? icart_dl_trim_to_chars($short, 170) : '';
 	return array($title, $short);
 }
 
